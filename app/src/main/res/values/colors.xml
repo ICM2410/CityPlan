@@ -2,4 +2,13 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="moradoOscuro">#2F0942</color>
+    <color name="moradoMedio">#572773</color>
+    <color name="moradoClaro">#91257B</color>
+    <color name="rosado">#E22F63</color>
+    <color name="amarillo">#F7954C</color>
+    <color name="grisClaro">#E9E9E9</color>
+    <color name="grisMedio">#E5E5E5</color>
+    <color name="grisOscuro">#D5D5D5</color>
+
 </resources>
