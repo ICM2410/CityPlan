@@ -66,7 +66,7 @@
                     tools:src="@drawable/message" />
 
                 <ImageButton
-                    android:id="@+id/camara"
+                    android:id="@+id/botonCamara"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:background="@drawable/boton_plan"
@@ -130,7 +130,7 @@
 
 
                 <Switch
-                    android:id="@+id/confirmacion"
+                    android:id="@+id/switchPasos"
                     android:layout_width="127dp"
                     android:layout_height="49dp"
                     android:layout_below="@id/textView7"

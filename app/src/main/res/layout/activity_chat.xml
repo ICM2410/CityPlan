@@ -1,9 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ChatActivity">
+    tools:context=".ChatActivity"
+    android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:id="@+id/nombreGrupo"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/moradoClaro"
+        android:backgroundTint="@color/moradoClaro"
+        android:orientation="horizontal"
+        android:layout_weight="1"
+        android:padding="20dp"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/imagenGrupoChat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            tools:srcCompat="@drawable/perfilplan" />
+
+        <TextView
+            android:id="@+id/nombreGrupoChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:text="Los chocmelos"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:layout_marginLeft="20dp"/>
+    </LinearLayout>
+    <FrameLayout
+        android:id="@+id/chatContenido"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5">
+
+        <LinearLayout
+            android:id="@+id/mensajes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:id="@+id/comentarioTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="25dp">
+
+                <LinearLayout
+                    android:id="@+id/BurbujaChat"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/comentario_shape"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/autorMensaje"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:text="Pepe"
+                        android:textColor="@color/rosaClaro" />
+
+                    <TextView
+                        android:id="@+id/textoMensaje"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Hola! Acabo de crear el grupo" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/horaComentario"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:text="8:15 pm" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="63dp"
+            android:layout_height="178dp"
+            android:orientation="vertical"
+            android:layout_gravity="right"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/botonVerPlanes"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/boton_plan"
+                android:backgroundTint="@color/grisMedio"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                tools:src="@drawable/plan_mano"
+                android:layout_margin="5dp"/>
+
+            <ImageButton
+                android:id="@+id/configChat"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/boton_plan"
+                android:backgroundTint="@color/grisMedio"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                tools:src="@drawable/settings_orange"
+                android:layout_margin="5dp"/>
+
+            <ImageButton
+                android:id="@+id/equisOpciones"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/boton_plan"
+                android:backgroundTint="@color/amarillo"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                tools:src="@drawable/equis"
+                android:layout_margin="5dp"/>
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/escribirMensaje"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/grisMedio"
+        android:orientation="horizontal"
+        android:layout_weight="1"
+        android:padding="20dp">
+
+        <ImageButton
+            android:id="@+id/botonCamara"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/boton_plan"
+            android:backgroundTint="@color/transparente"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/icono_camara"
+            android:layout_gravity="center_vertical"/>
+
+        <EditText
+            android:id="@+id/espacioDeTexto"
+            android:layout_width="match_parent"
+            android:layout_height="63dp"
+            android:layout_weight="3"
+            android:background="@drawable/puntas_blancas"
+            android:ems="10"
+            android:gravity="center_vertical"
+            android:hint="Escribe el mensaje aqui"
+            android:inputType="text"
+            android:textSize="14sp"
+            android:padding="15dp"/>
+    </LinearLayout>
+
+
+</LinearLayout

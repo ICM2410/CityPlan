@@ -11,5 +11,6 @@
     <color name="grisMedio">#E5E5E5</color>
     <color name="grisOscuro">#D5D5D5</color>
     <color name="rosaClaro">#F2D0FA</color>
+    <color name="transparente">#00F2D0FA</color>
 
 </resources>
