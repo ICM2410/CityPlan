@@ -4,6 +4,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CrearPlanActivity">
+    tools:context=".CrearPlanActivity"
+    android:background="@color/moradoOscuro"
+    android:padding="10dp">
 
+    <LinearLayout
+        android:layout_width="412dp"
+        android:layout_height="191dp"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="-1dp"
+        tools:layout_editor_absoluteY="1dp">
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="187dp"
+            android:layout_height="111dp"
+            app:srcCompat="@drawable/informal" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="412dp"
+        android:layout_height="194dp"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="235dp"></LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

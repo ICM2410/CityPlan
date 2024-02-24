@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true">
+        <layer-list>
+            <!-- Fondo circular -->
+            <item>
+                <shape android:shape="oval">
+                    <!-- Color de fondo cuando está checked -->
+                    <solid android:color="@color/amarillo"></solid>
+                    <!-- Tamaño del óvalo -->
+                    <size android:height="25dp" android:width="25dp"></size>
+                </shape>
+            </item>
+            <!-- Imagen -->
+            <item android:drawable="@drawable/happy_face"
+                android:gravity="center"
+                android:width="30dp"
+                android:height="30dp">
+            </item>
+        </layer-list>
+    </item>
+    <!-- Estado "unchecked" -->
+    <item android:state_checked="false">
+        <layer-list>
+            <!-- Fondo circular -->
+            <item>
+                <shape android:shape="oval">
+                    <!-- Color de fondo cuando está unchecked -->
+                    <solid android:color="@color/amarillo"></solid>
+                    <!-- Tamaño del óvalo -->
+                    <size android:height="25dp" android:width="25dp"></size>
+                </shape>
+            </item>
+            <!-- Imagen -->
+            <item android:drawable="@drawable/sad_face"
+                android:gravity="center"
+                android:width="30dp"
+                android:height="30dp">
+            </item>
+        </layer-list>
+    </item>
+</selector>

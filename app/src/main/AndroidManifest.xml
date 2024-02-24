@@ -13,6 +13,9 @@
         android:theme="@style/Theme.PrimeraEntrega"
         tools:targetApi="31">
         <activity
+            android:name=".EditarPlanActivity"
+            android:exported="false" />
+        <activity
             android:name=".RecomendacionesActivity"
             android:exported="false" />
         <activity

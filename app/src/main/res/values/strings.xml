@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">PrimeraEntrega</string>
+    <string name="recomendaciones">Recomendaciones</string>
+    <string name="mensajePasosPlan">Haz dado desde que inició el plan ! </string>
+    <string name="seguirPlan">Aún sigues en el plan!</string>
 </resources>
