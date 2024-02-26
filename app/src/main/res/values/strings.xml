@@ -3,4 +3,23 @@
     <string name="recomendaciones">Recomendaciones</string>
     <string name="mensajePasosPlan">Haz dado desde que inició el plan ! </string>
     <string name="seguirPlan">Aún sigues en el plan!</string>
+    <string name="tituloChat">Los chocmelos</string>
+    <string name="remitente">Pepe</string>
+    <string name="textMensaje">Hola! Acabo de crear el grupo</string>
+    <string name="hora">8:15 pm</string>
+    <string name="hint">Escribe el mensaje aqui</string>
+
+    <string name="crearPlanTitle">Crear plan</string>
+    <string name="fechaInicioTitle">Fecha inicio</string>
+    <string name="fechaFinTitle">Fecha fin</string>
+    <string name="puntoEncuentroTitle">Punto encuentro</string>
+    <string name="editatActivoTitle">Evaluar amigo más activo</string>
+    <string name="editarFotoEncuentroTitle">Añadir foto encuentro</string>
+    <string name="crearplanButton">Crear plan</string>
+
+    <string name="editarPlanTitle">Editar plan</string>
+    <string name="editarfechaInicioTitle">Editar fecha inicio</string>
+    <string name="editarFechaFinTitle">Editar fecha fin</string>
+
+
 </resources>

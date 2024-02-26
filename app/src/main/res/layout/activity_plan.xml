@@ -7,10 +7,14 @@
     tools:context=".PlanActivity">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/mapa"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/prueba"/>
+        android:layout_centerInParent="true"
+        app:srcCompat="@drawable/mapa3"
+        android:layout_weight="1"
+        android:scaleType="center"/>
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,16 +28,17 @@
             android:orientation="horizontal"
             android:padding="20dp">
 
+
             <ImageButton
                 android:id="@+id/configuraciones"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_centerInParent="true"
+                app:srcCompat="@drawable/settings"
                 android:layout_weight="0"
+                android:scaleType="center"
                 android:background="@drawable/boton_plan"
-                android:backgroundTint="@color/white"
-                android:padding="4dp"
-                android:scaleType="fitCenter"
-                tools:src="@drawable/settings" />
+                android:padding="10dp"/>
 
             <TextView
                 android:id="@+id/textView"
@@ -58,22 +63,26 @@
                     android:id="@+id/grupo"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_marginBottom="15dp"
+                    android:layout_centerInParent="true"
+                    app:srcCompat="@drawable/mensaje_morado"
+                    android:layout_weight="0"
+                    android:scaleType="center"
                     android:background="@drawable/boton_plan"
-                    android:backgroundTint="@color/white"
                     android:padding="10dp"
-                    android:scaleType="fitCenter"
-                    tools:src="@drawable/message" />
+                    android:layout_marginBottom="15dp"
+                    />
+
 
                 <ImageButton
                     android:id="@+id/botonCamara"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_centerInParent="true"
+                    app:srcCompat="@drawable/icono_camara"
+                    android:layout_weight="0"
+                    android:scaleType="center"
                     android:background="@drawable/boton_plan"
-                    android:backgroundTint="@color/white"
-                    android:padding="4dp"
-                    android:scaleType="fitCenter"
-                    tools:src="@drawable/icono_camara" />
+                    android:padding="10dp"/>
             </LinearLayout>
         </LinearLayout>
 

@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,31 +15,70 @@
         android:theme="@style/Theme.PrimeraEntrega"
         tools:targetApi="31">
         <activity
-            android:name=".EditarPlanActivity"
+            android:name=".PlanesActivity"
             android:exported="false" />
         <activity
-            android:name=".RecomendacionesActivity"
+            android:name=".PermisosActivity"
             android:exported="false" />
         <activity
-            android:name=".CrearPlanActivity"
+            android:name=".PerfilConfActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ConfiguracionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RegistrarUsuarioActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PlanFinalizadoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FijarPuntoMapaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AgregarContactosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ElegirUbicacionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ConfigurarHuellaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VerGruposActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EditarGrupoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IniciarSesionHuellaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
             android:exported="false" />
         <activity
             android:name=".GaleriaActivity"
             android:exported="false" />
         <activity
-            android:name=".PlanActivity"
+            android:name=".EditarPlanActivity"
             android:exported="false" />
         <activity
             android:name=".ChatActivity"
             android:exported="false" />
         <activity
-            android:name=".CrearGrupo"
+            android:name=".PlanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CrearPlanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CrearGrupoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RecomendacionesActivity"
             android:exported="false" />
         <activity
             android:name=".IniciarSesionActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

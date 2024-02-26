@@ -1,0 +1,40 @@
+{
+  "establecimientos":[
+    { "Nombre" : "Shoping Mart",
+      "imagen" : "https://static.thenounproject.com/png/1842089-200.png"
+    },
+    { "Nombre" : "Pizza HUTT",
+      "imagen" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNiROUXTw6BUWAP9A08C-1vcvI_YNWF4KzYtzTRAb9LQ&s"
+    },
+    { "Nombre" : "Starbucks",
+      "imagen" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNiROUXTw6BUWAP9A08C-1vcvI_YNWF4KzYtzTRAb9LQ&s"
+    },
+    { "Nombre" : "Salitre Magico",
+      "imagen" : "https://www.creativefabrica.com/wp-content/uploads/2019/02/People-Icon-by-Kanggraphic-1-580x386.jpg"
+    },
+    { "Nombre" : "PUTT",
+      "imagen" : "https://www.creativefabrica.com/wp-content/uploads/2019/02/People-Icon-by-Kanggraphic-1-580x386.jpg"
+    },
+    { "Nombre" : "Multiparque",
+      "imagen" : "https://www.creativefabrica.com/wp-content/uploads/2019/02/People-Icon-by-Kanggraphic-1-580x386.jpg"
+    },
+    { "Nombre" : "Wok",
+      "imagen" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNiROUXTw6BUWAP9A08C-1vcvI_YNWF4KzYtzTRAb9LQ&s"
+    },
+    { "Nombre" : "Incognito",
+      "imagen" : "https://www.creativefabrica.com/wp-content/uploads/2019/02/People-Icon-by-Kanggraphic-1-580x386.jpg"
+    },
+    { "Nombre" : "Parque de los novios",
+      "imagen" : "https://www.creativefabrica.com/wp-content/uploads/2019/02/People-Icon-by-Kanggraphic-1-580x386.jpg"
+    },
+    { "Nombre" : "Zara",
+      "imagen" : "https://static.thenounproject.com/png/1842089-200.png"
+    },
+    { "Nombre" : "snack fit me",
+      "imagen" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNiROUXTw6BUWAP9A08C-1vcvI_YNWF4KzYtzTRAb9LQ&s"
+    },
+    { "Nombre" : "Oleo Market",
+      "imagen" : "https://static.thenounproject.com/png/1842089-200.png"
+    }
+  ]
+}

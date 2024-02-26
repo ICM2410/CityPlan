@@ -25,7 +25,7 @@
             android:id="@+id/crearPlanTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Crear plan"
+            android:text="@string/crearPlanTitle"
             android:textColor="@color/white" />
 
         <ImageView
@@ -41,10 +41,13 @@
             android:layout_width="250dp"
             android:layout_height="40dp"
             android:background="@drawable/puntas_blancas"
+            android:drawableRight="@drawable/edit"
             android:ems="10"
             android:gravity="center"
             android:inputType="text"
-            android:text="Salida a Varietale" />
+            android:paddingRight="10dp"
+            android:text="Salida a Varietale"
+            android:textColor="@color/black" />
 
     </LinearLayout>
 
@@ -65,12 +68,12 @@
             android:id="@+id/fechaInicioTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fecha inicio"
+            android:text="@string/fechaInicioTitle"
             android:textColor="@color/white" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="46dp"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -84,8 +87,9 @@
             <EditText
                 android:id="@+id/fechaInicio"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="60dp"
                 android:layout_weight="2"
+                android:height="60dp"
                 android:ems="10"
                 android:inputType="text"
                 android:text="10/ 05 / 2024  4pm"
@@ -96,7 +100,7 @@
             android:id="@+id/FechaFinTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fecha fin"
+            android:text="@string/fechaFinTitle"
             android:textColor="@color/white" />
 
         <LinearLayout
@@ -115,19 +119,19 @@
             <EditText
                 android:id="@+id/editTextText66"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="60dp"
                 android:layout_weight="2"
                 android:ems="10"
                 android:inputType="text"
                 android:text="10/ 5/ 2024 10pm"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"/>
         </LinearLayout>
 
         <TextView
             android:id="@+id/puntoEncuentroTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Punto encuentro"
+            android:text="@string/puntoEncuentroTitle"
             android:textColor="@color/white" />
 
         <LinearLayout
@@ -165,7 +169,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.5"
-                android:text="Evaluar amigo más activo"
+                android:text="@string/editatActivoTitle"
                 android:textColor="@color/white" />
 
             <Switch
@@ -193,15 +197,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:text="Añadir foto encuentro"
+                android:text="@string/editarFotoEncuentroTitle"
                 android:textColor="@color/white" />
 
             <ImageView
                 android:id="@+id/pinPlanImg"
-                android:layout_width="0dp"
+                android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_weight="1"
-                tools:srcCompat="@drawable/iconopin" />
+                android:layout_centerInParent="true"
+                android:layout_margin="10dp"
+                app:srcCompat="@drawable/iconopin" />
+
         </LinearLayout>
     </LinearLayout>
 
@@ -211,7 +217,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:backgroundTint="@color/amarillo"
-        android:text="Crear plan"
+        android:text="@string/crearplanButton"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
