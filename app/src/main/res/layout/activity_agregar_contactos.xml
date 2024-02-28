@@ -25,7 +25,7 @@
         android:id="@+id/añadirGrupo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Añadir a Grupo"
+        android:text="@string/anadriGrupo"
         android:textSize="25dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

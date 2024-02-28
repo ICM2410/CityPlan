@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="Crear Grupo"
+            android:text="@string/crearGrupo"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="40sp"
@@ -38,17 +38,32 @@
         app:layout_constraintStart_toStartOf="parent">
 
 
-        <ImageView
-            android:id="@+id/botonAgregarGrupoNuevo"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
+        <LinearLayout
+            android:id="@+id/linearLayout7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/botonVerGrupos"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/agregar_grupo_blanco" />
+            app:layout_constraintVertical_bias="0.5">
+
+            <ImageView
+                android:id="@+id/botonAgregarGrupoNuevo"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                app:srcCompat="@drawable/agregar_grupo_blanco" />
+
+            <ImageView
+                android:id="@+id/imageView17"
+                android:layout_width="50dp"
+                android:layout_height="3dp"
+                app:srcCompat="@drawable/boton_plan" />
+        </LinearLayout>
 
         <ImageView
             android:id="@+id/botonVerGrupos"
@@ -58,9 +73,10 @@
             android:layout_marginBottom="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/botonConfiguraciones"
-            app:layout_constraintStart_toEndOf="@+id/botonAgregarGrupoNuevo"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/linearLayout7"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.45"
+            app:layout_constraintVertical_bias="0.5"
             app:srcCompat="@drawable/grupos_blanco" />
 
         <ImageView
@@ -72,19 +88,11 @@
             android:layout_marginBottom="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/botonVerGrupos"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5"
             app:srcCompat="@drawable/configuracion_blanco" />
-
-        <ImageView
-            android:id="@+id/imageView17"
-            android:layout_width="50dp"
-            android:layout_height="3dp"
-            android:layout_marginEnd="320dp"
-            android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/boton_plan" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -130,7 +138,7 @@
         android:layout_marginTop="19dp"
         android:layout_marginEnd="32dp"
         android:ems="10"
-        android:hint="Descripción del Grupo"
+        android:hint="@string/descripciónDelGrupo"
         android:inputType="text"
         android:textColor="@color/moradoMedio"
         app:layout_constraintEnd_toEndOf="parent"
@@ -143,7 +151,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="25dp"
-        android:hint="Nombre del Grupo"
+        android:hint="@string/nombredelGrupo"
         android:layout_marginEnd="32dp"
         android:ems="10"
         android:inputType="text"
@@ -159,7 +167,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="32dp"
         android:textSize="18sp"
-        android:text="Agregar Miembros al Grupo"
+        android:text="@string/AgregarMiembrosalGrupo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextDescGrupo" />
@@ -171,7 +179,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="81dp"
         android:layout_marginEnd="32dp"
-        android:text="Guardar"
+        android:text="@string/guardar"
         android:textSize="18sp"
         android:padding="13dp"
         app:layout_constraintEnd_toEndOf="parent"

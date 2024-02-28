@@ -13,7 +13,7 @@
         android:id="@+id/tituloElegirUbicacion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Haz &quot;pin&quot; al punto de encuentro"
+        android:text="@string/hazPin"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="30dp"
@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
-            android:text="Asi lo identificaran todos"
+            android:text="@string/asiloidentificarántodos"
             android:textColor="@color/white"
             android:textSize="20dp" />
 
@@ -54,7 +54,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="52dp"
         android:backgroundTint="@color/amarillo"
-        android:text="Ver recomendaciones para mi plan" />
+        android:text="@string/Verrecomendacionesparamiplan" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -84,7 +84,7 @@
             android:id="@+id/guardar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Guardar"
+            android:text="@string/guardar"
 
             android:layout_marginRight="50dp"
             android:layout_marginLeft="50dp"

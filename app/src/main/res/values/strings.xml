@@ -21,5 +21,43 @@
     <string name="editarfechaInicioTitle">Editar fecha inicio</string>
     <string name="editarFechaFinTitle">Editar fecha fin</string>
 
+    <string name="anadriGrupo">Añadir a Grupo</string>
+    <string name="adminPermisos">Administra tus permisos</string>
+    <string name="permisos">Permisos</string>
+    <string name="modificaTuHuella">Modifica tu huella</string>
+    <string name="huella">Huella</string>
+    <string name="modificatuPerfil">Modifica tu perfil</string>
+    <string name="Perfil">Perfil</string>
+    <string name="Configuración">Configuración</string>
+    <string name="cambiatuHuella">Cambia tu Huella</string>
+
+    <string name="crearGrupo">Crear Grupo</string>
+    <string name="guardar">Guardar</string>
+    <string name="descripciónDelGrupo">Descripción del Grupo</string>
+    <string name="nombredelGrupo">Nombre del Grupo</string>
+    <string name="AgregarMiembrosalGrupo">Agregar Miembros al Grupo</string>
+    <string name="EditarGrupo">Editar Grupo</string>
+    <string name="nuevaDescripción">Nueva Descripción</string>
+    <string name="nuevoNombre">Nuevo Nombre</string>
+    <string name="agregarMiembrosalGrupo">Agregar Miembros al Grupo</string>
+
+    <string name="salirdelGrupo">Salir del Grupo</string>
+    <string name="hazPin">Haz &quot;pin&quot; al punto de encuentro</string>
+    <string name="asiloidentificarántodos">Asi lo identificarán todos</string>
+    <string name="Verrecomendacionesparamiplan">Ver recomendaciones para mi plan</string>
+    <string name="fecha">Febrero 29 a las 9:45 pm</string>
+    <string name="cantFotos">4 fotos</string>
+    <string name="Fotos">Fotos</string>
+    <string name="IniciarSesión">Iniciar Sesión</string>
+    <string name="nombreUsuario">Usuario o Email</string>
+
+    <string name="Contraseña">Contraseña</string>
+    <string name="desbloquearHuella">Desbloquear con Huella</string>
+    <string name="Registrarse">Registrarse</string>
+    <string name="comprobar">Comprueba que eres tú</string>
+    <string name="Grupos">Grupos</string>
+    <string name="telefono">Teléfono</string>
+    <string name="planes">Planes</string>
+
 
 </resources>

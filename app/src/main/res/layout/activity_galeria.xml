@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="44dp"
-            android:text="Fotos"
+            android:text="@string/Fotos"
             android:textColor="#FFFFFF"
             android:textSize="48sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -60,7 +60,7 @@
                     android:layout_width="46dp"
                     android:layout_height="23dp"
                     android:layout_margin="10dp"
-                    android:text="4 fotos"
+                    android:text="@string/cantFotos"
                     android:textColor="@color/grisMedio" />
             </LinearLayout>
 
@@ -89,7 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="Febrero 29 a las 9:45 pm"
+            android:text="@string/fecha"
             android:textColor="@color/black" />
 
         <LinearLayout
