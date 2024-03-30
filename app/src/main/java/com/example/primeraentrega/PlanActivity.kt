@@ -24,10 +24,6 @@ class PlanActivity : AppCompatActivity() {
             startActivity(Intent(baseContext,EditarPlanActivity::class.java))
         }
 
-        binding.grupo.setOnClickListener{
-            startActivity(Intent(baseContext,ChatActivity::class.java))
-        }
-
         binding.botonCamara.setOnClickListener{
             startActivity(Intent(baseContext,GaleriaActivity::class.java))
         }

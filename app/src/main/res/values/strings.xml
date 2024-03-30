@@ -58,6 +58,8 @@
     <string name="Grupos">Grupos</string>
     <string name="telefono">Teléfono</string>
     <string name="planes">Planes</string>
-
+    <string name="cambiar">Cambiar</string>
+    <string name="estadisticas">Estadísticas del plan</string>
+    <string name="verRecuerdos">Ver Recuerdos</string>
 
 </resources>

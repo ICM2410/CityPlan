@@ -18,7 +18,7 @@ class CrearPlanActivity : AppCompatActivity() {
 
     private fun inicializarBotones() {
         binding.crearplanButton.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            startActivity(Intent(baseContext, PlanesActivity::class.java))
         }
 
         binding.seleccionarUbicacion.setOnClickListener {
