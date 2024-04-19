@@ -89,8 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
                 android:ems="10"
-                android:inputType="text"
-                android:text="10/ 05 / 2024  4pm"
+                android:inputType="date"
                 android:textColor="@color/white" />
         </LinearLayout>
 
@@ -120,8 +119,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
                 android:ems="10"
-                android:inputType="text"
-                android:text="10/ 5/ 2024 10pm"
+                android:inputType="date"
                 android:textColor="@color/white" />
         </LinearLayout>
 
@@ -152,7 +150,7 @@
                 android:layout_weight="2"
                 android:backgroundTint="@color/transparente"
                 android:gravity="center_vertical"
-                android:text="cll 145 no 56 - 80"
+                android:text=""
                 android:textColor="@color/white" />
         </LinearLayout>
 

@@ -1,13 +1,17 @@
 package com.example.primeraentrega
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.hardware.SensorManager
@@ -47,7 +51,10 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.util.Date
+import kotlin.math.min
 
 class PlanActivity : AppCompatActivity() {
 
@@ -279,7 +286,8 @@ class PlanActivity : AppCompatActivity() {
     private fun  configurarBotones()
     {
         binding.configuraciones.setOnClickListener{
-            startActivity(Intent(baseContext,EditarPlanActivity::class.java))
+            val intent=Intent(baseContext,EditarPlanActivity::class.java)
+            startActivity(intent)
         }
 
         binding.botonCamara.setOnClickListener{
@@ -423,7 +431,7 @@ class PlanActivity : AppCompatActivity() {
 
         //MY LOCATION
         if(tipo==0){
-            myLocationMarker = createMarker(p, "Tu ubicacion", snippet, R.drawable.foto2)
+            myLocationMarker = createMarker(p, "Tu ubicacion", snippet, R.drawable.pinyo)
 
             if (myLocationMarker != null) {
                 map.getOverlays().add(myLocationMarker)
@@ -431,7 +439,7 @@ class PlanActivity : AppCompatActivity() {
         }
         else //localizacion plan
         {
-            planLocationMarker = createMarker(p, "Tu destino", snippet, R.drawable.foto2)
+            planLocationMarker = createMarkerEncuentro(p, "Tu destino", snippet, R.drawable.iconopin)
 
             if (planLocationMarker != null) {
                 map.getOverlays().add(planLocationMarker)
@@ -441,18 +449,69 @@ class PlanActivity : AppCompatActivity() {
 
     val sizeInDp = 70
     //val sizeInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp.toFloat(), resources.displayMetrics).toInt()
-    fun createMarker(p: GeoPoint, title: String, desc: String, iconID : Int) : Marker? {
+    @SuppressLint("UseCompatLoadingForDrawables")
+    fun createMarkerEncuentro(p: GeoPoint, title: String, desc: String, iconID : Int) : Marker? {
         var marker : Marker? = null;
         if(map!=null) {
             marker = Marker(map);
             if (title != null) marker.setTitle(title);
             if (desc != null) marker.setSubDescription(desc);
             if (iconID != 0) {
-                //val myIcon = getResources().getDrawable(iconID, this.getTheme())
-                //val scaledBitmap = scaleBitmap((myIcon as BitmapDrawable).bitmap, sizeInPixels)
-                //val circularBitmap = getCircularBitmap(scaledBitmap)
-                //val circularDrawable = BitmapDrawable(getResources(), circularBitmap)
-                //marker.setIcon(circularDrawable)
+                val MAX_ICON_SIZE = 200
+                Thread(Runnable {
+                    val originalBitmap = BitmapFactory.decodeResource(resources, iconID)
+
+                    // Redimensionar la imagen manteniendo la forma circular
+                    val resizedBitmap = if (originalBitmap.width > MAX_ICON_SIZE || originalBitmap.height > MAX_ICON_SIZE) {
+                        val maxSize = min(originalBitmap.width, originalBitmap.height)
+                        val scaleFactor = MAX_ICON_SIZE.toFloat() / maxSize
+                        val scaledWidth = (originalBitmap.width * scaleFactor).toInt()
+                        val scaledHeight = (originalBitmap.height * scaleFactor).toInt()
+                        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+
+                        // Recortar el bitmap para mantener la forma circular
+                        val outputBitmap = Bitmap.createBitmap(scaledBitmap.width, scaledBitmap.height, Bitmap.Config.ARGB_8888)
+                        val canvas = Canvas(outputBitmap)
+                        val paint = Paint().apply {
+                            isAntiAlias = true
+                            shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                        }
+                        val diameter = min(scaledBitmap.width, scaledBitmap.height).toFloat()
+                        canvas.drawCircle(scaledBitmap.width / 2f, scaledBitmap.height / 2f, diameter / 2, paint)
+
+                        outputBitmap
+                    } else {
+                        val maxSize = min(originalBitmap.width, originalBitmap.height)
+                        val scaleFactor = MAX_ICON_SIZE.toFloat() / maxSize
+                        val scaledWidth = (originalBitmap.width * scaleFactor).toInt()
+                        val scaledHeight = (originalBitmap.height * scaleFactor).toInt()
+                        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+
+                        // Recortar el bitmap para mantener la forma circular
+                        val outputBitmap = Bitmap.createBitmap(scaledBitmap.width, scaledBitmap.height, Bitmap.Config.ARGB_8888)
+                        val canvas = Canvas(outputBitmap)
+                        val paint = Paint().apply {
+                            isAntiAlias = true
+                            shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                        }
+                        val diameter = min(scaledBitmap.width, scaledBitmap.height).toFloat()
+                        canvas.drawCircle(scaledBitmap.width / 2f, scaledBitmap.height / 2f, diameter / 2, paint)
+
+                        outputBitmap
+                    }
+
+                    // Comprimir y reducir la calidad de la imagen
+                    val compressedBitmapStream = ByteArrayOutputStream()
+                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, compressedBitmapStream) // Aquí puedes ajustar el nivel de compresión (0-100)
+
+                    // Convertir el bitmap comprimido en un BitmapDrawable
+                    val compressedBitmap = BitmapFactory.decodeStream(ByteArrayInputStream(compressedBitmapStream.toByteArray()))
+                    val drawable = BitmapDrawable(resources, compressedBitmap)
+
+                    // Establecer el BitmapDrawable como el icono del Marker
+                    marker.setIcon(drawable)
+
+                }).start()
             }
             marker.setPosition(p)
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
@@ -463,6 +522,33 @@ class PlanActivity : AppCompatActivity() {
                 ANCHOR_BOTTOM);
         }
         return marker
+    }
+
+    fun createMarker(p: GeoPoint, title: String, desc: String, iconID : Int) : Marker? {
+        var marker : Marker? = null;
+        if(map!=null) {
+            marker = Marker(map);
+            if (title != null) marker.setTitle(title);
+            if (desc != null) marker.setSubDescription(desc);
+            if (iconID != 0) {
+                val bitmap = getBitmapFromDrawable(iconID, 60)
+                val drawable = BitmapDrawable(resources, bitmap)
+                marker.icon = drawable
+            }
+            marker.setPosition(p)
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            marker.setPosition(p);
+            marker.setAnchor(
+                Marker.
+                ANCHOR_CENTER, Marker.
+                ANCHOR_BOTTOM);
+        }
+        return marker
+    }
+    private fun getBitmapFromDrawable(iconID: Int, sizeInDp: Int): Bitmap {
+        val sizeInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp.toFloat(), resources.displayMetrics).toInt()
+        val drawable = BitmapFactory.decodeResource(resources, iconID)
+        return Bitmap.createScaledBitmap(drawable, sizeInPixels, sizeInPixels, false)
     }
     private fun scaleBitmap(bitmap: Bitmap, size: Int): Bitmap {
         val scale = size.toFloat() / bitmap.width.toFloat()
@@ -506,7 +592,7 @@ class PlanActivity : AppCompatActivity() {
             routePoints.add(start)
             routePoints.add(finish)
             val road = roadManager.getRoad(routePoints)
-            Log.i("MapsApp", "Route length: "+road.mLength+" klm")
+            Log.i("MapsApp", "Route length: "+road.mLength+" km")
             Log.i("MapsApp", "Duration: "+road.mDuration/60+" min")
             if(map!=null){
                 if(roadOverlay != null){
