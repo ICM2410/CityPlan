@@ -6,14 +6,10 @@
     android:layout_height="match_parent"
     tools:context=".PlanActivity">
 
-    <ImageView
-        android:id="@+id/mapa"
+    <org.osmdroid.views.MapView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true"
-        app:srcCompat="@drawable/mapa3"
-        android:layout_weight="1"
-        android:scaleType="center"/>
+        android:id="@+id/osmMap"/>
 
 
     <LinearLayout
@@ -41,7 +37,7 @@
                 android:padding="10dp"/>
 
             <TextView
-                android:id="@+id/textView"
+                android:id="@+id/tituloPlan"
                 android:layout_width="113dp"
                 android:layout_height="35dp"
                 android:layout_marginLeft="30dp"
@@ -70,6 +66,23 @@
                     android:scaleType="center"
                     android:background="@drawable/boton_plan"
                     android:padding="10dp"/>
+
+                <ImageButton
+                    android:id="@+id/puntoEncuentro"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="0"
+                    android:background="@drawable/pin"
+                    android:layout_marginTop="5dp"/>
+
+                <ImageButton
+                    android:id="@+id/milocalizacion"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="0"
+                    app:srcCompat="@drawable/ic_menu_mylocation"
+                    android:backgroundTint="@color/transparente"
+                    android:layout_marginTop="5dp"/>
             </LinearLayout>
         </LinearLayout>
 
@@ -103,31 +116,33 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="45dp"
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:gravity="center">
+                    <TextView
+                        android:id="@+id/hazDado"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/mensajePasosPlan"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        android:layout_marginRight="5dp"/>
 
                     <TextView
-                        android:id="@+id/textView6"
+                        android:id="@+id/pasoscantText"
                         android:layout_width="wrap_content"
                         android:layout_height="40dp"
-                        android:layout_marginBottom="10dp"
                         android:background="@drawable/puntas"
                         android:gravity="center"
                         android:paddingLeft="20dp"
                         android:paddingRight="20dp"
                         android:text="600 pasos"
-                        android:textColor="@color/moradoMedio" />
+                        android:textColor="@color/moradoMedio"
+                        android:layout_gravity="center"/>
 
-                    <TextView
-                        android:id="@+id/textView5"
-                        android:layout_width="139dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/mensajePasosPlan"
-                        android:gravity="center"/>
                 </LinearLayout>
 
                 <TextView
-                    android:id="@+id/textView7"
+                    android:id="@+id/aunsiguesText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_toRightOf="@id/pasosLayOut"
@@ -137,9 +152,9 @@
 
                 <Switch
                     android:id="@+id/switchPasos"
-                    android:layout_width="104dp"
-                    android:layout_height="57dp"
-                    android:layout_below="@id/textView7"
+                    android:layout_width="72dp"
+                    android:layout_height="58dp"
+                    android:layout_below="@id/aunsiguesText"
                     android:layout_marginLeft="0dp"
                     android:layout_marginTop="6dp"
                     android:layout_toRightOf="@id/pasosLayOut"
@@ -147,6 +162,16 @@
                     android:textColor="@color/moradoMedio"
                     android:thumb="@drawable/thumb"
                     android:track="@drawable/track" />
+
+                <Button
+                    android:id="@+id/mostrarRutabutton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="11dp"
+                    android:layout_below="@id/pasosLayOut"
+                    android:layout_marginTop="5dp"
+                    android:text="Mostrar Ruta"
+                    android:backgroundTint="@color/moradoMedio"/>
 
 
             </RelativeLayout>

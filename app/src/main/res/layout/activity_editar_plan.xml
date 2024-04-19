@@ -174,7 +174,7 @@
                 android:id="@+id/switchPasos"
                 android:layout_width="127dp"
                 android:layout_height="46dp"
-                android:layout_below="@id/textView7"
+                android:layout_below="@id/aunsiguesText"
                 android:layout_marginLeft="0dp"
                 android:layout_marginTop="6dp"
                 android:layout_toRightOf="@id/pasosLayOut"
