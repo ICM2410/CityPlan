@@ -60,25 +60,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/mapaEnElegirUbicacion"
+        <org.osmdroid.views.MapView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            app:srcCompat="@drawable/mapa3" />
-        <ImageView
-            android:id="@+id/imageView14"
-            android:layout_width="95dp"
-            android:layout_height="95dp"
-            android:layout_gravity="center"
-            app:srcCompat="@drawable/circulo_gris" />
-
-        <ImageView
-            android:id="@+id/pinMapaElegirUbicacion"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:layout_gravity="center"
-            app:srcCompat="@drawable/iconopin"/>
+            android:id="@+id/osmMap"/>
 
         <Button
             android:id="@+id/guardar"

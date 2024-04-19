@@ -61,8 +61,9 @@ class PlanActivity : AppCompatActivity() {
     private var latEncuentro:Double= 0.0
     private var longEncuentro:Double= 0.0
     private var pasosAvtivado=true
-    private var EstoyEnElPlan=false
+    private var EstoyEnElPlan=true
     private lateinit var roadManager: RoadManager
+    private var firstTime=true
 
     private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
     lateinit var location: FusedLocationProviderClient
@@ -138,7 +139,7 @@ class PlanActivity : AppCompatActivity() {
             )
 
             //PARA PONER LA POSICION INICIAL DEL USUARIO
-            location.lastLocation.addOnSuccessListener {
+                /* location.lastLocation.addOnSuccessListener {
                 if (it != null) {
                     latActual = it.latitude
                     longActual = it.longitude
@@ -150,7 +151,7 @@ class PlanActivity : AppCompatActivity() {
                        myLocationOnMap(posActualGEO)
                    }
                 }
-            }
+            }*/
         } else {
             Toast.makeText(getApplicationContext(), "NO HAY PERMISO", Toast.LENGTH_LONG).show();
         }
@@ -173,6 +174,12 @@ class PlanActivity : AppCompatActivity() {
                     if(EstoyEnElPlan)
                     {
                         myLocationOnMap(posActualGEO)
+                        if(firstTime)
+                        {
+                            firstTime=false
+                            map.controller.animateTo(posActualGEO)
+                            map.controller.setZoom(19.0)
+                        }
                     }
                 }
             }
@@ -372,7 +379,6 @@ class PlanActivity : AppCompatActivity() {
 
         return request
     }
-
 
 
     //MARCADORES
