@@ -1,5 +1,7 @@
 package com.example.primeraentrega
 
+import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -16,6 +18,7 @@ import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.IntentSenderRequest
@@ -159,14 +162,15 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                 val last=result.lastLocation
                 if(last!=null)
                 {
-                    //Toast.makeText(getApplicationContext(), "($last.latitude , $last.longitude)", Toast.LENGTH_LONG).show();
-                    latActual=last.latitude
-                    longActual=last.longitude
-                    posActualGEO=GeoPoint(latActual, longActual)
-                    map.controller.animateTo(posActualGEO)
-                    map.controller.setZoom(19.0)
-                    selectedLocationOnMap(posActualGEO)
-                    location.removeLocationUpdates(locationCallBack)
+                        //Toast.makeText(getApplicationContext(), "($last.latitude , $last.longitude)", Toast.LENGTH_LONG).show();
+                        latActual=last.latitude
+                        longActual=last.longitude
+                        posActualGEO=GeoPoint(latActual, longActual)
+                        map.controller.animateTo(posActualGEO)
+                        map.controller.setZoom(19.0)
+                        selectedLocationOnMap(posActualGEO)
+                        location.removeLocationUpdates(locationCallBack)
+
                 }
             }
         }
@@ -294,7 +298,6 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     }
 
     private fun configurarLocalizacion() {
-
         location= LocationServices.getFusedLocationProviderClient(this);
         locationRequest=createLocationRequest()
         locationCallBack=createLocationCallback()
@@ -348,13 +351,14 @@ class ElegirUbicacionActivity : AppCompatActivity() {
 
     val sizeInDp = 70
     //val sizeInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp.toFloat(), resources.displayMetrics).toInt()
+    @SuppressLint("SuspiciousIndentation")
     fun createMarker(p: GeoPoint, title: String, desc: String, iconID: Bitmap) : Marker? {
         var marker : Marker? = null;
         if(map!=null) {
             marker = Marker(map);
             if (title != null) marker.setTitle(title);
             if (desc != null) marker.setSubDescription(desc);
-                val MAX_ICON_SIZE = 200
+                val MAX_ICON_SIZE = 130
                 Thread(Runnable {
                     val originalBitmap = iconID
 

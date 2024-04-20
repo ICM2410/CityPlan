@@ -311,11 +311,13 @@ class PlanActivity : AppCompatActivity() {
         binding.mostrarRutabutton.setOnClickListener{
             //muestra la ruta con oms bonus
             if(!switchRuta) {
+                switchRuta=true
                 binding.mostrarRutabutton.setText("Quitar ruta")
                 mostrarRuta(posActualGEO, posEncuentroGEO)
             }
             else
             {
+                switchRuta=false
                 //quita la ruta si esta existe
                 if(roadOverlay != null){
                     map.getOverlays().remove(roadOverlay);
@@ -370,6 +372,9 @@ class PlanActivity : AppCompatActivity() {
                 stopLocationUpdates()
                 if(myLocationMarker!=null)
                     map.overlays.remove(myLocationMarker)
+                if(roadOverlay != null){
+                    map.getOverlays().remove(roadOverlay);
+                }
             }
         }
     }
