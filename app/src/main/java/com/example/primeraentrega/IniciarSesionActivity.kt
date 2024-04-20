@@ -3,12 +3,19 @@ package com.example.primeraentrega
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import com.example.primeraentrega.databinding.ActivityIniciarSesionBinding
 
 import com.example.primeraentrega.usuario.usuario
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth
+
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
+
 
 class IniciarSesionActivity : AppCompatActivity() {
 
@@ -29,17 +36,37 @@ class IniciarSesionActivity : AppCompatActivity() {
         inicializarBotones()
     }
 
-    private fun inicializarBotones()
-    {
+    private fun inicializarBotones(){
         binding.buttonIniciarSesion.setOnClickListener {
+            val inicioUsuario = binding.user.text.toString()
+            val inicioPassword = binding.password.text.toString()
 
-            val user = binding.user.text.toString()
-            val password = binding.password.text.toString()
+            myRef = database.getReference("users")
+            myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    var usuarioEncontrado = false
+                    for (child in snapshot.children) {
+                        val user = child.getValue<usuario>()
+                        if (user?.user.toString() == inicioUsuario && user?.password.toString() == inicioPassword) {
+                            // Si se encuentra el usuario, iniciar la actividad y cambiar la bandera a true
+                            startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                            usuarioEncontrado = true
+                            break  // Salir del bucle si se encuentra el usuario
+                        }
+                    }
 
-            
+                    // Si el usuario no se encuentra después de iterar sobre todos los usuarios, mostrar un mensaje de error
+                    if (!usuarioEncontrado) {
+                        Toast.makeText(baseContext, "Credenciales inválidas", Toast.LENGTH_SHORT).show()
+                    }
+                }
 
-            startActivity(Intent(baseContext,VerGruposActivity::class.java))
+                override fun onCancelled(error: DatabaseError) {
+                    
+                }
+            })
         }
+
 
         binding.buttonHuella.setOnClickListener {
             startActivity(Intent(baseContext,IniciarSesionHuellaActivity::class.java))

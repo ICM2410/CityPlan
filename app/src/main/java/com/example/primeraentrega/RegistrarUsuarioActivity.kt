@@ -32,7 +32,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
             val password = binding.password.text.toString()
             val telefono = binding.telefono.text.toString()
 
-            val usuario = usuario(user, password, telefono)
+            val usuario = usuario(user,telefono, password)
             // Crea el usuario en la base de datos de Firebase
             registrarUsuarioEnFirebase(usuario)
 
