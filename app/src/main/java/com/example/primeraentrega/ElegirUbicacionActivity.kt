@@ -244,6 +244,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     }
 
     private fun inicializarImagen() {
+			Thread(Runnable {
         val byteArray = intent.getByteArrayExtra("pinImage")
         if (byteArray != null) {
             bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
@@ -283,6 +284,8 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         } else {
             // Manejar el caso en el que no se haya pasado ningún byteArray en el intent
         }
+				}).start()
+
     }
 
     //MAPA
