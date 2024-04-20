@@ -219,6 +219,21 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         map.controller.setZoom(19.0)
         map.controller.animateTo(posActualGEO)
         startLocationUpdates()
+        /*if (intent.hasExtra("recomendacion") && intent.getBooleanExtra("recomendacion", true)) {
+            map.getTileProvider().clearTileCache()
+            // Verificar si se recibió un intent con la bandera "recomendacion" establecida como verdadera
+            latActual = intent.getDoubleExtra("latitud", 0.0)
+            longActual = intent.getDoubleExtra("longitud", 0.0)
+            Log.i(ContentValues.TAG, "Info enviar - Longitud: $longActual, Latitud: $latActual")
+            // Usar la ubicación proporcionada en el intent
+            // Por ejemplo, podrías mostrar esta ubicación en el mapa
+            posActualGEO=GeoPoint(latActual, longActual)
+            map.controller.animateTo(posActualGEO)
+            map.controller.setZoom(19.0)
+            selectedLocationOnMap(posActualGEO)
+
+        } else {*/
+
     }
     override fun onPause() {
         super.onPause()
