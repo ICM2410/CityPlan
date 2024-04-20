@@ -75,6 +75,8 @@ class ElegirUbicacionActivity : AppCompatActivity() {
 
     private lateinit var bitmap:Bitmap
 
+		private var firstTime=true
+
 
     val permissionRequest= registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -170,10 +172,19 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                         latActual=last.latitude
                         longActual=last.longitude
                         posActualGEO=GeoPoint(latActual, longActual)
-                        map.controller.animateTo(posActualGEO)
-                        map.controller.setZoom(19.0)
-                        selectedLocationOnMap(posActualGEO)
-                        location.removeLocationUpdates(this);
+                       
+
+                    		posActualGEO=GeoPoint(latActual, longActual)
+                    
+                       
+                        if(firstTime)
+                        {
+                            firstTime=false
+                            map.controller.animateTo(posActualGEO)
+                            map.controller.setZoom(19.0)
+														 myLocationOnMap(posActualGEO)
+                        }
+
                 }
             }
         }
