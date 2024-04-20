@@ -174,9 +174,6 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                         posActualGEO=GeoPoint(latActual, longActual)
                        
 
-                    		posActualGEO=GeoPoint(latActual, longActual)
-                    
-                       
                         if(firstTime)
                         {
                             firstTime=false
