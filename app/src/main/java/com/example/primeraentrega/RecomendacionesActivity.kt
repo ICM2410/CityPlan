@@ -53,12 +53,19 @@ class RecomendacionesActivity : AppCompatActivity() {
         //OJO
         binding.listView.setOnItemClickListener { parent, view, position, id ->
 
+            val pantalla=intent.getStringExtra("pantalla")
             val selectedLugar = establecimientos[position] // Obtiene el objeto Pais seleccionado
-            val intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
-            
+
+            var intent = Intent(baseContext, EditarPlanActivity::class.java)
+
+            if(pantalla=="crear")
+            {
+                intent = Intent(baseContext, CrearPlanActivity::class.java)
+            }
+
             intent.putExtra("longitud",selectedLugar.getLongitude())
             intent.putExtra("latitud",selectedLugar.getLatitude())
-            intent.putExtra("recomendacion",true)
+            intent.putExtra("pantalla","recomendacion")
             Log.i(TAG, "Info enviar - Longitud: ${selectedLugar.getLongitude()}, Latitud: ${selectedLugar.getLatitude()}")
             // Pasa el objeto Pais como un extra del Intent
             startActivity(intent)

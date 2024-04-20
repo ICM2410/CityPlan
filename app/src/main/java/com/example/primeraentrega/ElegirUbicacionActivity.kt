@@ -273,7 +273,9 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     private fun inicializarBotones() {
         binding.verRecomendacion.setOnClickListener {
             //clearOsmdroidTileCache()
-            startActivity(Intent(baseContext, RecomendacionesActivity::class.java))
+            val intent=Intent(baseContext, RecomendacionesActivity::class.java)
+            intent.putExtra("pantalla",pantalla)
+            startActivity(intent)
         }
         binding.guardar.setOnClickListener {
             //aqui se va a devolver la posicion del plan en long y lat
@@ -302,13 +304,14 @@ class ElegirUbicacionActivity : AppCompatActivity() {
 
     private fun configurarLocalizacion() {
         /*if (intent.hasExtra("recomendacion") && intent.getBooleanExtra("recomendacion", true)) {
+            map.getTileProvider().clearTileCache()
             // Verificar si se recibió un intent con la bandera "recomendacion" establecida como verdadera
-            val latitud = intent.getDoubleExtra("latitud", 0.0)
-            val longitud = intent.getDoubleExtra("longitud", 0.0)
-            Log.i(ContentValues.TAG, "Info enviar - Longitud: $longitud, Latitud: $latitud")
+            latActual = intent.getDoubleExtra("latitud", 0.0)
+            longActual = intent.getDoubleExtra("longitud", 0.0)
+            Log.i(ContentValues.TAG, "Info enviar - Longitud: $longActual, Latitud: $latActual")
             // Usar la ubicación proporcionada en el intent
             // Por ejemplo, podrías mostrar esta ubicación en el mapa
-            posActualGEO=GeoPoint(latitud, longitud)
+            posActualGEO=GeoPoint(latActual, longActual)
             map.controller.animateTo(posActualGEO)
             map.controller.setZoom(19.0)
             selectedLocationOnMap(posActualGEO)
