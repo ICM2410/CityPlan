@@ -208,6 +208,26 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         configurarLocalizacion()
     }
 
+		override fun onStop() {
+        super.onStop()
+        stopLocationUpdates()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        map.onResume()
+        map.controller.setZoom(19.0)
+        map.controller.animateTo(posActualGEO)
+        startLocationUpdates()
+    }
+    override fun onPause() {
+        super.onPause()
+        stopLocationUpdates()
+    }
+    private fun stopLocationUpdates() {
+        location.removeLocationUpdates(locationCallBack)
+    }
+
     private fun inicializarImagen() {
         val byteArray = intent.getByteArrayExtra("pinImage")
         if (byteArray != null) {
