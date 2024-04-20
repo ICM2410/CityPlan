@@ -39,13 +39,18 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
+import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants
+import org.osmdroid.tileprovider.modules.SqlTileWriter
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.tileprovider.util.Counters
+import org.osmdroid.tileprovider.util.StorageUtils
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import kotlin.math.min
 
 class ElegirUbicacionActivity : AppCompatActivity() {
@@ -267,6 +272,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
 
     private fun inicializarBotones() {
         binding.verRecomendacion.setOnClickListener {
+            //clearOsmdroidTileCache()
             startActivity(Intent(baseContext, RecomendacionesActivity::class.java))
         }
         binding.guardar.setOnClickListener {
@@ -295,13 +301,30 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     }
 
     private fun configurarLocalizacion() {
-        location= LocationServices.getFusedLocationProviderClient(this);
-        locationRequest=createLocationRequest()
-        locationCallBack=createLocationCallback()
+        /*if (intent.hasExtra("recomendacion") && intent.getBooleanExtra("recomendacion", true)) {
+            // Verificar si se recibió un intent con la bandera "recomendacion" establecida como verdadera
+            val latitud = intent.getDoubleExtra("latitud", 0.0)
+            val longitud = intent.getDoubleExtra("longitud", 0.0)
+            Log.i(ContentValues.TAG, "Info enviar - Longitud: $longitud, Latitud: $latitud")
+            // Usar la ubicación proporcionada en el intent
+            // Por ejemplo, podrías mostrar esta ubicación en el mapa
+            posActualGEO=GeoPoint(latitud, longitud)
+            map.controller.animateTo(posActualGEO)
+            map.controller.setZoom(19.0)
+            selectedLocationOnMap(posActualGEO)
 
-        //primero gestionar los permisos
-        gestionarPermiso()
+        } else {*/
+            // Si no se recibió la bandera "recomendacion" o está establecida como falsa,
+            // continuar con la configuración normal de la ubicación
+            location = LocationServices.getFusedLocationProviderClient(this)
+            locationRequest = createLocationRequest()
+            locationCallBack = createLocationCallback()
+
+            // Gestionar los permisos
+            gestionarPermiso()
+        //}
     }
+
     private fun createLocationRequest():LocationRequest
     {
         val request=LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 7000)

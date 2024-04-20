@@ -55,13 +55,13 @@ class RecomendacionesActivity : AppCompatActivity() {
 
             val selectedLugar = establecimientos[position] // Obtiene el objeto Pais seleccionado
             val intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
-
+            
             intent.putExtra("longitud",selectedLugar.getLongitude())
             intent.putExtra("latitud",selectedLugar.getLatitude())
-            intent.putExtra("pantalla","recomendacion")
+            intent.putExtra("recomendacion",true)
             Log.i(TAG, "Info enviar - Longitud: ${selectedLugar.getLongitude()}, Latitud: ${selectedLugar.getLatitude()}")
             // Pasa el objeto Pais como un extra del Intent
-            //startActivity(intent)
+            startActivity(intent)
         }
     }
 
@@ -70,9 +70,11 @@ class RecomendacionesActivity : AppCompatActivity() {
         val spinner: Spinner = findViewById(R.id.ubicaciones)
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val seleccion = spinner.selectedItem as String
+                llenarLista(seleccion)
                 if (!isFirstSelection) {
-                    val seleccion = spinner.selectedItem as String
-                    llenarLista(seleccion)
+                    //val seleccion = spinner.selectedItem as String
+                    //llenarLista(seleccion)
                 } else {
                     isFirstSelection = false
                 }
