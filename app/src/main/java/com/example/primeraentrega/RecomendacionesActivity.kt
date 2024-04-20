@@ -58,19 +58,24 @@ class RecomendacionesActivity : AppCompatActivity() {
 
             intent.putExtra("longitud",selectedLugar.getLongitude())
             intent.putExtra("latitud",selectedLugar.getLatitude())
-            //intent.putExtra("pantalla","recomendacion")
+            intent.putExtra("pantalla","recomendacion")
             Log.i(TAG, "Info enviar - Longitud: ${selectedLugar.getLongitude()}, Latitud: ${selectedLugar.getLatitude()}")
             // Pasa el objeto Pais como un extra del Intent
             //startActivity(intent)
         }
     }
 
+    private var isFirstSelection = true
     private fun inicializarSpinner() {
         val spinner: Spinner = findViewById(R.id.ubicaciones)
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val seleccion = spinner.selectedItem as String
-                llenarLista(seleccion)
+                if (!isFirstSelection) {
+                    val seleccion = spinner.selectedItem as String
+                    llenarLista(seleccion)
+                } else {
+                    isFirstSelection = false
+                }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -84,10 +89,6 @@ class RecomendacionesActivity : AppCompatActivity() {
 
         crearConsulta(seleccion)
 
-        val adapter = AdapterEstablecimiento(applicationContext, establecimientos)
-
-                // Asignar el adaptador al ListView
-        binding.listView.adapter = adapter
     }
 
     private fun crearConsulta(seleccion: String) {
@@ -128,12 +129,17 @@ class RecomendacionesActivity : AppCompatActivity() {
                         if (name != null) {
                             if( latitude!=30000.0 && name != "Nombre no disponible")
                             {
-                                val establecimiento = findAddress(LatLng(latitude, longitude))?.let {
+                                findAddress(LatLng(latitude, longitude))?.let {
                                     establecimientos.add (Establecimiento(name, imagen, latitude, longitude, it))
                                 }
                             }
                         }
                     }
+
+                    val adapter = AdapterEstablecimiento(applicationContext, establecimientos)
+
+                    // Asignar el adaptador al ListView
+                    binding.listView.adapter = adapter
                     // Procesa el JSON según tus necesidades.
                     // Aquí puedes extraer y manejar los datos como desees.
                 } catch (e: JSONException) {

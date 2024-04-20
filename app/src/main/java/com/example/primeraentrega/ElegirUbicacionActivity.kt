@@ -147,7 +147,6 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                 locationCallBack,
                 Looper.getMainLooper()
             )
-
         } else {
             Toast.makeText(getApplicationContext(), "NO HAY PERMISO", Toast.LENGTH_LONG).show();
         }
@@ -169,8 +168,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                         map.controller.animateTo(posActualGEO)
                         map.controller.setZoom(19.0)
                         selectedLocationOnMap(posActualGEO)
-                        location.removeLocationUpdates(locationCallBack)
-
+                        location.removeLocationUpdates(this);
                 }
             }
         }
@@ -195,7 +193,6 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         configurarMapa()
 
         configurarLocalizacion()
-
     }
 
     private fun inicializarImagen() {
