@@ -75,7 +75,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
 
     private lateinit var bitmap:Bitmap
 
-		private var firstTime=true
+    private var firstTime=true
 
 
     val permissionRequest= registerForActivityResult(
@@ -172,14 +172,14 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                         latActual=last.latitude
                         longActual=last.longitude
                         posActualGEO=GeoPoint(latActual, longActual)
-                       
+
 
                         if(firstTime)
                         {
                             firstTime=false
                             map.controller.animateTo(posActualGEO)
                             map.controller.setZoom(19.0)
-														 myLocationOnMap(posActualGEO)
+                            selectedLocationOnMap(posActualGEO)
                         }
 
                 }
@@ -244,47 +244,47 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     }
 
     private fun inicializarImagen() {
-			Thread(Runnable {
-        val byteArray = intent.getByteArrayExtra("pinImage")
-        if (byteArray != null) {
-            bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        Thread(Runnable {
+                val byteArray = intent.getByteArrayExtra("pinImage")
+                if (byteArray != null) {
+                    bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
 
-            // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
-            val squareBitmap = Bitmap.createBitmap(
-                min(bitmap.width, bitmap.height),
-                min(bitmap.width, bitmap.height),
-                Bitmap.Config.ARGB_8888
-            )
+                    // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
+                    val squareBitmap = Bitmap.createBitmap(
+                        min(bitmap.width, bitmap.height),
+                        min(bitmap.width, bitmap.height),
+                        Bitmap.Config.ARGB_8888
+                    )
 
-            // Crear un lienzo para dibujar en el bitmap cuadrado
-            val canvas = Canvas(squareBitmap)
+                    // Crear un lienzo para dibujar en el bitmap cuadrado
+                    val canvas = Canvas(squareBitmap)
 
-            // Dibujar la imagen original en el centro del bitmap cuadrado
-            val left = (squareBitmap.width - bitmap.width) / 2f
-            val top = (squareBitmap.height - bitmap.height) / 2f
-            canvas.drawBitmap(bitmap, left, top, null)
+                    // Dibujar la imagen original en el centro del bitmap cuadrado
+                    val left = (squareBitmap.width - bitmap.width) / 2f
+                    val top = (squareBitmap.height - bitmap.height) / 2f
+                    canvas.drawBitmap(bitmap, left, top, null)
 
-            // Crear un bitmap circular
-            val circleBitmap = Bitmap.createBitmap(
-                squareBitmap.width,
-                squareBitmap.height,
-                Bitmap.Config.ARGB_8888
-            )
-            val paint = Paint().apply {
-                isAntiAlias = true
-                shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-            }
-            val rect = Rect(0, 0, squareBitmap.width, squareBitmap.height)
-            val rectF = RectF(rect)
-            val diameter = min(squareBitmap.width, squareBitmap.height).toFloat()
-            canvas.setBitmap(circleBitmap)
-            canvas.drawCircle(diameter / 2, diameter / 2, diameter / 2, paint)
+                    // Crear un bitmap circular
+                    val circleBitmap = Bitmap.createBitmap(
+                        squareBitmap.width,
+                        squareBitmap.height,
+                        Bitmap.Config.ARGB_8888
+                    )
+                    val paint = Paint().apply {
+                        isAntiAlias = true
+                        shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                    }
+                    val rect = Rect(0, 0, squareBitmap.width, squareBitmap.height)
+                    val rectF = RectF(rect)
+                    val diameter = min(squareBitmap.width, squareBitmap.height).toFloat()
+                    canvas.setBitmap(circleBitmap)
+                    canvas.drawCircle(diameter / 2, diameter / 2, diameter / 2, paint)
 
-            binding.pinElegirUbicacion.setImageBitmap(circleBitmap)
-        } else {
-            // Manejar el caso en el que no se haya pasado ningún byteArray en el intent
-        }
-				}).start()
+                    binding.pinElegirUbicacion.setImageBitmap(circleBitmap)
+                } else {
+                    // Manejar el caso en el que no se haya pasado ningún byteArray en el intent
+                }
+        }).start()
 
     }
 

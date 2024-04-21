@@ -71,20 +71,12 @@ class RecomendacionesActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
-
-    private var isFirstSelection = true
     private fun inicializarSpinner() {
         val spinner: Spinner = findViewById(R.id.ubicaciones)
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val seleccion = spinner.selectedItem as String
                 llenarLista(seleccion)
-                if (!isFirstSelection) {
-                    //val seleccion = spinner.selectedItem as String
-                    //llenarLista(seleccion)
-                } else {
-                    isFirstSelection = false
-                }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {

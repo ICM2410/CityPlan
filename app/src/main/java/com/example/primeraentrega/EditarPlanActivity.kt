@@ -1,5 +1,9 @@
 package com.example.primeraentrega
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -16,6 +20,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
+import android.view.View
+import android.widget.Button
+import android.widget.DatePicker
+import android.widget.TimePicker
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.primeraentrega.Clases.Plan
@@ -32,7 +40,10 @@ import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import kotlin.math.min
 
 class EditarPlanActivity : AppCompatActivity() {
@@ -84,7 +95,9 @@ class EditarPlanActivity : AppCompatActivity() {
                 {
                     latitud=latitude
                     longitud=longitude
-                    binding.seleccionarUbicacion.setText( findAddress (LatLng(latitude, longitude)))
+                    var nombreUbicacion=findAddress (LatLng(latitude, longitude))
+                    Log.i(ContentValues.TAG, "dudu - Longitud: $latitud, Latitud: $longitud nombre $nombreUbicacion")
+                    binding.seleccionarUbicacion.setText( nombreUbicacion)
                 }
 
                 binding.switchPasos.isChecked= jsonObject.getBoolean("AmigoMasActivo")
@@ -104,10 +117,16 @@ class EditarPlanActivity : AppCompatActivity() {
                 loadImage(ByteArrayInputStream(fotopinByteArray))
 
                 // Convertir fecha de milisegundos a objeto Date
+                val formatoFecha = SimpleDateFormat("dd/MM/yy", Locale.getDefault())
+
                 val dateInicio = Date(dateInMillisInicio)
-                binding.fechaInicio.setText(dateInicio.toString())
                 val dateFin = Date(dateInMillisFin)
-                binding.editTextText66.setText(dateFin.toString())
+
+                binding.fechaInicio.setText(formatoFecha.format(dateInicio))
+                binding.editTextText66.setText(formatoFecha.format(dateFin))
+                val formatoHora = SimpleDateFormat("h:mm", Locale.getDefault())
+                binding.horaInicio.setText(formatoHora.format(dateInicio))
+                binding.horaFin.setText(formatoHora.format(dateFin))
             }
 
         } catch (e: IOException) {
@@ -152,7 +171,6 @@ class EditarPlanActivity : AppCompatActivity() {
         }
 
         binding.seleccionarUbicacion.setOnClickListener {
-
             guardarInformacion()
             val bitmap = (binding.pinPlanImg.drawable as BitmapDrawable).bitmap
             val stream = ByteArrayOutputStream()
@@ -174,6 +192,67 @@ class EditarPlanActivity : AppCompatActivity() {
             destinationFoto=2
             getContentGallery.launch("image/*")
         }
+
+        inicializarPickers()
+    }
+
+
+
+    private fun inicializarPickers() {
+        binding.fechaInicio.setOnClickListener {
+            openDateDialogue(binding.fechaInicio.context, binding.fechaInicio)
+        }
+
+        binding.editTextText66.setOnClickListener{
+            openDateDialogue(binding.editTextText66.context, binding.editTextText66)
+        }
+
+        binding.horaInicio.setOnClickListener {
+            openTimeDialogue(binding.horaInicio.context,binding.horaInicio)
+        }
+
+        binding.horaFin.setOnClickListener {
+            openTimeDialogue(binding.horaFin.context,binding.horaFin)
+        }
+    }
+
+    fun openDateDialogue(context: Context, view: View) {
+        // Aquí irá el código para mostrar el diálogo de selección de fecha
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val dialog = DatePickerDialog(
+            context,
+            DatePickerDialog.OnDateSetListener { datePicker: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
+                (view as Button).text = "${month + 1}/${dayOfMonth}/${year}" // Sumo 1 al mes porque en Kotlin los meses van de 0 a 11
+            },
+            year,
+            month,
+            dayOfMonth
+        )
+
+        dialog.show()
+    }
+
+    fun openTimeDialogue(context: Context, view: View) {
+        // Aquí irá el código para mostrar el diálogo de selección de fecha
+        // Aquí irá el código para mostrar el diálogo de selección de tiempo
+        val hourOfDay = 15
+        val minute = 0
+
+        val dialog = TimePickerDialog(
+            context,
+            TimePickerDialog.OnTimeSetListener { timePicker: TimePicker, hourOfDay: Int, minute: Int ->
+                (view as Button).text  = "${hourOfDay}:${minute}"
+            },
+            hourOfDay,
+            minute,
+            true // Indica si se muestra el formato de 24 horas
+        )
+
+        dialog.show()
     }
 
     private fun guardarInformacion() {
@@ -190,8 +269,8 @@ class EditarPlanActivity : AppCompatActivity() {
         val byteArrayImagenPlan = streamImagenPlan.toByteArray()
 
         val myPlan = Plan(
-            Date(System.currentTimeMillis()),
-            Date(System.currentTimeMillis()),
+            textoAFecha(binding.fechaInicio, binding.horaInicio),
+            textoAFecha(binding.editTextText66, binding.horaFin),
             longitud,
             latitud,
             binding.switchPasos.isChecked,
@@ -201,6 +280,23 @@ class EditarPlanActivity : AppCompatActivity() {
         )
 
         writeJSONObject(myPlan);
+    }
+
+    fun textoAFecha(fechaTexto: View, horaTexto: View): Date {
+        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        val fecha = formatoFecha.parse((fechaTexto as Button).text.toString())
+        val hora = formatoHora.parse((horaTexto as Button).text.toString())
+
+        val calendario = Calendar.getInstance()
+        fecha?.let { calendario.time = it }
+        hora?.let {
+            calendario.set(Calendar.HOUR_OF_DAY, it.hours)
+            calendario.set(Calendar.MINUTE, it.minutes)
+        }
+        return calendario.time
+
     }
 
     private fun writeJSONObject(myPlan: Plan) {
@@ -227,45 +323,49 @@ class EditarPlanActivity : AppCompatActivity() {
             Log.e("LOCATION", "Error writing to file: ${e.message}")
         }
     }
+
     private fun loadImage(imageStream:  InputStream?) {
-        val originalBitmap = BitmapFactory.decodeStream(imageStream)
+        Thread(Runnable {
+            val originalBitmap = BitmapFactory.decodeStream(imageStream)
 
-        // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
-        val squareBitmap = Bitmap.createBitmap(
-            min(originalBitmap.width, originalBitmap.height),
-            min(originalBitmap.width, originalBitmap.height),
-            Bitmap.Config.ARGB_8888
-        )
+            // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
+            val squareBitmap = Bitmap.createBitmap(
+                min(originalBitmap.width, originalBitmap.height),
+                min(originalBitmap.width, originalBitmap.height),
+                Bitmap.Config.ARGB_8888
+            )
 
-        // Crear un lienzo para dibujar en el bitmap cuadrado
-        val canvas = Canvas(squareBitmap)
+            // Crear un lienzo para dibujar en el bitmap cuadrado
+            val canvas = Canvas(squareBitmap)
 
-        // Dibujar la imagen original en el centro del bitmap cuadrado
-        val left = (squareBitmap.width - originalBitmap.width) / 2f
-        val top = (squareBitmap.height - originalBitmap.height) / 2f
-        canvas.drawBitmap(originalBitmap, left, top, null)
+            // Dibujar la imagen original en el centro del bitmap cuadrado
+            val left = (squareBitmap.width - originalBitmap.width) / 2f
+            val top = (squareBitmap.height - originalBitmap.height) / 2f
+            canvas.drawBitmap(originalBitmap, left, top, null)
 
-        // Crear un bitmap circular
-        val circleBitmap = Bitmap.createBitmap(
-            squareBitmap.width,
-            squareBitmap.height,
-            Bitmap.Config.ARGB_8888
-        )
-        val paint = Paint().apply {
-            isAntiAlias = true
-            shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        }
-        val rect = Rect(0, 0, squareBitmap.width, squareBitmap.height)
-        val rectF = RectF(rect)
-        val diameter = min(squareBitmap.width, squareBitmap.height).toFloat()
-        canvas.setBitmap(circleBitmap)
-        canvas.drawCircle(diameter / 2, diameter / 2, diameter / 2, paint)
+            // Crear un bitmap circular
+            val circleBitmap = Bitmap.createBitmap(
+                squareBitmap.width,
+                squareBitmap.height,
+                Bitmap.Config.ARGB_8888
+            )
+            val paint = Paint().apply {
+                isAntiAlias = true
+                shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+            }
+            val rect = Rect(0, 0, squareBitmap.width, squareBitmap.height)
+            val rectF = RectF(rect)
+            val diameter = min(squareBitmap.width, squareBitmap.height).toFloat()
+            canvas.setBitmap(circleBitmap)
+            canvas.drawCircle(diameter / 2, diameter / 2, diameter / 2, paint)
 
-        // Establecer la imagen circular en la vista correspondiente
-        if (destinationFoto == 1) {
-            binding.imagenPlan.setImageBitmap(circleBitmap)
-        } else {
-            binding.pinPlanImg.setImageBitmap(circleBitmap)
-        }
+            // Establecer la imagen circular en la vista correspondiente
+            if (destinationFoto == 1) {
+                binding.imagenPlan.setImageBitmap(circleBitmap)
+            } else {
+                binding.pinPlanImg.setImageBitmap(circleBitmap)
+            }
+        }).start()
+
     }
 }

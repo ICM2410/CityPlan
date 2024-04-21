@@ -1,5 +1,8 @@
 package com.example.primeraentrega
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -32,6 +35,13 @@ import java.io.InputStream
 import java.util.Date
 import kotlin.math.min
 import android.util.Base64
+import android.view.View
+import android.widget.Button
+import android.widget.DatePicker
+import android.widget.TimePicker
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class CrearPlanActivity : AppCompatActivity() {
 
@@ -127,10 +137,16 @@ class CrearPlanActivity : AppCompatActivity() {
                            loadImage(ByteArrayInputStream(fotopinByteArray))
 
                            // Convertir fecha de milisegundos a objeto Date
+                           val formatoFecha = SimpleDateFormat("dd/MM/yy", Locale.getDefault())
+
                            val dateInicio = Date(dateInMillisInicio)
-                           binding.fechaInicio.setText(dateInicio.toString())
                            val dateFin = Date(dateInMillisFin)
-                           binding.editTextText66.setText(dateFin.toString())
+
+                           binding.fechaInicio.setText(formatoFecha.format(dateInicio))
+                           binding.editTextText66.setText(formatoFecha.format(dateFin))
+                           val formatoHora = SimpleDateFormat("h:mm", Locale.getDefault())
+                           binding.horaInicio.setText(formatoHora.format(dateInicio))
+                           binding.horaFin.setText(formatoHora.format(dateFin))
                        }
 
         } catch (e: IOException) {
@@ -184,7 +200,67 @@ class CrearPlanActivity : AppCompatActivity() {
             destinationFoto=2
             getContentGallery.launch("image/*")
         }
+
+        inicializarPickers()
     }
+
+    private fun inicializarPickers() {
+        binding.fechaInicio.setOnClickListener {
+            openDateDialogue(binding.fechaInicio.context, binding.fechaInicio)
+        }
+
+        binding.editTextText66.setOnClickListener{
+            openDateDialogue(binding.editTextText66.context, binding.editTextText66)
+        }
+
+        binding.horaInicio.setOnClickListener {
+            openTimeDialogue(binding.horaInicio.context,binding.horaInicio)
+        }
+
+        binding.horaFin.setOnClickListener {
+            openTimeDialogue(binding.horaFin.context,binding.horaFin)
+        }
+    }
+
+    fun openDateDialogue(context: Context, view: View) {
+        // Aquí irá el código para mostrar el diálogo de selección de fecha
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val dialog = DatePickerDialog(
+            context,
+            DatePickerDialog.OnDateSetListener { datePicker: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
+                (view as Button).text = "${month + 1}/${dayOfMonth}/${year}" // Sumo 1 al mes porque en Kotlin los meses van de 0 a 11
+            },
+            year,
+            month,
+            dayOfMonth
+        )
+
+        dialog.show()
+    }
+
+    fun openTimeDialogue(context: Context,view: View) {
+        // Aquí irá el código para mostrar el diálogo de selección de fecha
+        // Aquí irá el código para mostrar el diálogo de selección de tiempo
+        val hourOfDay = 15
+        val minute = 0
+
+        val dialog = TimePickerDialog(
+            context,
+            TimePickerDialog.OnTimeSetListener { timePicker: TimePicker, hourOfDay: Int, minute: Int ->
+                (view as Button).text  = "${hourOfDay}:${minute}"
+            },
+            hourOfDay,
+            minute,
+            true // Indica si se muestra el formato de 24 horas
+        )
+
+        dialog.show()
+    }
+
     private fun guardarInformacion() {
         //GUARDAR EN MEMORIA INTERNA EN UN JSON LA INFORMACION DEL PLAN
         //BORRAR LA INFORMACION DEL ARCHIVO SI ES QUE HAY
@@ -199,8 +275,8 @@ class CrearPlanActivity : AppCompatActivity() {
         val byteArrayImagenPlan = streamImagenPlan.toByteArray()
 
         val myPlan = Plan(
-            Date(System.currentTimeMillis()),
-            Date(System.currentTimeMillis()),
+            textoAFecha(binding.fechaInicio, binding.horaInicio),
+            textoAFecha(binding.editTextText66, binding.horaFin),
             longitud,
             latitud,
             binding.switchPasos.isChecked,
@@ -212,6 +288,22 @@ class CrearPlanActivity : AppCompatActivity() {
         writeJSONObject(myPlan);
     }
 
+    fun textoAFecha(fechaTexto: View, horaTexto: View): Date {
+        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+            val fecha = formatoFecha.parse((fechaTexto as Button).text.toString())
+            val hora = formatoHora.parse((horaTexto as Button).text.toString())
+
+            val calendario = Calendar.getInstance()
+            fecha?.let { calendario.time = it }
+            hora?.let {
+                calendario.set(Calendar.HOUR_OF_DAY, it.hours)
+                calendario.set(Calendar.MINUTE, it.minutes)
+            }
+            return calendario.time
+
+    }
     private fun writeJSONObject(myPlan: Plan) {
         val plan = mutableListOf<JSONObject>()
 
