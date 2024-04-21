@@ -1,5 +1,6 @@
 package com.example.primeraentrega
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -49,7 +50,9 @@ class IniciarSesionActivity : AppCompatActivity() {
                         val user = child.getValue<usuario>()
                         if (user?.user.toString() == inicioUsuario && user?.password.toString() == inicioPassword) {
                             // Si se encuentra el usuario, iniciar la actividad y cambiar la bandera a true
-                            startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                            var intent= Intent(baseContext, VerGruposActivity::class.java)
+                            intent.putExtra("user", user)
+                            startActivity(intent)
                             usuarioEncontrado = true
                             break  // Salir del bucle si se encuentra el usuario
                         }
@@ -62,7 +65,7 @@ class IniciarSesionActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    
+
                 }
             })
         }
@@ -78,4 +81,7 @@ class IniciarSesionActivity : AppCompatActivity() {
 
 
     }
+
+
+
 }
