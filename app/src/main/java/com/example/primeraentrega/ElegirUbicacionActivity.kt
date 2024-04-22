@@ -467,7 +467,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                 marker.icon = drawable
             }
             val MAX_ICON_SIZE = 130
-            val originalBitmap = bitmap
+            //val originalBitmap = bitmap
             // Establecer el BitmapDrawable como el icono del Marker
             //marker.setIcon(drawable)
 

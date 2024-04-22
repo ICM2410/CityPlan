@@ -2,6 +2,7 @@ package com.example.primeraentrega
 
 import android.annotation.SuppressLint
 import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -213,6 +214,8 @@ class PlanActivity : AppCompatActivity() {
 
         idPlan=intent.getStringExtra("idPlan").toString()
 
+        Log.e(TAG, "revisar $idPlan")
+
         configurarMapa()
 
         configurarLocalizacion()
@@ -253,7 +256,8 @@ class PlanActivity : AppCompatActivity() {
                     }
                     //SI TIENE LO DE NUMERO DE PASOS
                     if (plan != null) {
-                        if(!plan.AmigoMasActivo){
+                        pasosAvtivado=plan.AmigoMasActivo
+                        if(!pasosAvtivado){
                             // Hacer invisible el elemento binding.hazDado
                             binding.hazDado.visibility = View.INVISIBLE
 

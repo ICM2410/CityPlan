@@ -3,6 +3,7 @@ package com.example.primeraentrega
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -34,6 +35,7 @@ import com.example.primeraentrega.databinding.ActivityCrearPlanBinding
 import com.example.primeraentrega.databinding.ActivityEditarPlanBinding
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
@@ -60,7 +62,7 @@ class EditarPlanActivity : AppCompatActivity() {
 
     private var longitud=0.0
     private var latitud=0.0
-    private var documentId=""
+    private var idPlan=""
     private lateinit var pantalla:String
     val db = Firebase.firestore
     val storage = FirebaseStorage.getInstance()
@@ -81,19 +83,17 @@ class EditarPlanActivity : AppCompatActivity() {
         setContentView(binding.root)
         geocoder = Geocoder(baseContext)
 
-        documentId= intent.getStringExtra("idPlan").toString()
+        idPlan= intent.getStringExtra("idPlan").toString()
+        Log.d(ContentValues.TAG, "ID RECIBIDO $idPlan")
 
-        //inicializarBotones()
-        //obtenerInformacionLocalizacion()
-        //inicializarInformacion()
+
+        inicializarBotones()
+        inicializarInformacion()
     }
 
     private fun inicializarInformacion() {
 
-        documentId= intent.getStringExtra("idPlan").toString()
-        Log.d(ContentValues.TAG, "entreee $documentId")
-
-        val docRef = db.collection("Planes").document(documentId)
+        val docRef = db.collection("Planes").document(idPlan)
         docRef.get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
@@ -103,6 +103,7 @@ class EditarPlanActivity : AppCompatActivity() {
 
                     if (plan != null) {
                         binding.seleccionarUbicacion.setText( findAddress (LatLng(plan.latitude, plan.longitude)))
+                        obtenerInformacionLocalizacion()
                     }
 
                     // Convertir fecha de milisegundos a objeto Date
@@ -124,7 +125,7 @@ class EditarPlanActivity : AppCompatActivity() {
                         // Los bytes de la imagen se han recuperado exitosamente
                         destinationFoto=2
                         val imageStream = ByteArrayInputStream(bytes)
-                        loadImage(imageStream)
+                         loadImage(imageStream)
                     }?.addOnFailureListener {
                         // Manejar cualquier error que ocurra durante la recuperación de la imagen
                     }
@@ -162,15 +163,18 @@ class EditarPlanActivity : AppCompatActivity() {
         //REVISAR SI SE EDITO
 
         // Obtener la información del Intent
-        val longitud= intent.getDoubleExtra("longitud", 3000.0)
-        val latitud= intent.getDoubleExtra("latitud", 3000.0)
+        val longitudInterna= intent.getDoubleExtra("longitud", 3000.0)
+        val latitudInterna= intent.getDoubleExtra("latitud", 3000.0)
 
         // Verificar si se recibió la información de ubicación correctamente
-        if (longitud !=3000.0 && latitud != 3000.0) {
+        if (longitudInterna !=3000.0 && latitudInterna!= 3000.0) {
             // La información de ubicación se recibió correctamente
-            binding.seleccionarUbicacion.setText( findAddress (LatLng(latitud, longitud)))
+            binding.seleccionarUbicacion.setText( findAddress (LatLng(latitudInterna, longitudInterna)))
+            latitud=latitudInterna
+            longitud=longitudInterna
         }
     }
+
     fun findAddress (location : LatLng):String?{
         val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 2)
         if(addresses != null && !addresses.isEmpty()){
@@ -184,7 +188,8 @@ class EditarPlanActivity : AppCompatActivity() {
         binding.editarplanButton.setOnClickListener {
             guardarInformacion { documentId ->
                 val intent = Intent(baseContext, PlanActivity::class.java)
-                intent.putExtra("idPlan", documentId)
+                Log.e(ContentValues.TAG, "HOLA - $idPlan")
+                intent.putExtra("idPlan", idPlan)
                 startActivity(intent)
             }
         }
@@ -194,7 +199,7 @@ class EditarPlanActivity : AppCompatActivity() {
             //BORRAR LA INFORMACION DEL ARCHIVO SI ES QUE HAY
             guardarInformacion { documentId ->
                 val intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
-                intent.putExtra("idPlan", documentId)
+                intent.putExtra("idPlan", idPlan)
                 intent.putExtra("pantalla","editar")
                 startActivity(intent)
             }
@@ -311,7 +316,7 @@ class EditarPlanActivity : AppCompatActivity() {
                         // Uri es la URL de la imagen subida en Firebase Storage
                         //imgUrlplan= uri.toString()
                         // Una vez que se haya guardado la información, llamamos a la función de devolución de llamada
-                        callback.invoke(documentId)
+                        callback.invoke(idPlan)
                     }
                 }
             } else if (drawableplan is VectorDrawable || drawableplan is VectorDrawableCompat) {
@@ -343,17 +348,10 @@ class EditarPlanActivity : AppCompatActivity() {
         )
 
         val planMap: Map<String, Any> = plan.toMap()
-        db.collection("Planes")
-            .document(documentId) // Utiliza el ID del documento que deseas editar
-            .update(planMap) // Utiliza el objeto 'planMap' que contiene los datos que deseas actualizar
-            .addOnSuccessListener {
-                Log.d(ContentValues.TAG, "DocumentSnapshot successfully updated")
-                // Llama a la función de devolución de llamada si es necesario
-                callback.invoke(documentId)
-            }
-            .addOnFailureListener { e ->
-                Log.w(ContentValues.TAG, "Error updating document", e)
-            }
+        db.collection("Planes").document(idPlan)
+            .set(plan, SetOptions.merge())
+            .addOnSuccessListener { Log.d(TAG, "Document successfully updated!") }
+            .addOnFailureListener { e -> Log.w(TAG, "Error updating document", e) }
     }
 
     fun bitmapToUri(context: Context, bitmap: Bitmap): Uri {
@@ -380,7 +378,6 @@ class EditarPlanActivity : AppCompatActivity() {
     }
 
     private fun loadImage(imageStream:  InputStream?) {
-        Thread(Runnable {
             val originalBitmap = BitmapFactory.decodeStream(imageStream)
 
             // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
@@ -420,7 +417,5 @@ class EditarPlanActivity : AppCompatActivity() {
             } else {
                 binding.pinPlanImg.setImageBitmap(circleBitmap)
             }
-        }).start()
-
     }
 }

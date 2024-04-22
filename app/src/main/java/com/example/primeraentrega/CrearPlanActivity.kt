@@ -37,6 +37,7 @@ import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
@@ -192,23 +193,12 @@ class CrearPlanActivity : AppCompatActivity() {
     private fun inicializarBotones() {
 
         binding.crearplanButton.setOnClickListener {
-            if (pantalla != null && "ubicacion".equals(intent.getStringExtra("pantalla"))) {
                 //editar la informacion
                 editarInformacion { documentId ->
                     val intent = Intent(baseContext, PlanesActivity::class.java)
                     intent.putExtra("idPlan", documentId)
                     startActivity(intent)
                 }
-            }
-            else
-            {
-                guardarInformacion { documentId ->
-                    val intent = Intent(baseContext, PlanesActivity::class.java)
-                    intent.putExtra("idPlan", documentId)
-                    startActivity(intent)
-                }
-            }
-
 
             //ENVIAR A FIRE BASE EL NUEVO PLAN CREADO
             //EVALUAR SI TODA LA INFORMACION ESTA COMPLETA
@@ -459,17 +449,10 @@ class CrearPlanActivity : AppCompatActivity() {
         )
 
         val planMap: Map<String, Any> = plan.toMap()
-        db.collection("Planes")
-            .document(documentId) // Utiliza el ID del documento que deseas editar
-            .update(planMap) // Utiliza el objeto 'planMap' que contiene los datos que deseas actualizar
-            .addOnSuccessListener {
-                Log.d(TAG, "DocumentSnapshot successfully updated")
-                // Llama a la función de devolución de llamada si es necesario
-                callback.invoke(documentId)
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Error updating document", e)
-            }
+        db.collection("Planes").document(documentId)
+            .set(plan, SetOptions.merge())
+            .addOnSuccessListener { Log.d(TAG, "Document successfully updated!") }
+            .addOnFailureListener { e -> Log.w(TAG, "Error updating document", e) }
     }
     fun bitmapToUri(context: Context, bitmap: Bitmap): Uri {
         val bytes = ByteArrayOutputStream()

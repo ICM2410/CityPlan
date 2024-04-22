@@ -19,6 +19,8 @@ class PlanesActivity : AppCompatActivity() {
         idPlan=intent.getStringExtra("idPlan").toString()
 
         inicializarBotones()
+
+        //obtenerPlanes()
     }
     private fun inicializarBotones() {
         binding.botonPlanActivo.setOnClickListener {
