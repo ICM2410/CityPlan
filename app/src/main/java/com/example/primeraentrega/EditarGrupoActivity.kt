@@ -28,5 +28,13 @@ class EditarGrupoActivity : AppCompatActivity() {
         binding.buttonGuardar.setOnClickListener {
             startActivity(Intent(baseContext, ChatActivity::class.java))
         }
+
+        binding.botonConfiguracion.setOnClickListener {
+            startActivity(Intent(baseContext, ConfiguracionActivity::class.java))
+        }
+
+        binding.botonHome.setOnClickListener {
+            startActivity(Intent(baseContext, VerGruposActivity::class.java))
+        }
     }
 }
