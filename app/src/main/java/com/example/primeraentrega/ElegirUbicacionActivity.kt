@@ -19,11 +19,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
+import android.util.TypedValue
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.databinding.ActivityElegirUbicacionBinding
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -37,6 +39,10 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
+import com.google.firebase.storage.FirebaseStorage
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants
@@ -51,6 +57,9 @@ import org.osmdroid.views.overlay.Marker
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.min
 
 class ElegirUbicacionActivity : AppCompatActivity() {
@@ -168,11 +177,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                 val last=result.lastLocation
                 if(last!=null)
                 {
-                        //Toast.makeText(getApplicationContext(), "($last.latitude , $last.longitude)", Toast.LENGTH_LONG).show();
-                        latActual=last.latitude
-                        longActual=last.longitude
-                        posActualGEO=GeoPoint(latActual, longActual)
-
+                        posActualGEO=GeoPoint(last.latitude, last.longitude)
 
                         if(firstTime)
                         {
@@ -181,7 +186,6 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                             map.controller.setZoom(19.0)
                             selectedLocationOnMap(posActualGEO)
                         }
-
                 }
             }
         }
@@ -190,14 +194,14 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     }
 
     private lateinit var pantalla: String
+    private lateinit var idPlan: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityElegirUbicacionBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        //OBTENER INFORMACION DE LA OTRA PANTALLA DE LA UBICACION QUE SE QUIERE
 
-        //SINO EXISTE INFORMACION QUE MANDO DICHA PANTALLA, SE PONE LA UBICACION ACTUAL
         pantalla= intent.getStringExtra("pantalla").toString()
+        idPlan= intent.getStringExtra("idPlan").toString()
 
         inicializarBotones()
 
@@ -206,9 +210,10 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         configurarMapa()
 
         configurarLocalizacion()
+
     }
 
-		override fun onStop() {
+    override fun onStop() {
         super.onStop()
         stopLocationUpdates()
     }
@@ -233,7 +238,6 @@ class ElegirUbicacionActivity : AppCompatActivity() {
             selectedLocationOnMap(posActualGEO)
 
         } else {*/
-
     }
     override fun onPause() {
         super.onPause()
@@ -243,49 +247,78 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         location.removeLocationUpdates(locationCallBack)
     }
 
+    val db = Firebase.firestore
+    val storage = FirebaseStorage.getInstance()
+    val storageRef = storage.reference
     private fun inicializarImagen() {
-        Thread(Runnable {
-                val byteArray = intent.getByteArrayExtra("pinImage")
-                if (byteArray != null) {
-                    bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
 
-                    // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
-                    val squareBitmap = Bitmap.createBitmap(
-                        min(bitmap.width, bitmap.height),
-                        min(bitmap.width, bitmap.height),
-                        Bitmap.Config.ARGB_8888
-                    )
+       val docRef = db.collection("Planes").document(idPlan)
+        docRef.get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    Log.d(ContentValues.TAG, "encontrado elegir - ${documentSnapshot.id} => ${documentSnapshot.data}")
+                    // Aquí puedes acceder a los datos del documento utilizando document.data
+                    val plan = documentSnapshot.toObject<Plan>()
 
-                    // Crear un lienzo para dibujar en el bitmap cuadrado
-                    val canvas = Canvas(squareBitmap)
+                    //obtener imagenes
+                    val pathReferencePin = plan?.let { storageRef.child(it.fotopin) }
 
-                    // Dibujar la imagen original en el centro del bitmap cuadrado
-                    val left = (squareBitmap.width - bitmap.width) / 2f
-                    val top = (squareBitmap.height - bitmap.height) / 2f
-                    canvas.drawBitmap(bitmap, left, top, null)
+                    val ONE_MEGABYTE: Long = 1024 * 1024
+                    pathReferencePin?.getBytes(ONE_MEGABYTE)?.addOnSuccessListener { bytes ->
+                        // Los bytes de la imagen se han recuperado exitosamente
 
-                    // Crear un bitmap circular
-                    val circleBitmap = Bitmap.createBitmap(
-                        squareBitmap.width,
-                        squareBitmap.height,
-                        Bitmap.Config.ARGB_8888
-                    )
-                    val paint = Paint().apply {
-                        isAntiAlias = true
-                        shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                        if (bytes != null) {
+                            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+                            // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
+                            val squareBitmap = Bitmap.createBitmap(
+                                min(bitmap.width, bitmap.height),
+                                min(bitmap.width, bitmap.height),
+                                Bitmap.Config.ARGB_8888
+                            )
+
+                            // Crear un lienzo para dibujar en el bitmap cuadrado
+                            val canvas = Canvas(squareBitmap)
+
+                            // Dibujar la imagen original en el centro del bitmap cuadrado
+                            val left = (squareBitmap.width - bitmap.width) / 2f
+                            val top = (squareBitmap.height - bitmap.height) / 2f
+                            canvas.drawBitmap(bitmap, left, top, null)
+
+                            // Crear un bitmap circular
+                            val circleBitmap = Bitmap.createBitmap(
+                                squareBitmap.width,
+                                squareBitmap.height,
+                                Bitmap.Config.ARGB_8888
+                            )
+                            val paint = Paint().apply {
+                                isAntiAlias = true
+                                shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                            }
+                            val rect = Rect(0, 0, squareBitmap.width, squareBitmap.height)
+                            val rectF = RectF(rect)
+                            val diameter = min(squareBitmap.width, squareBitmap.height).toFloat()
+                            canvas.setBitmap(circleBitmap)
+                            canvas.drawCircle(diameter / 2, diameter / 2, diameter / 2, paint)
+
+                            binding.pinElegirUbicacion.setImageBitmap(circleBitmap)
+
+                        } else {
+                            // Manejar el caso en el que no se haya pasado ningún byteArray en el intent
+                        }
+
+                    }?.addOnFailureListener {
+                        // Manejar cualquier error que ocurra durante la recuperación de la imagen
                     }
-                    val rect = Rect(0, 0, squareBitmap.width, squareBitmap.height)
-                    val rectF = RectF(rect)
-                    val diameter = min(squareBitmap.width, squareBitmap.height).toFloat()
-                    canvas.setBitmap(circleBitmap)
-                    canvas.drawCircle(diameter / 2, diameter / 2, diameter / 2, paint)
 
-                    binding.pinElegirUbicacion.setImageBitmap(circleBitmap)
+
                 } else {
-                    // Manejar el caso en el que no se haya pasado ningún byteArray en el intent
+                    Log.d(ContentValues.TAG, "No such document")
                 }
-        }).start()
-
+            }
+            .addOnFailureListener { exception ->
+                Log.d(ContentValues.TAG, "get failed with ", exception)
+            }
     }
 
     //MAPA
@@ -308,6 +341,9 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                 if(p!=null) {
                     latActual=p.latitude
                     longActual=p.longitude
+
+                    Log.i(ContentValues.TAG, "HELPER - Longitud: $longActual, Latitud: $latActual")
+
                     selectedLocationOnMap(p)
                 }
                 return true
@@ -317,34 +353,31 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     }
 
     private fun inicializarBotones() {
+
         binding.verRecomendacion.setOnClickListener {
             //clearOsmdroidTileCache()
             val intent=Intent(baseContext, RecomendacionesActivity::class.java)
             intent.putExtra("pantalla",pantalla)
+            intent.putExtra("idPlan", idPlan)
             startActivity(intent)
         }
+
         binding.guardar.setOnClickListener {
-            //aqui se va a devolver la posicion del plan en long y lat
-
-            var intent = Intent(baseContext, EditarPlanActivity::class.java)
-
-            if(pantalla=="crear")
-            {
-                intent = Intent(baseContext, CrearPlanActivity::class.java)
+            val intent: Intent = if(pantalla == "crear") {
+                Intent(baseContext, CrearPlanActivity::class.java)
+            } else {
+                Intent(baseContext, EditarPlanActivity::class.java)
             }
 
-            val stream = ByteArrayOutputStream()
-            // Agregar los valores de longitud y latitud como extras al Intent
+// Agregar los valores de longitud y latitud como extras al Intent
             intent.putExtra("longitud", longActual)
             intent.putExtra("latitud", latActual)
+            intent.putExtra("pantalla", "ubicacion")
+            intent.putExtra("idPlan", idPlan)
 
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-            val byteArray = stream.toByteArray()
-
-            intent.putExtra("pinImage", byteArray)
-
-            // Iniciar la siguiente actividad con el Intent modificado
+// Iniciar la siguiente actividad con el Intent modificado
             startActivity(intent)
+
         }
     }
 
@@ -411,7 +444,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
 
     fun addMarker(p: GeoPoint, snippet : String, tipo : Int){
         //MY LOCATION
-        selectedLocationMarker = createMarker(p, "Ubicacion seleccionada", snippet, bitmap)
+        selectedLocationMarker = createMarker(p, "Ubicacion seleccionada", snippet, R.drawable.pinyo)
 
         if (selectedLocationMarker != null) {
             map.getOverlays().add(selectedLocationMarker)
@@ -420,68 +453,24 @@ class ElegirUbicacionActivity : AppCompatActivity() {
 
     val sizeInDp = 70
     //val sizeInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp.toFloat(), resources.displayMetrics).toInt()
-    @SuppressLint("SuspiciousIndentation")
-    fun createMarker(p: GeoPoint, title: String, desc: String, iconID: Bitmap) : Marker? {
+    //@SuppressLint("SuspiciousIndentation")
+    fun createMarker(p: GeoPoint, title: String, desc: String, iconID:Int): Marker? {//bitmap: Bitmap) : Marker? {
         var marker : Marker? = null;
         if(map!=null) {
             marker = Marker(map);
             if (title != null) marker.setTitle(title);
             if (desc != null) marker.setSubDescription(desc);
-                val MAX_ICON_SIZE = 130
-                Thread(Runnable {
-                    val originalBitmap = iconID
 
-                    // Redimensionar la imagen manteniendo la forma circular
-                    val resizedBitmap = if (originalBitmap.width > MAX_ICON_SIZE || originalBitmap.height > MAX_ICON_SIZE) {
-                        val maxSize = min(originalBitmap.width, originalBitmap.height)
-                        val scaleFactor = MAX_ICON_SIZE.toFloat() / maxSize
-                        val scaledWidth = (originalBitmap.width * scaleFactor).toInt()
-                        val scaledHeight = (originalBitmap.height * scaleFactor).toInt()
-                        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+            if (iconID != 0) {
+                val bitmap = getBitmapFromDrawable(iconID, 60)
+                val drawable = BitmapDrawable(resources, bitmap)
+                marker.icon = drawable
+            }
+            val MAX_ICON_SIZE = 130
+            val originalBitmap = bitmap
+            // Establecer el BitmapDrawable como el icono del Marker
+            //marker.setIcon(drawable)
 
-                        // Recortar el bitmap para mantener la forma circular
-                        val outputBitmap = Bitmap.createBitmap(scaledBitmap.width, scaledBitmap.height, Bitmap.Config.ARGB_8888)
-                        val canvas = Canvas(outputBitmap)
-                        val paint = Paint().apply {
-                            isAntiAlias = true
-                            shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-                        }
-                        val diameter = min(scaledBitmap.width, scaledBitmap.height).toFloat()
-                        canvas.drawCircle(scaledBitmap.width / 2f, scaledBitmap.height / 2f, diameter / 2, paint)
-
-                        outputBitmap
-                    } else {
-                        val maxSize = min(originalBitmap.width, originalBitmap.height)
-                        val scaleFactor = MAX_ICON_SIZE.toFloat() / maxSize
-                        val scaledWidth = (originalBitmap.width * scaleFactor).toInt()
-                        val scaledHeight = (originalBitmap.height * scaleFactor).toInt()
-                        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
-
-                        // Recortar el bitmap para mantener la forma circular
-                        val outputBitmap = Bitmap.createBitmap(scaledBitmap.width, scaledBitmap.height, Bitmap.Config.ARGB_8888)
-                        val canvas = Canvas(outputBitmap)
-                        val paint = Paint().apply {
-                            isAntiAlias = true
-                            shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-                        }
-                        val diameter = min(scaledBitmap.width, scaledBitmap.height).toFloat()
-                        canvas.drawCircle(scaledBitmap.width / 2f, scaledBitmap.height / 2f, diameter / 2, paint)
-
-                        outputBitmap
-                    }
-
-                    // Comprimir y reducir la calidad de la imagen
-                    val compressedBitmapStream = ByteArrayOutputStream()
-                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, compressedBitmapStream) // Aquí puedes ajustar el nivel de compresión (0-100)
-
-                    // Convertir el bitmap comprimido en un BitmapDrawable
-                    val compressedBitmap = BitmapFactory.decodeStream(ByteArrayInputStream(compressedBitmapStream.toByteArray()))
-                    val drawable = BitmapDrawable(resources, compressedBitmap)
-
-                    // Establecer el BitmapDrawable como el icono del Marker
-                    marker.setIcon(drawable)
-
-                }).start()
             marker.setPosition(p)
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             marker.setPosition(p);
@@ -493,4 +482,9 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         return marker
     }
 
+    private fun getBitmapFromDrawable(iconID: Int, sizeInDp: Int): Bitmap {
+        val sizeInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp.toFloat(), resources.displayMetrics).toInt()
+        val drawable = BitmapFactory.decodeResource(resources, iconID)
+        return Bitmap.createScaledBitmap(drawable, sizeInPixels, sizeInPixels, false)
+    }
 }

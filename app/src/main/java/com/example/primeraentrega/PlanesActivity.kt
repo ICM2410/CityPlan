@@ -10,15 +10,21 @@ import java.io.File
 
 class PlanesActivity : AppCompatActivity() {
     private lateinit var binding : ActivityPlanesBinding
+    private lateinit var idPlan : String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityPlanesBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        idPlan=intent.getStringExtra("idPlan").toString()
+
         inicializarBotones()
     }
     private fun inicializarBotones() {
         binding.botonPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            val intent =Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idPlan",idPlan)
+            startActivity(intent)
         }
 
         binding.botonPlanInactivo.setOnClickListener {
