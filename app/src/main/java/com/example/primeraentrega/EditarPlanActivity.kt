@@ -102,6 +102,8 @@ class EditarPlanActivity : AppCompatActivity() {
                     val plan = documentSnapshot.toObject<Plan>()
 
                     if (plan != null) {
+                        longitud=plan.longitude
+                        latitud=plan.latitude
                         binding.seleccionarUbicacion.setText( findAddress (LatLng(plan.latitude, plan.longitude)))
                         obtenerInformacionLocalizacion()
                     }
