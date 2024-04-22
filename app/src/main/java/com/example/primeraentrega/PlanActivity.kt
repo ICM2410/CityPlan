@@ -1,6 +1,7 @@
 package com.example.primeraentrega
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -14,6 +15,8 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
+import android.hardware.Sensor
+import android.hardware.SensorEvent
 import android.hardware.SensorManager
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
@@ -55,8 +58,10 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.Date
 import kotlin.math.min
+import android.hardware.SensorEventListener
+import org.osmdroid.views.overlay.TilesOverlay
 
-class PlanActivity : AppCompatActivity() {
+class PlanActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var binding : ActivityPlanBinding
 
@@ -78,6 +83,17 @@ class PlanActivity : AppCompatActivity() {
     //MAPA
     lateinit var map : MapView
     private lateinit var geocoder: Geocoder
+
+    //Sensor de Podometro (PARA PASOS)
+    private lateinit var sensorManager: SensorManager
+    private var running = false
+    private var totalSteps = 0f
+    private var previousTotalSteps = 0f
+
+    //SENSOR luz
+    private lateinit var lightSensor : Sensor
+    private lateinit var lightEventListener: SensorEventListener
+
 
     val permissionRequest= registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -224,6 +240,20 @@ class PlanActivity : AppCompatActivity() {
         configurarBotones();
 
         activarOMS()
+
+        configurarSensores()
+
+
+    }
+    private fun configurarSensores(){
+        //Sensores
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        //Sensor Luz
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
+        lightEventListener = createLightSensorListener()
+        //Sensor Pasos
+        resetSteps()
+        loadData()
     }
 
     private fun configurarConFireBase() {
@@ -262,6 +292,26 @@ class PlanActivity : AppCompatActivity() {
             stopLocationUpdates()
         }
     }
+    fun createLightSensorListener() : SensorEventListener{
+        val ret : SensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if(this@PlanActivity::map.isInitialized){
+                    if (event != null && event.sensor.type == Sensor.TYPE_LIGHT) {
+                        if(event.values[0] < 1500){
+                            // Cambiar a modo oscuro
+                            map.getOverlayManager().getTilesOverlay().setColorFilter(TilesOverlay.INVERT_COLORS);
+                        }else{
+                            // Cambiar a modo claro
+                            map.getOverlayManager().getTilesOverlay().setColorFilter(null);
+                        }
+                    }
+                }
+            }
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+            }
+        }
+        return ret
+    }
 
     override fun onStop() {
         super.onStop()
@@ -270,6 +320,16 @@ class PlanActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        running = true
+        val stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        if (stepSensor == null){
+            Toast.makeText(this, "No sensor detected on this device", Toast.LENGTH_SHORT).show()
+       }else{
+        sensorManager?.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
+
+        }
+        sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+
         map.onResume()
         map.controller.setZoom(19.0)
         map.controller.animateTo(posActualGEO)
@@ -278,6 +338,37 @@ class PlanActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopLocationUpdates()
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if(running){
+            totalSteps = event!!.values[0]
+            val currentSteps = totalSteps.toInt() - previousTotalSteps.toInt()
+            binding.pasoscantText.text = ("$currentSteps")
+
+        }
+    }
+    fun resetSteps(){
+        previousTotalSteps = totalSteps
+        binding.pasoscantText.text = 0.toString()
+        saveData()
+    }
+    fun saveData(){
+        val sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putFloat("Key", previousTotalSteps)
+        editor.apply()
+    }
+
+    private fun loadData(){
+        val sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        val savedNumber = sharedPreferences.getFloat("KEY", 0f)
+        Log.d("PlanActivity","$savedNumber")
+        previousTotalSteps = savedNumber
     }
     private fun stopLocationUpdates() {
         location.removeLocationUpdates(locationCallBack)
