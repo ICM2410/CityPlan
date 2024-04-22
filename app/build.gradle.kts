@@ -62,4 +62,6 @@ dependencies {
     val work_version = "2.9.0"
     implementation("androidx.work:work-runtime-ktx:$work_version")
     implementation ("com.android.volley:volley:1.2.1")
+    implementation ("com.github.bumptech.glide:glide:4.12.0")
+
 }

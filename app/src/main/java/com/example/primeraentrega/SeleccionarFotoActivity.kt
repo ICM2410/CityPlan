@@ -1,5 +1,7 @@
 package com.example.primeraentrega
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -52,8 +54,10 @@ class SeleccionarFotoActivity : AppCompatActivity() {
     }
 
     private fun loadImage(uri : Uri?) {
-        val imageStream = getContentResolver().openInputStream(uri!!)
-        val bitmap = BitmapFactory.decodeStream(imageStream)
-        binding.imagen.setImageBitmap(bitmap)
+        val returnIntent = Intent()
+        returnIntent.putExtra("imageUri", uri.toString())
+        setResult(Activity.RESULT_OK, returnIntent)
+        finish()
     }
+
 }

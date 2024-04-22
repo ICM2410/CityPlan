@@ -41,4 +41,6 @@ class EditarGrupoActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, SeleccionarFotoActivity::class.java))
         }
     }
+
+
 }
