@@ -19,6 +19,11 @@ class CrearGrupoActivity : AppCompatActivity() {
     }
 
     private fun inicializarBotones() {
+
+        binding.ButtonSeleccionarFoto.setOnClickListener {
+            startActivity(Intent(baseContext, SeleccionarFotoActivity::class.java))
+        }
+
         binding.buttonAgregarMiembros.setOnClickListener {
             startActivity(Intent(baseContext, AgregarContactosActivity::class.java))
         }
