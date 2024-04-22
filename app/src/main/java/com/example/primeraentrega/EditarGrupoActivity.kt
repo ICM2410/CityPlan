@@ -36,5 +36,9 @@ class EditarGrupoActivity : AppCompatActivity() {
         binding.botonHome.setOnClickListener {
             startActivity(Intent(baseContext, VerGruposActivity::class.java))
         }
+
+        binding.buttonSeleccionarFoto.setOnClickListener {
+            startActivity(Intent(baseContext, SeleccionarFotoActivity::class.java))
+        }
     }
 }
