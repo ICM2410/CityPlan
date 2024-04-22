@@ -11,90 +11,33 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@color/rosado"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/PlanFinalizado"
-            android:layout_width="match_parent"
+            android:id="@+id/CrearGrupo"
+            android:layout_width="322dp"
             android:layout_height="match_parent"
+            android:layout_marginLeft="40dp"
             android:gravity="center"
             android:text="@string/crearGrupo"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="40sp"
             android:textStyle="bold" />
-    </LinearLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout4"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="@drawable/menu_principal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-
-        <LinearLayout
-            android:id="@+id/linearLayout7"
+        <ImageButton
+            android:id="@+id/botonConfiguracion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/botonVerGrupos"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5">
-
-            <ImageView
-                android:id="@+id/botonAgregarGrupoNuevo"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                app:srcCompat="@drawable/agregar_grupo_blanco" />
-
-            <ImageView
-                android:id="@+id/imageView17"
-                android:layout_width="50dp"
-                android:layout_height="3dp"
-                app:srcCompat="@drawable/boton_plan" />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/botonVerGrupos"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/botonConfiguraciones"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/linearLayout7"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5"
-            app:srcCompat="@drawable/grupos_blanco" />
-
-        <ImageView
-            android:id="@+id/botonConfiguraciones"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="32dp"
-            android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/botonVerGrupos"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5"
-            app:srcCompat="@drawable/configuracion_blanco" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_weight="1"
+            app:srcCompat="@drawable/configuracion"
+            android:backgroundTint="@color/transparente"
+            android:layout_marginTop="6dp"
+            />
+    </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout5"
@@ -104,7 +47,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="32dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/constraintLayout4"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tituloGrupos">
 
         <ImageView
@@ -177,13 +120,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="81dp"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="32dp"
         android:text="@string/guardar"
         android:textSize="18sp"
-        android:padding="13dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonAgregarMiembros" />
+
+    <ImageButton
+        android:id="@+id/botonHome"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="right"
+        android:layout_marginStart="327dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/boton_menu"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/grupos" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

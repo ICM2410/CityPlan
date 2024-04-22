@@ -27,11 +27,11 @@ class CrearGrupoActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, ChatActivity::class.java))
         }
 
-        binding.botonVerGrupos.setOnClickListener {
+        binding.botonHome.setOnClickListener {
             startActivity(Intent(baseContext, VerGruposActivity::class.java))
         }
 
-        binding.botonConfiguraciones.setOnClickListener {
+        binding.botonConfiguracion.setOnClickListener {
             startActivity(Intent(baseContext, ConfiguracionActivity::class.java))
         }
 

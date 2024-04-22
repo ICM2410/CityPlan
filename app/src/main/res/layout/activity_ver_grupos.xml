@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/PlanFinalizado"
+            android:id="@+id/CrearGrupo"
             android:layout_width="311dp"
             android:layout_height="match_parent"
             android:layout_marginLeft="50dp"
@@ -160,12 +160,12 @@
 
     <ImageButton
         android:id="@+id/botonAgregarGrupo"
-        android:layout_width="68dp"
-        android:layout_height="71dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_gravity="right"
         android:layout_marginStart="327dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/boton_menu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
