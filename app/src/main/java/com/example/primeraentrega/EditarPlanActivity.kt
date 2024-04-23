@@ -147,7 +147,7 @@ class EditarPlanActivity : AppCompatActivity() {
                     val dateInicio = plan?.dateInicio
                     val dateFin = plan?.dateFinal
 
-                    
+
                     if (dateInicio != null && dateFin != null) {
                         // Configura el formato de fecha y hora
                         val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
