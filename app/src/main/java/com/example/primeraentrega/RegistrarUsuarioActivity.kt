@@ -13,6 +13,10 @@ import com.example.primeraentrega.usuario.usuario
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
 
 class RegistrarUsuarioActivity : AppCompatActivity() {
 
@@ -46,24 +50,48 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
     }
     private fun guardarUsuarioEnFirebase(usuario: usuario) {
 
-        auth.createUserWithEmailAndPassword(usuario.correo, usuario.password)
-            .addOnSuccessListener { authResult ->
-                // Usuario registrado exitosamente en Firebase Authentication
-                val userId = authResult.user?.uid
-                if (userId != null) {
-                    // Asignar el userID al usuario
-                    usuario.userid = userId
-                    // Ahora, guarda el usuario en la base de datos de Firebase Realtime Database
-                    registrarUsuarioEnFirebase(usuario)
-                } else {
-                    // No se pudo obtener el userID
-                    Toast.makeText(baseContext, "Error: No se pudo obtener el userID", Toast.LENGTH_SHORT).show()
+        myRef = database.getReference("users")
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var usuarioEncontrado = false
+                for (child in snapshot.children) {
+                    val user = child.getValue<usuario>()
+
+                    if(user?.user.toString()!=usuario.user.toString() && user?.telefono.toString()!=usuario.telefono){
+                        auth.createUserWithEmailAndPassword(usuario.correo, usuario.password)
+                            .addOnSuccessListener { authResult ->
+                                // Usuario registrado exitosamente en Firebase Authentication
+                                val userId = authResult.user?.uid
+                                if (userId != null) {
+                                    // Asignar el userID al usuario
+                                    usuario.userid = userId
+                                    // Ahora, guarda el usuario en la base de datos de Firebase Realtime Database
+                                    registrarUsuarioEnFirebase(usuario)
+                                } else {
+                                    // No se pudo obtener el userID
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                // Error al registrar usuario en Firebase Authentication
+                                Toast.makeText(baseContext, "${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                    else{
+                        Toast.makeText(baseContext, "Error al registrar ", Toast.LENGTH_SHORT).show()
+
+                    }
                 }
             }
-            .addOnFailureListener { e ->
-                // Error al registrar usuario en Firebase Authentication
-                Toast.makeText(baseContext, "${e.message}", Toast.LENGTH_SHORT).show()
-            }
+                override fun onCancelled(error: DatabaseError) {
+
+
+                }
+            })
+
+
+
+
+
     }
 
     private fun registrarUsuarioEnFirebase(usuario: usuario) {
