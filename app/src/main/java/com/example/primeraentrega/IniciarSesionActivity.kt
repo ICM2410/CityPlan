@@ -85,15 +85,16 @@ class IniciarSesionActivity : AppCompatActivity() {
         }
 */
 
-            binding.buttonHuella.setOnClickListener {
-                startActivity(Intent(baseContext, IniciarSesionHuellaActivity::class.java))
-            }
-
-            binding.buttonRegistrarse.setOnClickListener {
-                startActivity(Intent(baseContext, RegistrarUsuarioActivity::class.java))
-            }
 
 
+        }
+
+        binding.buttonHuella.setOnClickListener {
+            startActivity(Intent(baseContext, IniciarSesionHuellaActivity::class.java))
+        }
+
+        binding.buttonRegistrarse.setOnClickListener {
+            startActivity(Intent(baseContext, RegistrarUsuarioActivity::class.java))
         }
 
     }

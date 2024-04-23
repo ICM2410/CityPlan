@@ -50,6 +50,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.firebase:firebase-database:20.3.1")
     implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
+    implementation("com.google.firebase:firebase-auth:22.3.1")
     testImplementation("junit:junit:4.13.2")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("com.squareup.picasso:picasso:2.71828")
