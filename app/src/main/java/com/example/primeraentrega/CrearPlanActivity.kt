@@ -154,21 +154,26 @@ class CrearPlanActivity : AppCompatActivity() {
                         // Manejar cualquier error que ocurra durante la recuperación de la imagen
                     }
 
-                    val dateInicio = Calendar.getInstance().apply {
-                        timeZone = TimeZone.getTimeZone("UTC") // Configura la zona horaria UTC
-                        timeInMillis = (plan?.dateInicio?.seconds ?: 0) * 1000L
-                    }.time
+                    Log.e(TAG, "DATES ${plan?.dateInicio} Y ${plan?.dateFinal}?")
+                    val dateInicio = plan?.dateInicio
+                    val dateFin = plan?.dateFinal
 
-                    val dateFin = Calendar.getInstance().apply {
-                        timeZone = TimeZone.getTimeZone("UTC") // Configura la zona horaria UTC
-                        timeInMillis = (plan?.dateFinal?.seconds ?: 0) * 1000L
-                    }.time
+                    // Asegúrate de que las fechas no sean nulas antes de continuar
+                    if (dateInicio != null && dateFin != null) {
+                        // Configura el formato de fecha y hora
+                        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        val formatoHora = SimpleDateFormat("h:mm a", Locale.getDefault())
 
-                    binding.fechaInicio.setText(formatoFecha.format(dateInicio))
-                    binding.editTextText66.setText(formatoFecha.format(dateFin))
-                    val formatoHora = SimpleDateFormat("h:mm a", Locale.getDefault()) // Agrega 'a' para mostrar AM/PM
-                    binding.horaInicio.setText(formatoHora.format(dateInicio))
-                    binding.horaFin.setText(formatoHora.format(dateFin))
+                        // Establece la zona horaria a UTC si es necesario
+                        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
+                        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
+
+                        // Configura las fechas en las vistas
+                        binding.fechaInicio.setText(formatoFecha.format(dateInicio))
+                        binding.editTextText66.setText(formatoFecha.format(dateFin))
+                        binding.horaInicio.setText(formatoHora.format(dateInicio))
+                        binding.horaFin.setText(formatoHora.format(dateFin))
+                    }
 
 
                 } else {

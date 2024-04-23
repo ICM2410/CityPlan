@@ -53,6 +53,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.min
 
 class EditarPlanActivity : AppCompatActivity() {
@@ -142,14 +143,26 @@ class EditarPlanActivity : AppCompatActivity() {
                         // Manejar cualquier error que ocurra durante la recuperación de la imagen
                     }
 
-                    val dateInicio = Date((plan?.dateInicio?.seconds ?: 0) * 1000L) // Convertir segundos a milisegundos
-                    val dateFin = Date((plan?.dateFinal?.seconds ?: 0) * 1000L) // Convertir segundos a milisegundos
+                    Log.e(TAG, "DATES ${plan?.dateInicio} Y ${plan?.dateFinal}?")
+                    val dateInicio = plan?.dateInicio
+                    val dateFin = plan?.dateFinal
 
-                    binding.fechaInicio.setText(formatoFecha.format(dateInicio))
-                    binding.editTextText66.setText(formatoFecha.format(dateFin))
-                    val formatoHora = SimpleDateFormat("h:mm", Locale.getDefault())
-                    binding.horaInicio.setText(formatoHora.format(dateInicio))
-                    binding.horaFin.setText(formatoHora.format(dateFin))
+                    
+                    if (dateInicio != null && dateFin != null) {
+                        // Configura el formato de fecha y hora
+                        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        val formatoHora = SimpleDateFormat("h:mm a", Locale.getDefault())
+
+                        // Establece la zona horaria a UTC si es necesario
+                        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
+                        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
+
+                        // Configura las fechas en las vistas
+                        binding.fechaInicio.setText(formatoFecha.format(dateInicio))
+                        binding.editTextText66.setText(formatoFecha.format(dateFin))
+                        binding.horaInicio.setText(formatoHora.format(dateInicio))
+                        binding.horaFin.setText(formatoHora.format(dateFin))
+                    }
 
                 } else {
                     Log.d(ContentValues.TAG, "No such document")
