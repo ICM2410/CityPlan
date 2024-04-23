@@ -37,12 +37,26 @@ class IniciarSesionActivity : AppCompatActivity() {
         inicializarBotones()
     }
 
-    private fun inicializarBotones(){
+    private fun inicializarBotones() {
         binding.buttonIniciarSesion.setOnClickListener {
             val inicioUsuario = binding.user.text.toString()
             val inicioPassword = binding.password.text.toString()
 
-            myRef = database.getReference("users")
+            auth.signInWithEmailAndPassword(inicioUsuario, inicioPassword)
+                .addOnSuccessListener { authResult ->
+                    // Inicio de sesión exitoso
+                    val userId = authResult.user?.uid
+                    var intent= Intent(baseContext, VerGruposActivity::class.java)
+
+                    startActivity(intent)
+                    // Aquí puedes agregar lógica adicional después del inicio de sesión exitoso
+                }
+                .addOnFailureListener { e ->
+                    // Error en el inicio de sesión
+                    Toast.makeText(this, "Error al iniciar sesión: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+
+            /* myRef = database.getReference("users")
             myRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     var usuarioEncontrado = false
@@ -69,19 +83,19 @@ class IniciarSesionActivity : AppCompatActivity() {
                 }
             })
         }
+*/
+
+            binding.buttonHuella.setOnClickListener {
+                startActivity(Intent(baseContext, IniciarSesionHuellaActivity::class.java))
+            }
+
+            binding.buttonRegistrarse.setOnClickListener {
+                startActivity(Intent(baseContext, RegistrarUsuarioActivity::class.java))
+            }
 
 
-        binding.buttonHuella.setOnClickListener {
-            startActivity(Intent(baseContext,IniciarSesionHuellaActivity::class.java))
         }
-
-        binding.buttonRegistrarse.setOnClickListener {
-            startActivity(Intent(baseContext,RegistrarUsuarioActivity::class.java))
-        }
-
 
     }
-
-
 
 }

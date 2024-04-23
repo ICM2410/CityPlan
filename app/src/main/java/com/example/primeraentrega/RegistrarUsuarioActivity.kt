@@ -1,8 +1,11 @@
 package com.example.primeraentrega
 
+import android.content.ContentValues.TAG
 import android.content.Intent
+import android.nfc.Tag
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.example.primeraentrega.databinding.ActivityIniciarSesionBinding
 import com.example.primeraentrega.databinding.ActivityRegistrarUsuarioBinding
@@ -31,17 +34,41 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
             val user = binding.user.text.toString()
             val password = binding.password.text.toString()
             val telefono = binding.telefono.text.toString()
+            val correo = binding.correo.text.toString()
 
-            val usuario = usuario(user,telefono, password)
+            val usuario = usuario(user,telefono, password,"", correo, "")
+
+
             // Crea el usuario en la base de datos de Firebase
-            registrarUsuarioEnFirebase(usuario)
+            guardarUsuarioEnFirebase(usuario)
 
         }
+    }
+    private fun guardarUsuarioEnFirebase(usuario: usuario) {
+
+        auth.createUserWithEmailAndPassword(usuario.correo, usuario.password)
+            .addOnSuccessListener { authResult ->
+                // Usuario registrado exitosamente en Firebase Authentication
+                val userId = authResult.user?.uid
+                if (userId != null) {
+                    // Asignar el userID al usuario
+                    usuario.userid = userId
+                    // Ahora, guarda el usuario en la base de datos de Firebase Realtime Database
+                    registrarUsuarioEnFirebase(usuario)
+                } else {
+                    // No se pudo obtener el userID
+                    Toast.makeText(baseContext, "Error: No se pudo obtener el userID", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener { e ->
+                // Error al registrar usuario en Firebase Authentication
+                Toast.makeText(baseContext, "${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun registrarUsuarioEnFirebase(usuario: usuario) {
         // Validación de campos
-        if (usuario.user.isEmpty() || usuario.password.isEmpty() || usuario.telefono.isEmpty()) {
+        if (usuario.user.isEmpty() || usuario.password.isEmpty() || usuario.telefono.isEmpty() || usuario.correo.isEmpty()) {
             Toast.makeText(baseContext, "Por favor, completa todos los campos", Toast.LENGTH_SHORT)
                 .show()
             return
@@ -49,9 +76,6 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
 
         // Inicializa la referencia a la base de datos
         myRef = database.getReference("users") // Aquí, especifica la ubicación correcta en la base de datos
-
-        // Validación de contraseña
-
 
         // Guardar el usuario en Firebase Realtime Database
         val key = myRef.push().key
