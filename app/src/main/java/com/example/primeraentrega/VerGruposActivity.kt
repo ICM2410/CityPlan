@@ -15,7 +15,6 @@ class VerGruposActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityVerGruposBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         inicializarBotones()
     }
 
@@ -31,6 +30,5 @@ class VerGruposActivity : AppCompatActivity() {
         binding.botonAgregarGrupo.setOnClickListener {
             startActivity(Intent(baseContext, CrearGrupoActivity::class.java))
         }
-
     }
 }

@@ -189,7 +189,7 @@
             android:padding="15dp"
             android:textSize="14sp" />
         <ImageButton
-            android:id="@+id/Grupos"
+            android:id="@+id/botonAgregarGrupo"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_weight="0"
