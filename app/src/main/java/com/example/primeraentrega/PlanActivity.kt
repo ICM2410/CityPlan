@@ -84,8 +84,11 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     lateinit var map : MapView
     private lateinit var geocoder: Geocoder
 
-    //Sensor de Podometro (PARA PASOS)
+    //Sensores
     private lateinit var sensorManager: SensorManager
+    //Para contar pasos
+    private var stepSensor : Sensor? = null
+    private lateinit var stepSensorEventListener: SensorEventListener
     private var running = false
     private var totalSteps = 0f
     private var previousTotalSteps = 0f
@@ -93,6 +96,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     //SENSOR luz
     private lateinit var lightSensor : Sensor
     private lateinit var lightEventListener: SensorEventListener
+    //Sensor Temperatura
+    private  var temperatureSensor: Sensor? = null
+    private lateinit var tempEventListener: SensorEventListener
 
 
     val permissionRequest= registerForActivityResult(
@@ -160,21 +166,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 locationCallBack,
                 Looper.getMainLooper()
             )
-
-            //PARA PONER LA POSICION INICIAL DEL USUARIO
-                /* location.lastLocation.addOnSuccessListener {
-                if (it != null) {
-                    latActual = it.latitude
-                    longActual = it.longitude
-                    posActualGEO = GeoPoint(it.latitude, it.longitude)
-                    map.controller.setZoom(19.0)
-                    map.controller.animateTo(posActualGEO)
-                   if(EstoyEnElPlan)
-                   {
-                       myLocationOnMap(posActualGEO)
-                   }
-                }
-            }*/
         } else {
             Toast.makeText(getApplicationContext(), "NO HAY PERMISO", Toast.LENGTH_LONG).show();
         }
@@ -226,6 +217,18 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             startLocationUpdates()
         }
     }
+
+    fun gestionarPermisoActividad() {
+        val permissionName = android.Manifest.permission.ACTIVITY_RECOGNITION
+
+        if (ActivityCompat.checkSelfPermission(this, permissionName) == PackageManager.PERMISSION_DENIED) {
+            if (shouldShowRequestPermissionRationale(permissionName)) {
+                // Mostrar un mensaje explicativo si es necesario
+                Toast.makeText(getApplicationContext(), "La aplicación requiere permiso de reconocimiento de actividad", Toast.LENGTH_LONG).show()
+            }
+            permissionRequest.launch(permissionName)
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityPlanBinding.inflate(layoutInflater)
@@ -252,8 +255,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
         lightEventListener = createLightSensorListener()
         //Sensor Pasos
-        resetSteps()
         loadData()
+        resetSteps()
+
+
     }
 
     private fun configurarConFireBase() {
@@ -292,6 +297,20 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             stopLocationUpdates()
         }
     }
+    fun createStepSensorListener() : SensorEventListener {
+        return object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (running && event != null && event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
+                    // Incrementar el contador de pasos cada vez que se detecta un paso
+                    binding.pasoscantText.text = (binding.pasoscantText.text.toString().toInt() + 1).toString()
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // No necesitas hacer nada aquí para este caso
+            }
+        }
+    }
     fun createLightSensorListener() : SensorEventListener{
         val ret : SensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
@@ -313,6 +332,36 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         return ret
     }
 
+    fun createTemperatureSensorListener() : SensorEventListener {
+        val ret : SensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event != null && event.sensor.type == Sensor.TYPE_AMBIENT_TEMPERATURE) {
+                    val temperatura = event.values[0]
+                    val resource = when {
+                        temperatura < 0 -> {
+                            R.drawable.nevando
+                        }
+                        temperatura < 15 -> {
+                            R.drawable.muynublado
+                        }
+                        temperatura < 20 -> {
+                            R.drawable.parcialmentenublado
+                        }
+                        else -> {
+                            R.drawable.soleado
+                        }
+                    }
+                    binding.imagenTemperatura.setImageResource(resource)
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // No necesitas hacer nada aquí para este caso
+            }
+        }
+        return ret
+    }
+
     override fun onStop() {
         super.onStop()
         stopLocationUpdates()
@@ -321,13 +370,27 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         running = true
-        val stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        if (stepSensor == null){
-            Toast.makeText(this, "No sensor detected on this device", Toast.LENGTH_SHORT).show()
-       }else{
-        sensorManager?.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
-
+        // Registrar el SensorEventListener para el sensor de pasos
+        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        if (stepSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de pasos", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay podómetro para pasos")
+            stepSensorEventListener = createStepSensorListener()
+            sensorManager.registerListener(stepSensorEventListener, stepSensor, SensorManager.SENSOR_DELAY_UI)
         }
+
+        // Sensor temperatura
+        temperatureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
+        if (temperatureSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de temperatura", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay sensor de temperatura")
+            tempEventListener = createTemperatureSensorListener()
+            sensorManager.registerListener(tempEventListener, temperatureSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+
+        // Registrar el SensorEventListener para el sensor de luz
         sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
 
         map.onResume()
@@ -396,7 +459,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
 
         //primero gestionar los permisos
         gestionarPermiso()
-
+        gestionarPermisoActividad()
         ponerUbicacionPlan()
 
         binding.mostrarRutabutton.setOnClickListener{
