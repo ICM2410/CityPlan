@@ -55,8 +55,11 @@ class EditarGrupoActivity : AppCompatActivity() {
         if (requestCode == SELECCIONAR_FOTO_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val imageUri = data?.getStringExtra("imageUri")
             if (imageUri != null) {
-                // Cargar la imagen en tu botón o ImageView
-                Glide.with(this).load(Uri.parse(imageUri)).into(binding.buttonSeleccionarFoto)
+                // Cargar la imagen en tu botón o ImageView y aplicar círculo de recorte
+                Glide.with(this)
+                    .load(Uri.parse(imageUri))
+                    .circleCrop() // Aplicar círculo de recorte
+                    .into(binding.buttonSeleccionarFoto)
             }
         }
     }
