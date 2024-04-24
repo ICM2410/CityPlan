@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/PlanFinalizado"
+            android:id="@+id/CrearGrupo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"

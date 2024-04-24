@@ -78,19 +78,26 @@
 
             <ImageView
                 android:id="@+id/calendarioImg3"
-                android:layout_width="0dp"
+                android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_weight="1"
-                tools:srcCompat="@drawable/calendar" />
+                android:layout_centerInParent="true"
+                android:layout_margin="10dp"
+                app:srcCompat="@drawable/calendar"/>
 
-            <EditText
+            <Button
                 android:id="@+id/fechaInicio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:ems="10"
-                android:inputType="date"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                android:backgroundTint="@color/transparente"/>
+            <Button
+                android:id="@+id/horaInicio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/transparente"/>
         </LinearLayout>
 
         <TextView
@@ -108,19 +115,26 @@
 
             <ImageView
                 android:id="@+id/calendarioImg2"
-                android:layout_width="0dp"
+                android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_weight="1"
-                tools:srcCompat="@drawable/calendar" />
+                android:layout_centerInParent="true"
+                android:layout_margin="10dp"
+                app:srcCompat="@drawable/calendar" />
 
-            <EditText
+            <Button
                 android:id="@+id/editTextText66"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:ems="10"
-                android:inputType="date"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                android:backgroundTint="@color/transparente"/>
+            <Button
+                android:id="@+id/horaFin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/transparente"/>
         </LinearLayout>
 
         <TextView

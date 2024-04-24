@@ -23,6 +23,7 @@ class VerGruposActivity : AppCompatActivity() {
 
 
         inicializarBotones(usuario)
+        inicializarBotones()
     }
 
     private fun inicializarBotones(usuario: usuario?) {
@@ -40,6 +41,5 @@ class VerGruposActivity : AppCompatActivity() {
         binding.botonAgregarGrupo.setOnClickListener {
             startActivity(Intent(baseContext, CrearGrupoActivity::class.java))
         }
-
     }
 }

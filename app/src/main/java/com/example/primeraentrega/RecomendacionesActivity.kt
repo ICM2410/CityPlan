@@ -34,6 +34,8 @@ class RecomendacionesActivity : AppCompatActivity() {
     private lateinit var binding : ActivityRecomendacionesBinding
     private var establecimientos = mutableListOf<Establecimiento>()
     private lateinit var geocoder: Geocoder
+    private lateinit var idPlan: String
+    private lateinit var pantalla: String
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -42,8 +44,12 @@ class RecomendacionesActivity : AppCompatActivity() {
         //binding representa toda la actividad
         setContentView(binding.root)
 
-        inicializarSpinner()
+        idPlan= intent.getStringExtra("idPlan").toString()
+        Log.i(TAG, "ENCONTRADO JEJE - $idPlan")
 
+        pantalla= intent.getStringExtra("pantalla").toString()
+
+        inicializarSpinner()
         inicializarSeleccionLista()
     }
 
@@ -53,38 +59,36 @@ class RecomendacionesActivity : AppCompatActivity() {
         //OJO
         binding.listView.setOnItemClickListener { parent, view, position, id ->
 
-            val pantalla=intent.getStringExtra("pantalla")
+            //val pantalla=intent.getStringExtra("pantalla")
             val selectedLugar = establecimientos[position] // Obtiene el objeto Pais seleccionado
 
-            var intent = Intent(baseContext, EditarPlanActivity::class.java)
+            var intent: Intent
+            //intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
 
             if(pantalla=="crear")
             {
                 intent = Intent(baseContext, CrearPlanActivity::class.java)
             }
+            else
+            {
+                intent = Intent(baseContext, EditarPlanActivity::class.java)
+            }
 
             intent.putExtra("longitud",selectedLugar.getLongitude())
             intent.putExtra("latitud",selectedLugar.getLatitude())
-            intent.putExtra("pantalla","recomendacion")
+            intent.putExtra("idPlan", idPlan)
+            intent.putExtra("pantalla","ubicacion")
             Log.i(TAG, "Info enviar - Longitud: ${selectedLugar.getLongitude()}, Latitud: ${selectedLugar.getLatitude()}")
             // Pasa el objeto Pais como un extra del Intent
             startActivity(intent)
         }
     }
-
-    private var isFirstSelection = true
     private fun inicializarSpinner() {
         val spinner: Spinner = findViewById(R.id.ubicaciones)
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val seleccion = spinner.selectedItem as String
                 llenarLista(seleccion)
-                if (!isFirstSelection) {
-                    //val seleccion = spinner.selectedItem as String
-                    //llenarLista(seleccion)
-                } else {
-                    isFirstSelection = false
-                }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {

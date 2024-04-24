@@ -3,15 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission."/>
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-
 
     <application
         android:allowBackup="true"
@@ -23,6 +20,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PrimeraEntrega"
         tools:targetApi="31">
+        <activity
+            android:name=".SeleccionarFotoActivity"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.primeraentrega.fileprovider"
@@ -32,6 +33,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
         <activity
             android:name=".PlanesActivity"
             android:exported="false" />
@@ -70,9 +72,6 @@
             android:exported="false" />
         <activity
             android:name=".IniciarSesionHuellaActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
             android:exported="false" />
         <activity
             android:name=".GaleriaActivity"
