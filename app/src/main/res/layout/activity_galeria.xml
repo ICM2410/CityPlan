@@ -44,15 +44,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.485">
 
-            <ImageButton
-                android:id="@+id/imagenPerfil"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_centerInParent="true"
-                android:layout_weight="1"
-                android:background="@color/transparente"
-                app:srcCompat="@drawable/user" />
-
             <Button
                 android:id="@+id/buttonSeleccionarFoto"
                 android:layout_width="match_parent"
