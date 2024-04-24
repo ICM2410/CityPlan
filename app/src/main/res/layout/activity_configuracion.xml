@@ -36,7 +36,8 @@
             android:id="@+id/imageView2"
             android:layout_width="142dp"
             android:layout_height="140dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="100dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/Permisos"
             app:srcCompat="@drawable/perfil" />
@@ -49,16 +50,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView2"
             app:srcCompat="@drawable/huella_negra_fondo_blanco" />
-
-        <ImageView
-            android:id="@+id/imageView4"
-            android:layout_width="142dp"
-            android:layout_height="140dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="44dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView3"
-            app:srcCompat="@drawable/permisos" />
 
         <TextView
             android:id="@+id/perfilconf"
@@ -109,29 +100,5 @@
             android:background="@color/transparente"
             android:padding="0dp"/>
 
-        <TextView
-            android:id="@+id/permisosconf"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="28dp"
-            android:text="@string/permisos"
-            android:textSize="20sp"
-            app:layout_constraintStart_toEndOf="@+id/imageView4"
-            app:layout_constraintTop_toTopOf="@+id/imageView4"
-            android:background="@color/transparente"/>
-
-        <Button
-            android:id="@+id/permisosconftext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
-            android:background="@color/transparente"
-            android:text="@string/adminPermisos"
-            android:textColor="@color/moradoClaro"
-            app:layout_constraintStart_toEndOf="@+id/imageView4"
-            app:layout_constraintTop_toBottomOf="@+id/permisosconf"
-            android:padding="0dp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

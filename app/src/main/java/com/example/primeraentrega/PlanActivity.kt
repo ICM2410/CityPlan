@@ -2,6 +2,8 @@ package com.example.primeraentrega
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -11,8 +13,6 @@ import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.hardware.Sensor
@@ -31,6 +31,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
+import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.databinding.ActivityPlanBinding
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -44,6 +45,10 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
+import com.google.firebase.storage.FirebaseStorage
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
 import org.osmdroid.config.Configuration
@@ -56,7 +61,11 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.min
 import android.hardware.SensorEventListener
 import org.osmdroid.views.overlay.TilesOverlay
@@ -69,9 +78,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     private var posActualGEO = GeoPoint(4.0, 72.0)
     private var latActual:Double= 4.0
     private var longActual:Double= 72.0
-    private var posEncuentroGEO = GeoPoint(0.0, 0.0)
-    private var latEncuentro:Double= 0.0
-    private var longEncuentro:Double= 0.0
+    private var posEncuentroGEO = GeoPoint(-122.084, 37.4219983 )
+    private var latEncuentro:Double= -122.0
+    private var longEncuentro:Double= 37.0
     private var pasosAvtivado=true
     private var EstoyEnElPlan=true
     private lateinit var roadManager: RoadManager
@@ -218,6 +227,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+
     fun gestionarPermisoActividad() {
         val permissionName = android.Manifest.permission.ACTIVITY_RECOGNITION
 
@@ -229,10 +239,17 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             permissionRequest.launch(permissionName)
         }
     }
+
+    private lateinit var idPlan : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityPlanBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        idPlan=intent.getStringExtra("idPlan").toString()
+
+        Log.e(TAG, "revisar $idPlan")
 
         configurarMapa()
 
@@ -261,41 +278,81 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
 
     }
 
+    val db = Firebase.firestore
+    val storage = FirebaseStorage.getInstance()
+    val storageRef = storage.reference
+
     private fun configurarConFireBase() {
-        //AQUI SE OBTIENE LA INFORMACION PARA PONER
-        //TITULO DEL PLAN
-        var titulo="golf"
-        binding.tituloPlan.setText(titulo)
-        //UBICACION DEL PLAN
-        posEncuentroGEO=GeoPoint(latEncuentro, longEncuentro)
-        //SI TIENE LO DE NUMERO DE PASOS
-        if(!pasosAvtivado){
-            // Hacer invisible el elemento binding.hazDado
-            binding.hazDado.visibility = View.INVISIBLE
 
-            // Hacer invisible el elemento binding.pasoscantText
-            binding.pasoscantText.visibility = View.INVISIBLE
-        }
+        Log.d(ContentValues.TAG, "entreee $idPlan")
 
-        if(EstoyEnElPlan)
-        {
-            binding.switchPasos.isChecked=true
-            binding.aunsiguesText.setText("Aun sigues en el plan")
-        }
-        else
-        {
-            binding.aunsiguesText.setText("Estas fuera del plan")
-            binding.switchPasos.isChecked=false
-            // Hacer invisible el elemento binding.hazDado
-            binding.hazDado.visibility = View.INVISIBLE
+        val docRef = db.collection("Planes").document(idPlan)
+        docRef.get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    Log.d(ContentValues.TAG, "encontrado - ${documentSnapshot.id} => ${documentSnapshot.data}")
+                    // Aquí puedes acceder a los datos del documento utilizando document.data
+                    val plan = documentSnapshot.toObject<Plan>()
+                    //AQUI SE OBTIENE LA INFORMACION PARA PONER
+                    //TITULO DEL PLAN
+                    var titulo= plan?.titulo
+                    binding.tituloPlan.setText(titulo)
+                    //UBICACION DEL PLAN
+                    if (plan != null) {
+                        Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                        latEncuentro=plan.latitude
+                        longEncuentro=plan.longitude
+                        posEncuentroGEO=GeoPoint(latEncuentro, longEncuentro)
+                        ponerUbicacionPlan()
+                    }
+                    //SI TIENE LO DE NUMERO DE PASOS
+                    if (plan != null) {
+                        pasosAvtivado=plan.AmigoMasActivo
+                        if(!pasosAvtivado){
+                            // Hacer invisible el elemento binding.hazDado
+                            binding.hazDado.visibility = View.INVISIBLE
 
-            // Hacer invisible el elemento binding.pasoscantText
-            binding.pasoscantText.visibility = View.INVISIBLE
+                            // Hacer invisible el elemento binding.pasoscantText
+                            binding.pasoscantText.visibility = View.INVISIBLE
+                        }
+                    }
 
-            binding.mostrarRutabutton.isVisible= false
-            binding.milocalizacion.isVisible=false
-            stopLocationUpdates()
-        }
+                    val pathReferencePin = plan?.let { storageRef.child(it.fotopin) }
+
+                    val ONE_MEGABYTE: Long = 1024 * 1024
+                    pathReferencePin?.getBytes(ONE_MEGABYTE)?.addOnSuccessListener { bytes ->
+                        // Los bytes de la imagen se han recuperado exitosamente
+                        val imageStream = ByteArrayInputStream(bytes)
+                        //loadImage(imageStream)
+                    }?.addOnFailureListener {
+                        // Manejar cualquier error que ocurra durante la recuperación de la imagen
+                    }
+
+                    //ESTO ES DEL USUARIO
+                    if(EstoyEnElPlan)
+                    {
+                        binding.switchPasos.isChecked=true
+                        binding.aunsiguesText.setText("Aun sigues en el plan")
+                    }
+                    else
+                    {
+                        binding.aunsiguesText.setText("Estas fuera del plan")
+                        binding.switchPasos.isChecked=false
+                        // Hacer invisible el elemento binding.hazDado
+                        binding.hazDado.visibility = View.INVISIBLE
+
+                        // Hacer invisible el elemento binding.pasoscantText
+                        binding.pasoscantText.visibility = View.INVISIBLE
+
+                        binding.mostrarRutabutton.isVisible= false
+                        binding.milocalizacion.isVisible=false
+                        stopLocationUpdates()
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d(ContentValues.TAG, "get failed with ", exception)
+            }
     }
     fun createStepSensorListener() : SensorEventListener {
         return object : SensorEventListener {
@@ -440,12 +497,18 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     private fun  configurarBotones()
     {
         binding.configuraciones.setOnClickListener{
+
             val intent=Intent(baseContext,EditarPlanActivity::class.java)
+            intent.putExtra("idPlan",idPlan)
             startActivity(intent)
         }
 
         binding.botonCamara.setOnClickListener{
             startActivity(Intent(baseContext,GaleriaActivity::class.java))
+        }
+
+        binding.botonVolverAPlanes.setOnClickListener{
+            startActivity(Intent(baseContext,PlanesActivity::class.java))
         }
 
     }
@@ -461,6 +524,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         gestionarPermiso()
         gestionarPermisoActividad()
         ponerUbicacionPlan()
+
+
 
         binding.mostrarRutabutton.setOnClickListener{
             //muestra la ruta con oms bonus
@@ -500,10 +565,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 if(pasosAvtivado)
                 {
                     binding.hazDado.visibility = View.VISIBLE
-
                     // Hacer invisible el elemento binding.pasoscantText
                     binding.pasoscantText.visibility = View.VISIBLE
                 }
+                binding.mostrarRutabutton.setText("Mostrar ruta")
                 binding.milocalizacion.isVisible=true
                 binding.mostrarRutabutton.isVisible= true
                 binding.aunsiguesText.setText("Aun sigues en el plan")
@@ -534,6 +599,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun ponerUbicacionPlan() {
+        Log.d(ContentValues.TAG, "$posEncuentroGEO A VER QUE ")
         planLocationOnMap(posEncuentroGEO)
     }
 
@@ -598,6 +664,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         }
         else //localizacion plan
         {
+            Log.i("MapsApp", "Route length: $p km")
             planLocationMarker = createMarkerEncuentro(p, "Tu destino", snippet, R.drawable.iconopin)
 
             if (planLocationMarker != null) {
@@ -672,9 +739,11 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
 
                 }).start()
             }
+
             marker.setPosition(p)
+            Log.i("MARKER ENCUENTRO", "Route length: "+p+" km")
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker.setPosition(p);
+
             marker.setAnchor(
                 Marker.
                 ANCHOR_CENTER, Marker.
@@ -695,8 +764,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 marker.icon = drawable
             }
             marker.setPosition(p)
+            Log.i("MARKER", "Route length: "+p+" km")
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker.setPosition(p);
             marker.setAnchor(
                 Marker.
                 ANCHOR_CENTER, Marker.
