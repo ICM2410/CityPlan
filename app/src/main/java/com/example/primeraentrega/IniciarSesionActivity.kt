@@ -84,9 +84,7 @@ class IniciarSesionActivity : AppCompatActivity() {
             })
         }
 */
-
-
-
+                
         }
 
         binding.buttonHuella.setOnClickListener {
