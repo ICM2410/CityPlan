@@ -36,10 +36,5 @@ class ConfiguracionActivity : AppCompatActivity() {
 
         }
 
-        binding.permisosconftext.setOnClickListener {
-            startActivity(Intent(baseContext,PermisosActivity::class.java))
-        }
-
-
     }
 }
