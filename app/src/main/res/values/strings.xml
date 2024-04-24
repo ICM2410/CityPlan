@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">PrimeraEntrega</string>
     <string name="recomendaciones">Recomendaciones</string>
-    <string name="mensajePasosPlan">Haz dado </string>
+    <string name="mensajePasosPlan">Pasos </string>
     <string name="seguirPlan">Aún sigues en el plan!</string>
     <string name="tituloChat">Los chocmelos</string>
     <string name="remitente">Pepe</string>

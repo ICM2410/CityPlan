@@ -1,6 +1,7 @@
 package com.example.primeraentrega
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.content.Intent
@@ -14,6 +15,9 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorManager
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -63,8 +67,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.min
+import android.hardware.SensorEventListener
+import org.osmdroid.views.overlay.TilesOverlay
 
-class PlanActivity : AppCompatActivity() {
+class PlanActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var binding : ActivityPlanBinding
 
@@ -86,6 +92,23 @@ class PlanActivity : AppCompatActivity() {
     //MAPA
     lateinit var map : MapView
     private lateinit var geocoder: Geocoder
+
+    //Sensores
+    private lateinit var sensorManager: SensorManager
+    //Para contar pasos
+    private var stepSensor : Sensor? = null
+    private lateinit var stepSensorEventListener: SensorEventListener
+    private var running = false
+    private var totalSteps = 0f
+    private var previousTotalSteps = 0f
+
+    //SENSOR luz
+    private lateinit var lightSensor : Sensor
+    private lateinit var lightEventListener: SensorEventListener
+    //Sensor Temperatura
+    private  var temperatureSensor: Sensor? = null
+    private lateinit var tempEventListener: SensorEventListener
+
 
     val permissionRequest= registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -203,7 +226,22 @@ class PlanActivity : AppCompatActivity() {
             startLocationUpdates()
         }
     }
+
+
+    fun gestionarPermisoActividad() {
+        val permissionName = android.Manifest.permission.ACTIVITY_RECOGNITION
+
+        if (ActivityCompat.checkSelfPermission(this, permissionName) == PackageManager.PERMISSION_DENIED) {
+            if (shouldShowRequestPermissionRationale(permissionName)) {
+                // Mostrar un mensaje explicativo si es necesario
+                Toast.makeText(getApplicationContext(), "La aplicación requiere permiso de reconocimiento de actividad", Toast.LENGTH_LONG).show()
+            }
+            permissionRequest.launch(permissionName)
+        }
+    }
+
     private lateinit var idPlan : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityPlanBinding.inflate(layoutInflater)
@@ -222,6 +260,22 @@ class PlanActivity : AppCompatActivity() {
         configurarBotones();
 
         activarOMS()
+
+        configurarSensores()
+
+
+    }
+    private fun configurarSensores(){
+        //Sensores
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        //Sensor Luz
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
+        lightEventListener = createLightSensorListener()
+        //Sensor Pasos
+        loadData()
+        resetSteps()
+
+
     }
 
     val db = Firebase.firestore
@@ -300,6 +354,70 @@ class PlanActivity : AppCompatActivity() {
                 Log.d(ContentValues.TAG, "get failed with ", exception)
             }
     }
+    fun createStepSensorListener() : SensorEventListener {
+        return object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (running && event != null && event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
+                    // Incrementar el contador de pasos cada vez que se detecta un paso
+                    binding.pasoscantText.text = (binding.pasoscantText.text.toString().toInt() + 1).toString()
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // No necesitas hacer nada aquí para este caso
+            }
+        }
+    }
+    fun createLightSensorListener() : SensorEventListener{
+        val ret : SensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if(this@PlanActivity::map.isInitialized){
+                    if (event != null && event.sensor.type == Sensor.TYPE_LIGHT) {
+                        if(event.values[0] < 1500){
+                            // Cambiar a modo oscuro
+                            map.getOverlayManager().getTilesOverlay().setColorFilter(TilesOverlay.INVERT_COLORS);
+                        }else{
+                            // Cambiar a modo claro
+                            map.getOverlayManager().getTilesOverlay().setColorFilter(null);
+                        }
+                    }
+                }
+            }
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+            }
+        }
+        return ret
+    }
+
+    fun createTemperatureSensorListener() : SensorEventListener {
+        val ret : SensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event != null && event.sensor.type == Sensor.TYPE_AMBIENT_TEMPERATURE) {
+                    val temperatura = event.values[0]
+                    val resource = when {
+                        temperatura < 0 -> {
+                            R.drawable.nevando
+                        }
+                        temperatura < 15 -> {
+                            R.drawable.muynublado
+                        }
+                        temperatura < 20 -> {
+                            R.drawable.parcialmentenublado
+                        }
+                        else -> {
+                            R.drawable.soleado
+                        }
+                    }
+                    binding.imagenTemperatura.setImageResource(resource)
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // No necesitas hacer nada aquí para este caso
+            }
+        }
+        return ret
+    }
 
     override fun onStop() {
         super.onStop()
@@ -308,6 +426,30 @@ class PlanActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        running = true
+        // Registrar el SensorEventListener para el sensor de pasos
+        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        if (stepSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de pasos", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay podómetro para pasos")
+            stepSensorEventListener = createStepSensorListener()
+            sensorManager.registerListener(stepSensorEventListener, stepSensor, SensorManager.SENSOR_DELAY_UI)
+        }
+
+        // Sensor temperatura
+        temperatureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
+        if (temperatureSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de temperatura", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay sensor de temperatura")
+            tempEventListener = createTemperatureSensorListener()
+            sensorManager.registerListener(tempEventListener, temperatureSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+
+        // Registrar el SensorEventListener para el sensor de luz
+        sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+
         map.onResume()
         map.controller.setZoom(19.0)
         map.controller.animateTo(posActualGEO)
@@ -316,6 +458,37 @@ class PlanActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopLocationUpdates()
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if(running){
+            totalSteps = event!!.values[0]
+            val currentSteps = totalSteps.toInt() - previousTotalSteps.toInt()
+            binding.pasoscantText.text = ("$currentSteps")
+
+        }
+    }
+    fun resetSteps(){
+        previousTotalSteps = totalSteps
+        binding.pasoscantText.text = 0.toString()
+        saveData()
+    }
+    fun saveData(){
+        val sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putFloat("Key", previousTotalSteps)
+        editor.apply()
+    }
+
+    private fun loadData(){
+        val sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        val savedNumber = sharedPreferences.getFloat("KEY", 0f)
+        Log.d("PlanActivity","$savedNumber")
+        previousTotalSteps = savedNumber
     }
     private fun stopLocationUpdates() {
         location.removeLocationUpdates(locationCallBack)
@@ -349,6 +522,10 @@ class PlanActivity : AppCompatActivity() {
 
         //primero gestionar los permisos
         gestionarPermiso()
+        gestionarPermisoActividad()
+        ponerUbicacionPlan()
+
+
 
         binding.mostrarRutabutton.setOnClickListener{
             //muestra la ruta con oms bonus
