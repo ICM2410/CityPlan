@@ -95,7 +95,7 @@
 
 
             <ImageButton
-                android:id="@+id/botonAgregarGrupo"
+                android:id="@+id/botonVolverAPlanes"
                 android:layout_width="68dp"
                 android:layout_height="71dp"
                 android:layout_marginBottom="15dp"

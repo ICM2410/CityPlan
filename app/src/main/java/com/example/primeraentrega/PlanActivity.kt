@@ -334,6 +334,10 @@ class PlanActivity : AppCompatActivity() {
             startActivity(Intent(baseContext,GaleriaActivity::class.java))
         }
 
+        binding.botonVolverAPlanes.setOnClickListener{
+            startActivity(Intent(baseContext,PlanesActivity::class.java))
+        }
+
     }
 
     private var switchRuta=false
