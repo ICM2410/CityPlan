@@ -55,35 +55,6 @@ class IniciarSesionActivity : AppCompatActivity() {
                     // Error en el inicio de sesión
                     Toast.makeText(this, "Error al iniciar sesión: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
-
-            /* myRef = database.getReference("users")
-            myRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    var usuarioEncontrado = false
-                    for (child in snapshot.children) {
-                        val user = child.getValue<usuario>()
-                        if (user?.user.toString() == inicioUsuario && user?.password.toString() == inicioPassword) {
-                            // Si se encuentra el usuario, iniciar la actividad y cambiar la bandera a true
-                            var intent= Intent(baseContext, VerGruposActivity::class.java)
-                            intent.putExtra("user", user)
-                            startActivity(intent)
-                            usuarioEncontrado = true
-                            break  // Salir del bucle si se encuentra el usuario
-                        }
-                    }
-
-                    // Si el usuario no se encuentra después de iterar sobre todos los usuarios, mostrar un mensaje de error
-                    if (!usuarioEncontrado) {
-                        Toast.makeText(baseContext, "Credenciales inválidas", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-
-                }
-            })
-        }
-*/
                 
         }
 
