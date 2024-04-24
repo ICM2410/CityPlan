@@ -24,12 +24,8 @@ class PlanFinalizadoActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, GaleriaActivity::class.java))
         }
 
-        binding.botonAgregarGrupoNuevo.setOnClickListener {
-            startActivity(Intent(baseContext, CrearGrupoActivity::class.java))
-        }
-
-        binding.btonConfiguraciones.setOnClickListener {
-            startActivity(Intent(baseContext, ConfiguracionActivity::class.java))
+        binding.grupos.setOnClickListener {
+            startActivity(Intent(baseContext, VerGruposActivity::class.java))
         }
 
     }

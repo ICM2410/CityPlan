@@ -1,6 +1,7 @@
 package com.example.primeraentrega
 
 import PhotoGalleryAdapter
+import android.content.Intent
 
 import android.net.Uri
 import android.os.Bundle
@@ -54,6 +55,9 @@ class GaleriaActivity : AppCompatActivity() {
             getContentGallery.launch("image/*")
         }
 
+        binding.botonGrupos.setOnClickListener {
+            startActivity(Intent(baseContext, VerGruposActivity::class.java))
+        }
         /*
         binding.buttonTomarFoto.setOnClickListener {
             // Permiso de cámara concedido, lanzar la actividad de la cámara

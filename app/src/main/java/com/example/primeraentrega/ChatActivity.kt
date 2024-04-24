@@ -24,5 +24,9 @@ class ChatActivity : AppCompatActivity() {
         binding.configGrupo.setOnClickListener {
             startActivity(Intent(baseContext, EditarGrupoActivity::class.java))
         }
+
+        binding.botonGrupos.setOnClickListener {
+            startActivity(Intent(baseContext, VerGruposActivity::class.java))
+        }
     }
 }

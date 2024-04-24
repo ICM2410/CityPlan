@@ -508,7 +508,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         }
 
         binding.botonVolverAPlanes.setOnClickListener{
-            startActivity(Intent(baseContext,PlanesActivity::class.java))
+            startActivity(Intent(baseContext,VerGruposActivity::class.java))
         }
 
     }

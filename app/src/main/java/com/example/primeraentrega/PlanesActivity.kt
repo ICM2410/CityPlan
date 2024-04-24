@@ -39,6 +39,10 @@ class PlanesActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, CrearPlanActivity::class.java))
         }
 
+        binding.botonGrupos.setOnClickListener {
+            startActivity(Intent(baseContext, VerGruposActivity::class.java))
+        }
+
     }
 
     private fun borrarJSON() {
