@@ -17,7 +17,7 @@ class IniciarSesionHuellaActivity : AppCompatActivity() {
     private lateinit var binding: ActivityIniciarSesionHuellaBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
