@@ -2,6 +2,7 @@ package com.example.primeraentrega
 
 import android.annotation.SuppressLint
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -14,6 +15,10 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -48,6 +53,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.TilesOverlay
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -74,7 +80,11 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     private lateinit var locationCallBack: LocationCallback
 
     private lateinit var bitmap:Bitmap
-
+    //Sensores
+    private lateinit var sensorManager: SensorManager
+    //SENSOR luz
+    private lateinit var lightSensor : Sensor
+    private lateinit var lightEventListener: SensorEventListener
 
     val permissionRequest= registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -198,6 +208,18 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         configurarMapa()
 
         configurarLocalizacion()
+
+        //Sensores
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        //Sensor Luz
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
+        lightEventListener = createLightSensorListener()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Registrar el SensorEventListener para el sensor de luz
+        sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     private fun inicializarImagen() {
@@ -268,6 +290,27 @@ class ElegirUbicacionActivity : AppCompatActivity() {
             }
         })
         return overlayEvents
+    }
+
+    fun createLightSensorListener() : SensorEventListener{
+        val ret : SensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if(this@ElegirUbicacionActivity::map.isInitialized){
+                    if (event != null && event.sensor.type == Sensor.TYPE_LIGHT) {
+                        if(event.values[0] < 1500){
+                            // Cambiar a modo oscuro
+                            map.getOverlayManager().getTilesOverlay().setColorFilter(TilesOverlay.INVERT_COLORS);
+                        }else{
+                            // Cambiar a modo claro
+                            map.getOverlayManager().getTilesOverlay().setColorFilter(null);
+                        }
+                    }
+                }
+            }
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+            }
+        }
+        return ret
     }
 
     private fun inicializarBotones() {
