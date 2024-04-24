@@ -12,21 +12,29 @@
         android:layout_height="60dp"
         android:background="@color/rosado"
         android:orientation="horizontal"
+        android:layout_margin="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <ImageButton
+            android:id="@+id/salida"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="7dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/transparente"
+            app:srcCompat="@drawable/salida"/>
         <TextView
             android:id="@+id/CrearGrupo"
             android:layout_width="311dp"
             android:layout_height="match_parent"
-            android:layout_marginLeft="50dp"
             android:gravity="center"
             android:text="@string/Grupos"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="40sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"/>
 
         <ImageButton
             android:id="@+id/botonConfiguracion"
@@ -156,6 +164,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageViewPerfilGrupo3"
             app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageButton

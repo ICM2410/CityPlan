@@ -42,6 +42,22 @@ class IniciarSesionActivity : AppCompatActivity() {
             val inicioUsuario = binding.user.text.toString()
             val inicioPassword = binding.password.text.toString()
 
+
+            if(inicioUsuario.isEmpty()||inicioPassword.isEmpty()){
+                Toast.makeText(this, "Por favor rellene todos los campos ", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (!validarCorreo(inicioUsuario)) {
+                Toast.makeText(this, "Por favor ingrese una dirección de correo electrónico válida", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if(inicioPassword.length<6){
+                Toast.makeText(this, "Por favor ingrese una contraseña de al menos 6 digitos", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             auth.signInWithEmailAndPassword(inicioUsuario, inicioPassword)
                 .addOnSuccessListener { authResult ->
                     // Inicio de sesión exitoso
@@ -66,6 +82,10 @@ class IniciarSesionActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, RegistrarUsuarioActivity::class.java))
         }
 
+    }
+    private fun validarCorreo(correo: String): Boolean {
+        val regexCorreo = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
+        return regexCorreo.matches(correo)
     }
 
 }
