@@ -26,6 +26,8 @@ class VerGruposActivity : AppCompatActivity() {
 
         inicializarBotones(usuario)
 
+        inicializarBotones(usuario)
+
     }
 
     private fun inicializarBotones(usuario: usuario?) {

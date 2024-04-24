@@ -37,7 +37,5 @@ class ConfiguracionActivity : AppCompatActivity() {
         }
 
 
-
-
     }
 }

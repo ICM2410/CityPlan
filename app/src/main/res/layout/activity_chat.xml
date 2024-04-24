@@ -37,15 +37,6 @@
             android:textColor="#FFFFFF"
             android:textSize="20sp" />
 
-        <ImageButton
-            android:id="@+id/imagenPerfil"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_centerInParent="true"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/user"
-            android:background="@color/transparente"/>
-
     </LinearLayout>
 
     <FrameLayout
