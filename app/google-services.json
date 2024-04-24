@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "246451630984",
+    "firebase_url": "https://cityplan-32689-default-rtdb.firebaseio.com",
+    "project_id": "cityplan-32689",
+    "storage_bucket": "cityplan-32689.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246451630984:android:ccc9b00ed337bed040403d",
+        "android_client_info": {
+          "package_name": "com.example.clasefirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDq5UanxcJpcASmpsGseNg0vb7_6mjOl8I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246451630984:android:434a5ac4ea6cfbfc40403d",
+        "android_client_info": {
+          "package_name": "com.example.primeraentrega"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDq5UanxcJpcASmpsGseNg0vb7_6mjOl8I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
