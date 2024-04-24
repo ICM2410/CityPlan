@@ -12,11 +12,8 @@ import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
-import android.hardware.SensorManager
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -387,10 +384,10 @@ class PlanActivity : AppCompatActivity() {
                 if(pasosAvtivado)
                 {
                     binding.hazDado.visibility = View.VISIBLE
-
                     // Hacer invisible el elemento binding.pasoscantText
                     binding.pasoscantText.visibility = View.VISIBLE
                 }
+                binding.mostrarRutabutton.setText("Mostrar ruta")
                 binding.milocalizacion.isVisible=true
                 binding.mostrarRutabutton.isVisible= true
                 binding.aunsiguesText.setText("Aun sigues en el plan")
