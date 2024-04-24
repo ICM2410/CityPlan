@@ -1,19 +1,14 @@
 package com.example.primeraentrega
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.Manifest
-import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
+import PhotoGalleryAdapter
+
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.primeraentrega.databinding.ActivityGaleriaBinding
 import java.io.File
 
@@ -23,8 +18,17 @@ class GaleriaActivity : AppCompatActivity() {
     private lateinit var binding : ActivityGaleriaBinding
     private lateinit var uriCamera : Uri
     private val REQUEST_CAMERA_PERMISSION = 100
+    private val photoList = mutableListOf<Uri>()
+    private lateinit var photoGalleryAdapter: PhotoGalleryAdapter
 
-    val getContentCamera = registerForActivityResult(ActivityResultContracts.TakePicture(),
+    val getContentGallery = registerForActivityResult(
+        ActivityResultContracts.GetContent(),
+        ActivityResultCallback {
+            loadImage(it)
+        })
+
+    val getContentCamera = registerForActivityResult(
+        ActivityResultContracts.TakePicture(),
         ActivityResultCallback {
             if(it){
                 loadImage(uriCamera)
@@ -39,36 +43,39 @@ class GaleriaActivity : AppCompatActivity() {
         val file = File(getFilesDir(), "picFromCamera");
         uriCamera = FileProvider.getUriForFile(baseContext,baseContext.packageName + ".fileprovider", file)
 
-        binding.tomarFoto.setOnClickListener {
-            takePicture()
-        }
-    }
+        // Configurar RecyclerView
+        binding.photoGalleryRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        photoGalleryAdapter = PhotoGalleryAdapter(photoList)
+        binding.photoGalleryRecyclerView.adapter = photoGalleryAdapter
 
-    private fun takePicture() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            getContentCamera.launch(uriCamera)
-        } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
+
+        binding.buttonSeleccionarFoto.setOnClickListener {
+            getContentGallery.launch("image/*")
         }
+
+        /*
+        binding.buttonTomarFoto.setOnClickListener {
+            // Permiso de cámara concedido, lanzar la actividad de la cámara
+            getContentCamera.launch(uriCamera)
+        }
+        */
+
     }
 
     private fun loadImage(uri : Uri?) {
-        val imageStream = getContentResolver().openInputStream(uri!!)
-        val bitmap = BitmapFactory.decodeStream(imageStream)
-        binding.imageView5.setImageBitmap(bitmap)
+        // Agregar la Uri recibida a la lista de fotos
+        if (uri != null) {
+            photoList.add(uri)
+        }
+        // Notificar al adaptador que se ha agregado una nueva foto
+        photoGalleryAdapter.notifyItemInserted(photoList.size - 1)
+        // Crear una nueva Uri para la próxima foto
+        val file = File(getFilesDir(), "picFromCamera")
+        uriCamera = FileProvider.getUriForFile(baseContext, baseContext.packageName + ".fileprovider", file)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permiso de cámara concedido, puedes lanzar la actividad de la cámara
-                getContentCamera.launch(uriCamera)
-            } else {
-                // Permiso de cámara denegado, puedes mostrar un mensaje al usuario o tomar alguna acción adicional
-                Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+
+
 
 }
