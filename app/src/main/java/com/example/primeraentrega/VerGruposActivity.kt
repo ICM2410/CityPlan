@@ -8,6 +8,7 @@ import com.example.primeraentrega.databinding.ActivityCrearGrupoBinding
 import com.example.primeraentrega.databinding.ActivityIniciarSesionBinding
 import com.example.primeraentrega.databinding.ActivityVerGruposBinding
 import com.example.primeraentrega.usuario.usuario
+import com.google.firebase.auth.FirebaseAuth
 
 class VerGruposActivity : AppCompatActivity() {
 
@@ -22,11 +23,19 @@ class VerGruposActivity : AppCompatActivity() {
 
 
 
+
         inicializarBotones(usuario)
-        inicializarBotones()
+
     }
 
     private fun inicializarBotones(usuario: usuario?) {
+
+        binding.salida.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            startActivity(Intent(baseContext, IniciarSesionActivity::class.java))
+        }
+
+
         binding.grupoChocmelos.setOnClickListener {
             startActivity(Intent(baseContext, ChatActivity::class.java))
         }

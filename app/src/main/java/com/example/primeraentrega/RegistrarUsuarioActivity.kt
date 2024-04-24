@@ -49,7 +49,21 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
         }
     }
     private fun guardarUsuarioEnFirebase(usuario: usuario) {
+        if (usuario.user.isEmpty() || usuario.password.isEmpty() || usuario.telefono.isEmpty() || usuario.correo.isEmpty()) {
+            Toast.makeText(baseContext, "Por favor, completa todos los campos", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
 
+        if (!validarCorreo(usuario.correo)) {
+            Toast.makeText(this, "Por favor ingrese una dirección de correo electrónico válida", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if(usuario.password.length<6){
+            Toast.makeText(this, "Por favor ingrese una contraseña de al menos 6 digitos", Toast.LENGTH_SHORT).show()
+            return
+        }
         myRef = database.getReference("users")
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -73,7 +87,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
                             }
                             .addOnFailureListener { e ->
                                 // Error al registrar usuario en Firebase Authentication
-                                Toast.makeText(baseContext, "${e.message}", Toast.LENGTH_SHORT).show()
+
                             }
                     }
                     else{
@@ -96,11 +110,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
 
     private fun registrarUsuarioEnFirebase(usuario: usuario) {
         // Validación de campos
-        if (usuario.user.isEmpty() || usuario.password.isEmpty() || usuario.telefono.isEmpty() || usuario.correo.isEmpty()) {
-            Toast.makeText(baseContext, "Por favor, completa todos los campos", Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
+
 
         // Inicializa la referencia a la base de datos
         myRef = database.getReference("users") // Aquí, especifica la ubicación correcta en la base de datos
@@ -119,6 +129,10 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
                     Toast.makeText(baseContext, "Error al registrar en Firebase Realtime Database", Toast.LENGTH_SHORT).show()
                 }
         }
+    }
+    private fun validarCorreo(correo: String): Boolean {
+        val regexCorreo = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
+        return regexCorreo.matches(correo)
     }
 
 }
