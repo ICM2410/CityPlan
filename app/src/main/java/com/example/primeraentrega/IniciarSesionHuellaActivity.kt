@@ -17,7 +17,7 @@ class IniciarSesionHuellaActivity : AppCompatActivity() {
     private lateinit var binding: ActivityIniciarSesionHuellaBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
-
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -52,7 +52,7 @@ class IniciarSesionHuellaActivity : AppCompatActivity() {
                     guardarUsuarioEnFirebase(usuario)
                 }
             })
-        
+
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle("Autenticación de huella dactilar")
