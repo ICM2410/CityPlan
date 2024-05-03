@@ -1,4 +1,4 @@
-package com.example.primeraentrega.Adapters
+package com.example.primeraentrega.adapters
 
 import android.content.Context
 import android.view.LayoutInflater

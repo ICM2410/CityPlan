@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BottomNavStyle" parent="Widget.MaterialComponents.BottomNavigationView">
+        <!-- Cambia el color de fondo aquí -->
+        <item name="android:background">#BB95FD</item>
+    </style>
+</resources>

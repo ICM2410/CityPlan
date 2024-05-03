@@ -2,7 +2,7 @@ package com.example.primeraentrega.usuario
 
 import java.io.Serializable
 
-class usuario : Serializable{
+class Usuario : Serializable{
     lateinit var user:String
     lateinit var telefono:String
     lateinit var password:String

@@ -10,22 +10,16 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
-import com.android.volley.AuthFailureError
 import com.example.primeraentrega.Clases.Establecimiento
-import com.example.primeraentrega.Adapters.AdapterEstablecimiento
+import com.example.primeraentrega.adapters.AdapterEstablecimiento
 import com.example.primeraentrega.databinding.ActivityRecomendacionesBinding
 import org.json.JSONObject
-import com.android.volley.toolbox.StringRequest
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
-import com.android.volley.VolleyError
-import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.model.LatLng
-import okhttp3.OkHttpClient
-import org.json.JSONArray
 import org.json.JSONException
 
 

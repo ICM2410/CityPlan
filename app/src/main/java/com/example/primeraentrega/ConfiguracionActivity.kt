@@ -3,10 +3,8 @@ package com.example.primeraentrega
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
 import com.example.primeraentrega.databinding.ActivityConfiguracionBinding
-import com.example.primeraentrega.databinding.ActivityIniciarSesionBinding
-import com.example.primeraentrega.usuario.usuario
+import com.example.primeraentrega.usuario.Usuario
 
 class ConfiguracionActivity : AppCompatActivity() {
     private lateinit var binding : ActivityConfiguracionBinding
@@ -16,12 +14,12 @@ class ConfiguracionActivity : AppCompatActivity() {
         binding= ActivityConfiguracionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val usuario = intent.getSerializableExtra("user") as? usuario
+        val usuario = intent.getSerializableExtra("user") as? Usuario
 
         inicializarBotones(usuario)
     }
 
-    private fun inicializarBotones(usuario: usuario?)
+    private fun inicializarBotones(usuario: Usuario?)
     {
         binding.perfilconftext.setOnClickListener {
             startActivity(Intent(baseContext,PerfilConfActivity::class.java))

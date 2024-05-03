@@ -3,11 +3,8 @@ package com.example.primeraentrega
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
-import com.example.primeraentrega.databinding.ActivityCrearGrupoBinding
-import com.example.primeraentrega.databinding.ActivityIniciarSesionBinding
 import com.example.primeraentrega.databinding.ActivityVerGruposBinding
-import com.example.primeraentrega.usuario.usuario
+import com.example.primeraentrega.usuario.Usuario
 import com.google.firebase.auth.FirebaseAuth
 
 class VerGruposActivity : AppCompatActivity() {
@@ -19,34 +16,42 @@ class VerGruposActivity : AppCompatActivity() {
         binding = ActivityVerGruposBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val usuario = intent.getSerializableExtra("user") as? usuario
+        val usuario = intent.getSerializableExtra("user") as? Usuario
 
 
 
-
-        inicializarBotones(usuario)
 
         inicializarBotones(usuario)
 
     }
 
-    private fun inicializarBotones(usuario: usuario?) {
+    private fun inicializarBotones(usuario: Usuario?) {
 
-        binding.salida.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
-            startActivity(Intent(baseContext, IniciarSesionActivity::class.java))
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when(item.itemId) {
+                R.id.Grupos_bar -> {
+                    // Respond to navigation item 1 click
+                    true
+                }
+                R.id.cuenta_bar -> {
+                    // Respond to navigation item 2 click
+                    var intent = Intent(baseContext, ConfiguracionActivity::class.java)
+                    intent.putExtra("user", usuario)
+                    startActivity(intent)
+                    true
+                }
+                R.id.salir_bar -> {
+                    // Respond to navigation item 3 click
+                    FirebaseAuth.getInstance().signOut()
+                    startActivity(Intent(baseContext, IniciarSesionActivity::class.java))
+                    true
+                }
+                else -> false
+            }
         }
-
 
         binding.grupoChocmelos.setOnClickListener {
             startActivity(Intent(baseContext, ChatActivity::class.java))
-        }
-
-        binding.botonConfiguracion.setOnClickListener {
-
-            var intent = Intent(baseContext, ConfiguracionActivity::class.java)
-            intent.putExtra("user", usuario)
-            startActivity(intent)
         }
 
         binding.botonAgregarGrupo.setOnClickListener {

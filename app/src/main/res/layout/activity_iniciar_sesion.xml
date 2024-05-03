@@ -5,107 +5,110 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".IniciarSesionActivity"
-    android:background="@drawable/degradado">
+    android:background="@color/white">
 
-    <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.56"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/cityplan_purple" />
-
-    <TextView
-        android:id="@+id/textView2"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        android:textColor="@color/white"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        android:textAlignment="center"
-        android:text="@string/IniciarSesión"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView2" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="-27dp"
+        tools:layout_editor_absoluteY="3dp">
 
-    <EditText
-        android:id="@+id/user"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="38dp"
-        android:layout_marginEnd="32dp"
-        android:ems="10"
-        android:inputType="text"
-        android:hint="@string/nombreUsuario"
-        android:background="@drawable/boton_plan"
-        android:padding="9dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        <Button
+            android:id="@+id/buttonRegistrarse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/transparente"
+            android:text="@string/Registrarse"
+            android:textColor="@color/rosado"
+            android:textSize="16sp"
+            android:layout_gravity="right"
+            android:layout_marginTop="10dp"/>
 
-    <EditText
-        android:id="@+id/password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="32dp"
-        android:ems="10"
-        android:background="@drawable/boton_plan"
-        android:padding="9dp"
-        android:hint="@string/Contraseña"
-        android:inputType="textPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/user" />
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="213dp"
+            android:layout_height="190dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="35dp"
+            android:layout_marginEnd="32dp"
+            app:srcCompat="@drawable/cityplan_purple" />
 
-    <Button
-        android:id="@+id/buttonIniciarSesion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="32dp"
-        android:text="@string/IniciarSesión"
-        android:padding="2dp"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password" />
+        <TextView
+            android:id="@+id/IniciosesionTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Inicia sesión"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"/>
 
-    <Button
-        android:id="@+id/buttonHuella"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="32dp"
-        android:padding="2dp"
-        android:text="@string/desbloquearHuella"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonIniciarSesion" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/user2"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            app:errorEnabled="true"
+            android:hint="Correo"
+            android:inputType="text"
+            android:padding="9dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/buttonRegistrarse"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="27dp"
-        android:layout_marginEnd="32dp"
-        android:text="@string/Registrarse"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonHuella" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/password2"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            app:helperText=""
+            app:endIconMode="password_toggle"
+            app:errorEnabled="true"
+            android:hint="@string/Contraseña"
+            android:inputType="text"
+            android:padding="9dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="30dp">
+
+            <Button
+                android:id="@+id/buttonIniciarSesion"
+                android:layout_width="244dp"
+                android:layout_height="84dp"
+                android:backgroundTint="@color/rosado"
+                android:padding="2dp"
+                android:text="@string/IniciarSesión"
+                android:textSize="16sp" android:layout_marginRight="30dp"/>
+
+            <ImageButton
+                android:id="@+id/huella"
+                android:layout_width="61dp"
+                android:layout_height="67dp"
+                android:background="@drawable/huella_negra_fondo_blanco" />
+        </LinearLayout>
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
