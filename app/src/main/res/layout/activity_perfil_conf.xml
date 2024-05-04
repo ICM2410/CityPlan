@@ -1,77 +1,301 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PerfilConfActivity"
-    android:background="@drawable/degradado">
+    android:background="@drawable/degradado_grupos"
+    tools:context=".PerfilConfActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="626dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/boton_plan"
+        android:gravity="center"
+        android:orientation="vertical">
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/user2"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            android:hint="Usuario"
+            android:inputType="text"
+            android:padding="9dp"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tel"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            android:hint="Telefono"
+            android:inputType="phone"
+            android:padding="9dp"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/telephone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/password2"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            android:hint="@string/Contraseña"
+            android:inputType="text"
+            android:padding="9dp"
+            app:endIconMode="password_toggle"
+            app:errorEnabled="true"
+            app:helperText="">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+            <Button
+                android:id="@+id/guardarperfil"
+                android:layout_width="151dp"
+                android:layout_height="74dp"
+                android:text="@string/guardar"
+                android:textSize="20sp"
+                android:layout_marginRight="40dp"/>
+
+            <ImageButton
+                android:id="@+id/huella"
+                android:layout_width="61dp"
+                android:layout_height="67dp"
+                android:background="@drawable/huella_negra_fondo_blanco" />
+        </LinearLayout>
+
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.56"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/perfilconf" />
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:background="@drawable/foto2"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="35dp"/>
 
-    <EditText
-        android:id="@+id/user"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:backgroundTint="@drawable/circulo_gris"
+        android:background="@drawable/circulo_gris"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="140dp"
+        android:layout_marginLeft="50dp"
+        >
+        <ImageButton
+            android:id="@+id/cambiarperfil"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/editar_foto_perfil"
+            android:backgroundTint="@color/moradoClaro"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="70dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/boton_plan"
-        android:ems="10"
-        android:hint="@string/nombreUsuario"
-        android:inputType="text"
-        android:padding="9dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cambiarperfil" />
+        android:orientation="vertical"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="10dp"
+        android:gravity="right"
+        android:id="@+id/opcionesFAB">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/nuevoView">
 
-    <EditText
-        android:id="@+id/password"
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="2dp"
+                app:contentPadding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nuevo Plan">
+
+                </TextView>
+            </androidx.cardview.widget.CardView>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_mas"
+                android:tooltipText="crear"
+                android:id="@+id/fab_crear_plan"
+                app:menu="@menu/bottom_navigation_menu"
+                android:tint="@color/rosaClaro">
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/planesView">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="2dp"
+                app:contentPadding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mis planes">
+
+                </TextView>
+            </androidx.cardview.widget.CardView>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_mis_planes"
+                android:tooltipText="mis planes"
+                android:id="@+id/fab_mis_planes"
+                app:menu="@menu/bottom_navigation_menu">
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/activoView">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="2dp"
+                app:contentPadding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Plan activo">
+
+                </TextView>
+            </androidx.cardview.widget.CardView>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_plan_activo"
+                android:tooltipText="plan activo"
+                android:id="@+id/fab_plan_activo"
+                app:menu="@menu/bottom_navigation_menu">
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/pasadosView">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="2dp"
+                app:contentPadding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pasados">
+
+                </TextView>
+            </androidx.cardview.widget.CardView>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_plan_pasado"
+                android:tooltipText="planes pasados"
+                android:id="@+id/fab_planes_pasados"
+                app:menu="@menu/bottom_navigation_menu">
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="32dp"
-        android:ems="10"
-        android:background="@drawable/boton_plan"
-        android:padding="9dp"
-        android:hint="@string/Contraseña"
-        android:inputType="textPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/user" />
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:id="@+id/opPrincipales">
 
-    <Button
-        android:id="@+id/guardarperfil"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="32dp"
-        android:text="@string/guardar"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password" />
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="324dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:backgroundTint="@color/moradoClaro"
+            app:menu="@menu/bottom_navigation_menu" />
 
-    <Button
-        android:id="@+id/cambiarperfil"
-        android:layout_width="174dp"
-        android:layout_height="72dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/cambiar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView2" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="10dp"
+            android:src="@drawable/ic_plan"
+            android:tooltipText="@string/planes"
+            android:id="@+id/fab_menu_plan"
+            android:backgroundTint="@color/rosaClaro">
+
+        </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+
+    </LinearLayout>
+
+</FrameLayout>

@@ -41,7 +41,7 @@ class VerGruposActivity : AppCompatActivity() {
                 }
                 R.id.cuenta_bar -> {
                     // Respond to navigation item 2 click
-                    var intent = Intent(baseContext, ConfiguracionActivity::class.java)
+                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
                     intent.putExtra("user", usuario)
                     startActivity(intent)
                     true

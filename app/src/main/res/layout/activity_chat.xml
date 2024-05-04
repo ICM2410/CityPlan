@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,189 +9,339 @@
     tools:context=".ChatActivity">
 
     <LinearLayout
-        android:id="@+id/nombreGrupo"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.7"
-        android:background="@color/moradoClaro"
-        android:backgroundTint="@color/moradoClaro"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="20dp">
-
-        <ImageView
-            android:id="@+id/imagenGrupoChat"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_centerInParent="true"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/perfilplan" />
-
-        <TextView
-            android:id="@+id/nombreGrupoChat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_weight="3"
-            android:text="@string/tituloChat"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp" />
-
-    </LinearLayout>
-
-    <FrameLayout
-        android:id="@+id/chatContenido"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="5">
+        android:layout_height="652dp"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:id="@+id/mensajes"
+            android:id="@+id/nombreGrupo"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="0dp"
+            android:layout_weight="0.7"
+            android:background="@color/moradoClaro"
+            android:backgroundTint="@color/moradoClaro"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="20dp">
 
+            <ImageView
+                android:id="@+id/imagenGrupoChat"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/perfilplan" />
+
+            <TextView
+                android:id="@+id/nombreGrupoChat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="3"
+                android:text="@string/tituloChat"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/chatContenido"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="5">
 
             <LinearLayout
-                android:id="@+id/comentarioTotal"
+                android:id="@+id/mensajes"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="25dp">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
 
                 <LinearLayout
-                    android:id="@+id/BurbujaChat"
-                    android:layout_width="200dp"
+                    android:id="@+id/comentarioTotal"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/comentario_shape"
-                    android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="25dp">
+
+                    <LinearLayout
+                        android:id="@+id/BurbujaChat"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/comentario_shape"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:id="@+id/autorMensaje"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="4dp"
+                            android:text="@string/remitente"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/rosaClaro"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/textoMensaje"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/textMensaje"
+                            android:textColor="@color/white" />
+                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/autorMensaje"
-                        android:layout_width="match_parent"
+                        android:id="@+id/horaComentario"
+                        android:layout_width="200dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:text="@string/remitente"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/rosaClaro"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/textoMensaje"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/textMensaje"
-                        android:textColor="@color/white" />
+                        android:gravity="right"
+                        android:text="@string/hora" />
                 </LinearLayout>
+            </LinearLayout>
 
-                <TextView
-                    android:id="@+id/horaComentario"
-                    android:layout_width="200dp"
+            <LinearLayout
+                android:layout_width="63dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:gravity="center"
+                android:orientation="vertical">
+
+
+                <ImageButton
+                    android:id="@+id/configGrupo"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerInParent="true"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/boton_chat"
+                    android:padding="10dp"
+                    android:scaleType="center"
+                    app:srcCompat="@drawable/settings_orange" />
+
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/escribirMensaje"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/grisMedio"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="20dp">
+
+            <ImageButton
+                android:id="@+id/botonCamara"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="0"
+                android:background="@color/transparente"
+                android:padding="10dp"
+                android:scaleType="center"
+                app:srcCompat="@drawable/icono_camara" />
+
+
+            <EditText
+                android:id="@+id/espacioDeTexto"
+                android:layout_width="match_parent"
+                android:layout_height="63dp"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="3"
+                android:background="@drawable/puntas_blancas"
+                android:drawableRight="@drawable/send2"
+                android:ems="10"
+                android:gravity="center_vertical"
+                android:hint="@string/hint"
+                android:inputType="text"
+                android:padding="15dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="10dp"
+            android:gravity="right"
+            android:id="@+id/opcionesFAB">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/nuevoView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="right"
-                    android:text="@string/hora" />
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nuevo Plan">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mas"
+                    android:tooltipText="crear"
+                    android:id="@+id/fab_crear_plan"
+                    app:menu="@menu/bottom_navigation_menu"
+                    android:tint="@color/rosaClaro">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/planesView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mis planes">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mis_planes"
+                    android:tooltipText="mis planes"
+                    android:id="@+id/fab_mis_planes"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/activoView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plan activo">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_activo"
+                    android:tooltipText="plan activo"
+                    android:id="@+id/fab_plan_activo"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/pasadosView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pasados">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_pasado"
+                    android:tooltipText="planes pasados"
+                    android:id="@+id/fab_planes_pasados"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="63dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:id="@+id/opPrincipales">
 
-            <ImageButton
-                android:id="@+id/equisOpciones"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="324dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:backgroundTint="@color/moradoClaro"
+                app:menu="@menu/bottom_navigation_menu" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_margin="10dp"
-                android:background="@drawable/boton_naranja"
-                android:padding="10dp"
-                android:scaleType="center"
-                app:srcCompat="@drawable/equis" />
+                android:src="@drawable/ic_plan"
+                android:tooltipText="@string/planes"
+                android:id="@+id/fab_menu_plan"
+                android:backgroundTint="@color/rosaClaro">
 
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
-            <ImageButton
-                android:id="@+id/botonVerPlanes"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="10dp"
-                android:background="@drawable/boton_chat"
-                android:padding="10dp"
-                android:scaleType="center"
-                app:srcCompat="@drawable/plan_mano" />
-
-            <ImageButton
-                android:id="@+id/configGrupo"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="10dp"
-                android:background="@drawable/boton_chat"
-                android:padding="10dp"
-                android:scaleType="center"
-                app:srcCompat="@drawable/settings_orange" />
 
         </LinearLayout>
-    </FrameLayout>
 
-    <LinearLayout
-        android:id="@+id/escribirMensaje"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@color/grisMedio"
-        android:orientation="horizontal"
-        android:padding="20dp"
-        android:gravity="center">
-
-        <ImageButton
-            android:id="@+id/botonCamara"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerInParent="true"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="0"
-            android:background="@color/transparente"
-            android:padding="10dp"
-            android:scaleType="center"
-            app:srcCompat="@drawable/icono_camara" />
-
-
-        <EditText
-            android:id="@+id/espacioDeTexto"
-            android:layout_width="match_parent"
-            android:layout_height="63dp"
-            android:layout_marginLeft="10dp"
-            android:layout_weight="3"
-            android:background="@drawable/puntas_blancas"
-            android:drawableRight="@drawable/send2"
-            android:ems="10"
-            android:gravity="center_vertical"
-            android:hint="@string/hint"
-            android:inputType="text"
-            android:padding="15dp"
-            android:textSize="14sp" />
-        <ImageButton
-            android:id="@+id/botonGrupos"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_weight="0"
-            android:layout_centerInParent="true"
-            android:layout_gravity="center_vertical"
-            android:layout_margin="10dp"
-            android:background="@drawable/boton_menu"
-            android:padding="10dp"
-            android:scaleType="center"
-            app:srcCompat="@drawable/users" />
     </LinearLayout>
-
-
-</LinearLayout>
+</FrameLayout>
