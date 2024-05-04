@@ -16,7 +16,7 @@
         <LinearLayout
             android:id="@+id/nombreGrupo"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="18dp"
             android:layout_weight="0.7"
             android:background="@color/moradoClaro"
             android:backgroundTint="@color/moradoClaro"
@@ -98,6 +98,12 @@
                         android:gravity="right"
                         android:text="@string/hora" />
                 </LinearLayout>
+
+                <ListView
+                    android:id="@+id/chat"
+                    android:layout_width="match_parent"
+                    android:layout_height="298dp" />
+
             </LinearLayout>
 
             <LinearLayout
