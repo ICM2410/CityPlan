@@ -37,13 +37,6 @@ class CrearGrupoActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, ChatActivity::class.java))
         }
 
-        binding.botonHome.setOnClickListener {
-            startActivity(Intent(baseContext, VerGruposActivity::class.java))
-        }
-
-        binding.botonConfiguracion.setOnClickListener {
-            startActivity(Intent(baseContext, ConfiguracionActivity::class.java))
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
