@@ -117,154 +117,6 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/opcionesFAB"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|right"
-                android:layout_margin="10dp"
-                android:gravity="right"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:id="@+id/nuevoView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="10dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardElevation="2dp"
-                        app:contentPadding="5dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Nuevo Plan">
-
-                        </TextView>
-                    </androidx.cardview.widget.CardView>
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fab_crear_plan"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_mas"
-                        android:tint="@color/rosaClaro"
-                        android:tooltipText="crear"
-                        app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/planesView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="10dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardElevation="2dp"
-                        app:contentPadding="5dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Mis planes">
-
-                        </TextView>
-                    </androidx.cardview.widget.CardView>
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fab_mis_planes"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_mis_planes"
-                        android:tooltipText="mis planes"
-                        app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/activoView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="10dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardElevation="2dp"
-                        app:contentPadding="5dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Plan activo">
-
-                        </TextView>
-                    </androidx.cardview.widget.CardView>
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fab_plan_activo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_plan_activo"
-                        android:tooltipText="plan activo"
-                        app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/pasadosView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="10dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardElevation="2dp"
-                        app:contentPadding="5dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Pasados">
-
-                        </TextView>
-                    </androidx.cardview.widget.CardView>
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fab_planes_pasados"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_plan_pasado"
-                        android:tooltipText="planes pasados"
-                        app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
                 android:id="@+id/opPrincipales"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -284,12 +136,11 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_margin="10dp"
-                    android:backgroundTint="@color/rosaClaro"
+                    android:backgroundTint="@color/grisOscuro"
                     android:src="@drawable/ic_plan"
                     android:tooltipText="@string/planes">
 
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
-
 
             </LinearLayout>
 

@@ -37,6 +37,8 @@ class VerGruposActivity : AppCompatActivity() {
             when(item.itemId) {
                 R.id.Grupos_bar -> {
                     // Respond to navigation item 1 click
+                    startActivity(Intent(baseContext, VerGruposActivity::class.java))
+
                     true
                 }
                 R.id.cuenta_bar -> {
@@ -64,90 +66,6 @@ class VerGruposActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, CrearGrupoActivity::class.java))
         }
 
-        initShowout(binding.pasadosView)
-        initShowout(binding.nuevoView)
-        initShowout(binding.activoView)
-        initShowout(binding.planesView)
-        binding.fabMenuPlan.setOnClickListener {
-            if(!isFabOpen)
-            {
-                showFabMenu();
-            }
-            else
-            {
-                closeFabMenu();
-            }
-        }
     }
 
-    private fun initShowout (v: View){
-        v.apply {
-            visibility = View. GONE
-            translationY= height.toFloat()
-            alpha = 0f
-        }
-    }
-
-    private fun closeFabMenu() {
-        rotation=rotateFAB()
-        isFabOpen=false
-        cerrar(binding.pasadosView)
-        cerrar(binding.nuevoView)
-        cerrar(binding.activoView)
-        cerrar(binding.planesView)
-    }
-
-    private fun cerrar(view: View) {
-        view.apply {
-            visibility=View.VISIBLE
-            alpha=1f
-            translationY=0f
-            animate()
-                .setDuration(200)
-                .translationY(0f)
-                .setListener(object : AnimatorListenerAdapter(){
-                    override fun onAnimationEnd(animation: Animator) {
-                        super.onAnimationEnd(animation)
-                        visibility=View.GONE
-                    }
-                })
-                .alpha(0f)
-                .start()
-        }
-    }
-
-    private fun showFabMenu() {
-        rotation=rotateFAB()
-        isFabOpen=true
-
-        //motrar info
-        mostrar(binding.pasadosView)
-        mostrar(binding.nuevoView)
-        mostrar(binding.activoView)
-        mostrar(binding.planesView)
-
-    }
-
-    private fun mostrar(view: View) {
-        view.apply {
-            visibility=View.VISIBLE
-            alpha=0f
-            translationY=height.toFloat()
-            animate()
-                .setDuration(200)
-                .translationY(0f)
-                .setListener(object : AnimatorListenerAdapter(){})
-                .alpha(1f)
-                .start()
-        }
-    }
-
-    private fun rotateFAB():Boolean {
-        binding.fabMenuPlan.animate()
-            .setDuration(200)
-            .setListener(object : AnimatorListenerAdapter(){})
-            .rotation(if(!isFabOpen) 180f else 0f)
-
-        return isFabOpen
-    }
 }

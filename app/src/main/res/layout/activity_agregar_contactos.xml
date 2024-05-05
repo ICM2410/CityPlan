@@ -20,7 +20,8 @@
             android:layout_height="39dp"
             android:layout_gravity="right"
             android:text="Listo!"
-            android:textSize="15dp" />
+            android:textSize="15dp"
+            android:backgroundTint="@color/rosado"/>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/user2"

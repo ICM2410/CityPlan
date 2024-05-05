@@ -129,7 +129,8 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Mostrar ruta">
+                                    android:text="Mostrar ruta"
+                                    android:id="@+id/mostrarRutaTxt">
 
                                 </TextView>
                             </androidx.cardview.widget.CardView>
