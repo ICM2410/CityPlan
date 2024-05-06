@@ -45,7 +45,7 @@
             android:layout_height="200dp"
             android:background="@drawable/circulo_gris"
             app:srcCompat="@drawable/camara"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="35dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/user2"
@@ -235,6 +235,7 @@
                     android:layout_margin="10dp"
                     android:src="@drawable/ic_plan_activo"
                     android:tooltipText="plan activo"
+                    android:backgroundTint="@color/rosaClaro"
                     app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
             </LinearLayout>
 

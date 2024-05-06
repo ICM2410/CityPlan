@@ -25,9 +25,14 @@ class ChatActivity : AppCompatActivity() {
         binding= ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
         inicializarBotones()
+        //binding.bottomNavigation.selectedItemId = R.id.cuenta_bar // Establecer elemento seleccionado
     }
 
     private fun inicializarBotones() {
+
+        binding.configGrupo.setOnClickListener {
+            startActivity(Intent(baseContext, EditarGrupoActivity::class.java))
+        }
         val usuario: Usuario = Usuario()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
@@ -42,6 +47,7 @@ class ChatActivity : AppCompatActivity() {
                     var intent = Intent(baseContext, PerfilConfActivity::class.java)
                     intent.putExtra("user", usuario)
                     startActivity(intent)
+                    //startActivity(Intent(baseContext, VerGruposActivity::class.java))
                     true
                 }
                 R.id.salir_bar -> {
@@ -67,6 +73,26 @@ class ChatActivity : AppCompatActivity() {
             {
                 closeFabMenu();
             }
+        }
+
+        fabClicks()
+    }
+
+    private fun fabClicks() {
+        binding.fabPlanesPasados.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+        }
+
+        binding.fabCrearPlan.setOnClickListener {
+            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+        }
+
+        binding.fabMisPlanes.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesActivity::class.java))
+        }
+
+        binding.fabPlanActivo.setOnClickListener {
+            startActivity(Intent(baseContext, PlanActivity::class.java))
         }
     }
 

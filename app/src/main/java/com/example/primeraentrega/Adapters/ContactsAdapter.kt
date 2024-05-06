@@ -1,4 +1,4 @@
-package com.example.primeraentrega.adapters
+package com.example.primeraentrega.Adapters
 
 import android.content.Context
 import android.database.Cursor

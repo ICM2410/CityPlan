@@ -71,6 +71,26 @@ class PlanFinalizadoActivity : AppCompatActivity() {
                 closeFabMenu();
             }
         }
+
+        fabClicks()
+    }
+
+    private fun fabClicks() {
+        binding.fabPlanesPasados.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+        }
+
+        binding.fabCrearPlan.setOnClickListener {
+            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+        }
+
+        binding.fabMisPlanes.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesActivity::class.java))
+        }
+
+        binding.fabPlanActivo.setOnClickListener {
+            startActivity(Intent(baseContext, PlanActivity::class.java))
+        }
     }
 
     private fun initShowout (v: View){

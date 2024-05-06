@@ -12,7 +12,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.example.primeraentrega.adapters.ContactsAdapter
+import com.example.primeraentrega.Adapters.ContactsAdapter
 import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
 import com.example.primeraentrega.usuario.Usuario
 import com.google.firebase.auth.FirebaseAuth
@@ -48,6 +48,7 @@ class AgregarContactosActivity : AppCompatActivity() {
             when(item.itemId) {
                 R.id.Grupos_bar -> {
                     // Respond to navigation item 1 click
+                    startActivity(Intent(baseContext, VerGruposActivity::class.java))
                     true
                 }
                 R.id.cuenta_bar -> {
@@ -80,6 +81,26 @@ class AgregarContactosActivity : AppCompatActivity() {
             {
                 closeFabMenu();
             }
+        }
+
+        fabClicks()
+    }
+
+    private fun fabClicks() {
+        binding.fabPlanesPasados.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+        }
+
+        binding.fabCrearPlan.setOnClickListener {
+            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+        }
+
+        binding.fabMisPlanes.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesActivity::class.java))
+        }
+
+        binding.fabPlanActivo.setOnClickListener {
+            startActivity(Intent(baseContext, PlanActivity::class.java))
         }
     }
 

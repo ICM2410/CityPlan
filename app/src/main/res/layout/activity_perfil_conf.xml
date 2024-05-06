@@ -9,7 +9,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="626dp"
+        android:layout_height="729dp"
         android:layout_gravity="bottom"
         android:background="@drawable/boton_plan"
         android:gravity="center"
@@ -82,13 +82,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center">
+
             <Button
                 android:id="@+id/guardarperfil"
                 android:layout_width="151dp"
                 android:layout_height="74dp"
+                android:layout_marginRight="40dp"
                 android:text="@string/guardar"
-                android:textSize="20sp"
-                android:layout_marginRight="40dp"/>
+                android:textSize="20sp" />
 
             <ImageButton
                 android:id="@+id/huella"
@@ -107,23 +108,16 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="35dp"/>
 
-    <LinearLayout
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:backgroundTint="@drawable/circulo_gris"
-        android:background="@drawable/circulo_gris"
-        android:gravity="center"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="140dp"
-        android:layout_marginLeft="50dp"
-        >
+
         <ImageButton
             android:id="@+id/cambiarperfil"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/editar_foto_perfil"
-            android:backgroundTint="@color/moradoClaro"/>
-    </LinearLayout>
+            android:backgroundTint="@color/black"
+            android:layout_marginTop="160dp"
+            android:layout_marginStart="250dp"/>
+
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -130,7 +130,7 @@
                     android:tooltipText="crear"
                     android:id="@+id/fab_crear_plan"
                     app:menu="@menu/bottom_navigation_menu"
-                    android:tint="@color/rosaClaro">
+                    android:backgroundTint="@color/rosado">
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
             </LinearLayout>
@@ -257,7 +257,7 @@
                 android:src="@drawable/ic_plan"
                 android:tooltipText="@string/planes"
                 android:id="@+id/fab_menu_plan"
-                android:backgroundTint="@color/rosaClaro">
+                android:backgroundTint="@color/rosado">
 
             </com.google.android.material.floatingactionbutton.FloatingActionButton>
 

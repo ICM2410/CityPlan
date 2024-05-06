@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-import com.example.primeraentrega.databinding.ActivityCrearGrupoBinding
 import com.example.primeraentrega.databinding.ActivityPerfilConfBinding
 import com.example.primeraentrega.usuario.Usuario
 import com.google.firebase.auth.FirebaseAuth
@@ -23,7 +22,8 @@ class PerfilConfActivity : AppCompatActivity() {
         binding = ActivityPerfilConfBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val usuario = intent.getSerializableExtra("user") as? Usuario
+        //val usuario = intent.getSerializableExtra("user") as? Usuario
+        binding.bottomNavigation.selectedItemId = R.id.cuenta_bar
 
         // Inicializar Firebase
         auth = FirebaseAuth.getInstance()
@@ -34,7 +34,7 @@ class PerfilConfActivity : AppCompatActivity() {
 
     private fun inicializarBotones() {
         binding.guardarperfil.setOnClickListener {
-            startActivity(Intent(baseContext, ConfiguracionActivity::class.java))
+            startActivity(Intent(baseContext, VerGruposActivity::class.java))
         }
 
         val usuario: Usuario = Usuario()

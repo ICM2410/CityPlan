@@ -313,8 +313,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                     if (plan != null) {
                         pasosAvtivado=plan.AmigoMasActivo
                         if(!pasosAvtivado){
-                            // Hacer invisible el elemento binding.hazDado
-                            binding.hazDado.visibility = View.INVISIBLE
 
                             // Hacer invisible el elemento binding.pasoscantText
                             binding.pasoscantText.visibility = View.INVISIBLE
@@ -343,8 +341,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                         binding.aunsiguesText.setText("Estas fuera del plan")
                         binding.switchPasos.isChecked=false
                         // Hacer invisible el elemento binding.hazDado
-                        binding.hazDado.visibility = View.INVISIBLE
-
                         // Hacer invisible el elemento binding.pasoscantText
                         binding.pasoscantText.visibility = View.INVISIBLE
 
@@ -552,10 +548,11 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 closeFabMenu();
             }
         }
+        fabClicks()
 
-        initShowout(binding.configuraciones)
-        initShowout(binding.mostrarRutabutton)
-        initShowout(binding.botonCamara)
+        initShowout(binding.confView)
+        initShowout(binding.rutaView)
+        initShowout(binding.recuerdosView)
         binding.fabOpcionesPlan.setOnClickListener {
             if(!isFabOpen)
             {
@@ -565,6 +562,24 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             {
                 closeFabPlan();
             }
+        }
+    }
+
+    private fun fabClicks() {
+        binding.fabPlanesPasados.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+        }
+
+        binding.fabCrearPlan.setOnClickListener {
+            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+        }
+
+        binding.fabMisPlanes.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesActivity::class.java))
+        }
+
+        binding.fabPlanActivo.setOnClickListener {
+            startActivity(Intent(baseContext, PlanActivity::class.java))
         }
     }
 
@@ -588,9 +603,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     private fun closeFabPlan() {
         rotation=rotateFAB()
         isFabOpen=false
-        cerrar(binding.configuraciones)
-        cerrar(binding.mostrarRutabutton)
-        cerrar(binding.botonCamara)
+        cerrar(binding.confView)
+        cerrar(binding.rutaView)
+        cerrar(binding.recuerdosView)
     }
     private fun cerrar(view: View) {
         view.apply {
@@ -627,9 +642,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         rotation=rotateFAB()
         isFabOpen=true
 
-        mostrarPlan(binding.configuraciones)
-        mostrarPlan(binding.mostrarRutabutton)
-        mostrarPlan(binding.botonCamara)
+        mostrarPlan(binding.confView)
+        mostrarPlan(binding.rutaView)
+        mostrarPlan(binding.recuerdosView)
     }
 
     private fun mostrar(view: View) {
@@ -681,8 +696,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         gestionarPermisoActividad()
         ponerUbicacionPlan()
 
-
-
         binding.mostrarRutabutton.setOnClickListener{
             //muestra la ruta con oms bonus
             if(!switchRuta) {
@@ -720,7 +733,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             {
                 if(pasosAvtivado)
                 {
-                    binding.hazDado.visibility = View.VISIBLE
                     // Hacer invisible el elemento binding.pasoscantText
                     binding.pasoscantText.visibility = View.VISIBLE
                 }
@@ -736,8 +748,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             }
             else
             {
-
-                binding.hazDado.visibility = View.INVISIBLE
                 binding.milocalizacion.isVisible=false
                 // Hacer invisible el elemento binding.pasoscantText
                 binding.pasoscantText.visibility = View.INVISIBLE

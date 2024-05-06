@@ -355,6 +355,7 @@
                     android:layout_margin="10dp"
                     android:src="@drawable/ic_plan_activo"
                     android:tooltipText="plan activo"
+                    android:backgroundTint="@color/rosado"
                     android:id="@+id/fab_plan_activo"
                     app:menu="@menu/bottom_navigation_menu">
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
@@ -416,7 +417,7 @@
                 android:src="@drawable/ic_plan"
                 android:tooltipText="@string/planes"
                 android:id="@+id/fab_menu_plan"
-                android:backgroundTint="@color/rosaClaro">
+                android:backgroundTint="@color/rosado">
 
             </com.google.android.material.floatingactionbutton.FloatingActionButton>
 

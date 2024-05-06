@@ -13,7 +13,7 @@ import android.widget.AdapterView
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import com.example.primeraentrega.Clases.Establecimiento
-import com.example.primeraentrega.adapters.AdapterEstablecimiento
+import com.example.primeraentrega.Adapters.AdapterEstablecimiento
 import com.example.primeraentrega.databinding.ActivityRecomendacionesBinding
 import org.json.JSONObject
 import com.android.volley.Request
@@ -229,7 +229,28 @@ class RecomendacionesActivity : AppCompatActivity() {
                 closeFabMenu();
             }
         }
+
+        fabClicks()
     }
+
+    private fun fabClicks() {
+        binding.fabPlanesPasados.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+        }
+
+        binding.fabCrearPlan.setOnClickListener {
+            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+        }
+
+        binding.fabMisPlanes.setOnClickListener {
+            startActivity(Intent(baseContext, PlanesActivity::class.java))
+        }
+
+        binding.fabPlanActivo.setOnClickListener {
+            startActivity(Intent(baseContext, PlanActivity::class.java))
+        }
+    }
+
 
     private fun initShowout (v: View){
         v.apply {

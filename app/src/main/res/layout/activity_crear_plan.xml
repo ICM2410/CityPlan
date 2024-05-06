@@ -290,7 +290,7 @@
                     android:tooltipText="crear"
                     android:id="@+id/fab_crear_plan"
                     app:menu="@menu/bottom_navigation_menu"
-                    android:tint="@color/rosaClaro">
+                    android:backgroundTint="@color/rosado">
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
             </LinearLayout>
@@ -324,6 +324,7 @@
                     android:src="@drawable/ic_mis_planes"
                     android:tooltipText="mis planes"
                     android:id="@+id/fab_mis_planes"
+                    android:backgroundTint="@color/white"
                     app:menu="@menu/bottom_navigation_menu">
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
             </LinearLayout>
@@ -357,7 +358,8 @@
                     android:src="@drawable/ic_plan_activo"
                     android:tooltipText="plan activo"
                     android:id="@+id/fab_plan_activo"
-                    app:menu="@menu/bottom_navigation_menu">
+                    app:menu="@menu/bottom_navigation_menu"
+                    android:backgroundTint="@color/white">
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
             </LinearLayout>
             <LinearLayout
@@ -390,6 +392,7 @@
                     android:src="@drawable/ic_plan_pasado"
                     android:tooltipText="planes pasados"
                     android:id="@+id/fab_planes_pasados"
+                    android:backgroundTint="@color/white"
                     app:menu="@menu/bottom_navigation_menu">
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
             </LinearLayout>
@@ -403,7 +406,7 @@
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottom_navigation"
-                android:layout_width="295dp"
+                android:layout_width="328dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:backgroundTint="@color/moradoClaro"
@@ -417,7 +420,7 @@
                 android:src="@drawable/ic_plan"
                 android:tooltipText="@string/planes"
                 android:id="@+id/fab_menu_plan"
-                android:backgroundTint="@color/rosaClaro">
+                android:backgroundTint="@color/rosado">
 
             </com.google.android.material.floatingactionbutton.FloatingActionButton>
 

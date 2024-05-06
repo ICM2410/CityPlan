@@ -9,7 +9,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="656dp">
+        android:layout_height="811dp">
 
         <org.osmdroid.views.MapView
             android:id="@+id/osmMap"
@@ -25,7 +25,7 @@
             <LinearLayout
                 android:id="@+id/opcionesBasicas"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="390dp"
                 android:orientation="horizontal"
                 android:padding="20dp">
 
@@ -38,16 +38,28 @@
                     android:orientation="vertical">
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="103dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
                         android:gravity="center"
                         android:orientation="vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="opciones" />
+                            android:layout_gravity="center_vertical"
+                            android:layout_margin="10dp"
+                            app:cardBackgroundColor="@color/white"
+                            app:cardElevation="2dp"
+                            app:contentPadding="5dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="opciones">
+
+                            </TextView>
+                        </androidx.cardview.widget.CardView>
 
                         <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/fab_opciones_plan"
@@ -127,14 +139,15 @@
                                 app:contentPadding="5dp">
 
                                 <TextView
+                                    android:id="@+id/mostrarRutaTxt"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Mostrar ruta"
-                                    android:id="@+id/mostrarRutaTxt">
+                                    android:text="Mostrar ruta">
 
                                 </TextView>
                             </androidx.cardview.widget.CardView>
                         </LinearLayout>
+
                         <LinearLayout
                             android:id="@+id/recuerdosView"
                             android:layout_width="wrap_content"
@@ -172,13 +185,14 @@
                     </LinearLayout>
 
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:orientation="vertical"
-                    >
+                    android:orientation="vertical">
+
                     <ImageButton
                         android:id="@+id/puntoEncuentro"
                         android:layout_width="40dp"
@@ -205,6 +219,7 @@
                         app:srcCompat="@drawable/parcialmentenublado" />
                 </LinearLayout>
             </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/opcionesIniciales"
                 android:layout_width="match_parent"
@@ -214,11 +229,11 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="142dp"
+                    android:layout_height="169dp"
                     android:background="@color/transparente"
-                    android:paddingLeft="25dp"
+                    android:gravity="top"
                     android:orientation="vertical"
-                    android:gravity="top">
+                    android:paddingLeft="25dp">
 
                     <LinearLayout
                         android:id="@+id/pasosLayOut"
@@ -229,14 +244,22 @@
                         android:gravity="center"
                         android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/hazDado"
-                            android:layout_width="wrap_content"
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_marginRight="5dp"
-                            android:gravity="center"
-                            android:text="@string/mensajePasosPlan" />
+                            android:layout_gravity="center_vertical"
+                            android:layout_margin="10dp"
+                            app:cardBackgroundColor="@color/white"
+                            app:cardElevation="2dp"
+                            app:contentPadding="5dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="pasos">
+
+                            </TextView>
+                        </androidx.cardview.widget.CardView>
 
                         <TextView
                             android:id="@+id/pasoscantText"
@@ -252,15 +275,26 @@
 
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/aunsiguesText"
+                    <androidx.cardview.widget.CardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toRightOf="@id/pasosLayOut"
-                        android:background="@color/white"
-                        android:text="@string/seguirPlan"
-                        android:textColor="@color/moradoMedio"
-                        android:layout_marginTop="10dp"/>
+                        android:layout_gravity="center_vertical"
+                        android:layout_margin="10dp"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardElevation="2dp"
+                        app:contentPadding="5dp">
+
+                        <TextView
+                            android:id="@+id/aunsiguesText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:layout_toRightOf="@id/pasosLayOut"
+                            android:background="@color/white"
+                            android:text="@string/seguirPlan"
+                            android:textColor="@color/moradoMedio" />
+
+                    </androidx.cardview.widget.CardView>
 
 
                     <Switch
@@ -268,14 +302,14 @@
                         android:layout_width="72dp"
                         android:layout_height="58dp"
                         android:layout_below="@id/aunsiguesText"
+                        android:layout_marginStart="22dp"
                         android:layout_marginLeft="0dp"
                         android:layout_marginTop="6dp"
                         android:layout_toRightOf="@id/pasosLayOut"
                         android:checked="true"
                         android:textColor="@color/moradoMedio"
                         android:thumb="@drawable/thumb"
-                        android:track="@drawable/track"
-                        android:layout_marginStart="22dp"/>
+                        android:track="@drawable/track" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -284,14 +318,14 @@
             android:id="@+id/tituloPlan"
             android:layout_width="113dp"
             android:layout_height="35dp"
+            android:layout_gravity="center_horizontal"
             android:layout_marginLeft="30dp"
+            android:layout_marginTop="20dp"
             android:layout_marginRight="30dp"
             android:background="@drawable/etiqueta_plan"
             android:gravity="center"
-            android:layout_gravity="center_horizontal"
             android:text="PLAN"
-            android:textColor="@color/moradoOscuro"
-            android:layout_marginTop="20dp"/>
+            android:textColor="@color/moradoOscuro" />
     </FrameLayout>
 
     <LinearLayout
@@ -406,7 +440,8 @@
                     android:src="@drawable/ic_plan_activo"
                     android:tooltipText="plan activo"
                     android:id="@+id/fab_plan_activo"
-                    app:menu="@menu/bottom_navigation_menu">
+                    app:menu="@menu/bottom_navigation_menu"
+                    android:backgroundTint="@color/rosado">
                 </com.google.android.material.floatingactionbutton.FloatingActionButton>
             </LinearLayout>
             <LinearLayout
@@ -466,7 +501,7 @@
                 android:src="@drawable/ic_plan"
                 android:tooltipText="@string/planes"
                 android:id="@+id/fab_menu_plan"
-                android:backgroundTint="@color/rosaClaro">
+                android:backgroundTint="@color/rosado">
 
             </com.google.android.material.floatingactionbutton.FloatingActionButton>
 

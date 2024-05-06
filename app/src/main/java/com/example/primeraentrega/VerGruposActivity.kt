@@ -37,19 +37,22 @@ class VerGruposActivity : AppCompatActivity() {
             when(item.itemId) {
                 R.id.Grupos_bar -> {
                     // Respond to navigation item 1 click
-                    startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                    //startActivity(Intent(baseContext, VerGruposActivity::class.java))
 
                     true
                 }
                 R.id.cuenta_bar -> {
                     // Respond to navigation item 2 click
-                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                    intent.putExtra("user", usuario)
-                    startActivity(intent)
+                    //var intent = Intent(baseContext, PerfilConfActivity::class.java)
+                    //intent.putExtra("user", usuario)
+                   // startActivity(intent)
+                    startActivity(Intent(baseContext, PerfilConfActivity::class.java))
+                    //startActivity(Intent(baseContext, VerGruposActivity::class.java))
                     true
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
+                    startActivity(Intent(baseContext, PerfilConfActivity::class.java))
                     FirebaseAuth.getInstance().signOut()
                     startActivity(Intent(baseContext, IniciarSesionActivity::class.java))
                     true
