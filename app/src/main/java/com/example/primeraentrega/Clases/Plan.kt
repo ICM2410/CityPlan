@@ -14,23 +14,7 @@ class Plan (
     val fotopin: String,
     val estado:Boolean
 ) {
-
-<<<<<<< Updated upstream
-    constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "")
-
-    fun toJSON(): JSONObject {
-        val obj = JSONObject()
-        obj.put("latitude", latitude)
-        obj.put("longitude", longitude)
-        obj.put("dateInicio", dateInicio.time)
-        obj.put("dateFinal", dateFinal.time)
-        obj.put("AmigoMasActivo", AmigoMasActivo)
-        obj.put("titulo", titulo)
-        obj.put("fotoEncuentro", fotoEncuentro)
-        obj.put("fotopin", fotopin)
-        return obj
-    }
-=======
+    
     constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "", false)
->>>>>>> Stashed changes
+
 }
