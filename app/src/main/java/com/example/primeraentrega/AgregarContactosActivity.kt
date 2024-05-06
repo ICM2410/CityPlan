@@ -14,7 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Adapters.ContactsAdapter
 import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 
 class AgregarContactosActivity : AppCompatActivity() {
@@ -43,7 +43,7 @@ class AgregarContactosActivity : AppCompatActivity() {
     }
 
     private fun inicializarBotones() {
-        val usuario: Usuario=Usuario()
+        val usuario: Usuario = Usuario()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {

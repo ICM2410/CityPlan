@@ -23,7 +23,6 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -33,9 +32,8 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.example.primeraentrega.Clases.Plan
-import com.example.primeraentrega.databinding.ActivityCrearPlanBinding
 import com.example.primeraentrega.databinding.ActivityEditarPlanBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -43,15 +41,8 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.BufferedWriter
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar

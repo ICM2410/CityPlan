@@ -1,15 +1,10 @@
 package com.example.primeraentrega
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-import android.view.animation.Animation.AnimationListener
 import com.example.primeraentrega.databinding.ActivityVerGruposBinding
-import com.example.primeraentrega.usuario.Usuario
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 
 

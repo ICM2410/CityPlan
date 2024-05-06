@@ -9,10 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.bumptech.glide.Glide
-import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
-import com.example.primeraentrega.databinding.ActivityChatBinding
 import com.example.primeraentrega.databinding.ActivityEditarGrupoBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 
 class EditarGrupoActivity : AppCompatActivity() {
