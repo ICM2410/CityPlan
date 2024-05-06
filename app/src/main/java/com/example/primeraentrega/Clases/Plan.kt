@@ -11,9 +11,11 @@ class Plan (
     val AmigoMasActivo: Boolean,
     val titulo: String,
     val fotoEncuentro: String,
-    val fotopin: String
+    val fotopin: String,
+    val estado:Boolean
 ) {
 
+<<<<<<< Updated upstream
     constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "")
 
     fun toJSON(): JSONObject {
@@ -28,4 +30,7 @@ class Plan (
         obj.put("fotopin", fotopin)
         return obj
     }
+=======
+    constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "", false)
+>>>>>>> Stashed changes
 }
