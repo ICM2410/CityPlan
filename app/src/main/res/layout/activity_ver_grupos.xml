@@ -1,184 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".VerGruposActivity">
+    tools:context=".VerGruposActivity"
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/tituloGrupos"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@color/rosado"
-        android:orientation="horizontal"
+        android:layout_height="78dp"
         android:layout_margin="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:background="@color/rosado"
+        android:gravity="center"
+        android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/salida"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="7dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/transparente"
-            app:srcCompat="@drawable/salida"/>
+
         <TextView
             android:id="@+id/CrearGrupo"
-            android:layout_width="311dp"
+            android:layout_width="211dp"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:gravity="center"
             android:text="@string/Grupos"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="40sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
 
         <ImageButton
-            android:id="@+id/botonConfiguracion"
+            android:id="@+id/botonAgregarGrupo"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/configuracion"
-            android:backgroundTint="@color/transparente"
-            android:layout_marginTop="7dp"
-            />
+            android:layout_gravity="center_vertical"
+            android:layout_margin="10dp"
+            android:background="@drawable/mas"
+            android:backgroundTint="@color/white" />
 
     </LinearLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/degradado_grupos"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tituloGrupos">
+        android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/imageViewPerfilGrupo1"
-            android:layout_width="65dp"
-            android:layout_height="65dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/boton_plan" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/TextViewVerRecuerdos"
-            android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/grupoChocmelos"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="32dp"
+                android:background="@drawable/degradado_grupos">
+
+                <ImageView
+                    android:id="@+id/imageViewPerfilGrupo3"
+                    android:layout_width="65dp"
+                    android:layout_height="65dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/boton_plan" />
+
+                <TextView
+                    android:id="@+id/textViewNombreGrupo3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginBottom="30dp"
+                    android:text="Los Chocmelos"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/imageViewPerfilGrupo3"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <ListView
+                android:id="@+id/gruposList"
+                android:layout_width="match_parent"
+                android:layout_height="520dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="30dp"
-            android:layout_marginBottom="30dp"
-            android:text="BlueTech"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/imageViewPerfilGrupo1"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:orientation="vertical"
+            android:layout_gravity="bottom">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:id="@+id/opPrincipales">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/degradado_grupos"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
+                <com.google.android.material.bottomnavigation.BottomNavigationView
+                    android:id="@+id/bottom_navigation"
+                    android:layout_width="324dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:backgroundTint="@color/moradoClaro"
+                    app:menu="@menu/bottom_navigation_menu" />
 
-        <ImageView
-            android:id="@+id/imageViewPerfilGrupo2"
-            android:layout_width="65dp"
-            android:layout_height="65dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/boton_plan" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan"
+                    android:tooltipText="@string/planes"
+                    android:id="@+id/fab_menu_plan"
+                    android:backgroundTint="@color/grisOscuro">
 
-        <TextView
-            android:id="@+id/textViewnombreGrupo2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="30dp"
-            android:layout_marginBottom="30dp"
-            android:text="Larico"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/imageViewPerfilGrupo2"
-            app:layout_constraintTop_toTopOf="parent" />
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/grupoChocmelos"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/degradado_grupos"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
+            </LinearLayout>
 
-        <ImageView
-            android:id="@+id/imageViewPerfilGrupo3"
-            android:layout_width="65dp"
-            android:layout_height="65dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/boton_plan" />
-
-        <TextView
-            android:id="@+id/textViewNombreGrupo3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="30dp"
-            android:layout_marginBottom="30dp"
-            android:text="Los Chocmelos"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/imageViewPerfilGrupo3"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <ImageButton
-        android:id="@+id/botonAgregarGrupo"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_gravity="right"
-        android:layout_marginStart="327dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="20dp"
-        android:background="@drawable/boton_menu"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/agregar_grupo_blanco" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

@@ -4,9 +4,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-import com.example.primeraentrega.databinding.ActivityConfigurarHuellaBinding
 import com.example.primeraentrega.databinding.ActivityIniciarSesionHuellaBinding
-import com.example.primeraentrega.usuario.usuario
+import com.example.primeraentrega.usuario.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import java.security.MessageDigest
@@ -24,7 +23,7 @@ class IniciarSesionHuellaActivity : AppCompatActivity() {
         binding = ActivityIniciarSesionHuellaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val usuario = intent.getSerializableExtra("user") as? usuario
+        val usuario = intent.getSerializableExtra("user") as? Usuario
 
         // Inicializar Firebase
         auth = FirebaseAuth.getInstance()
@@ -34,7 +33,7 @@ class IniciarSesionHuellaActivity : AppCompatActivity() {
         solicitarHuella(usuario)
     }
 
-    private fun solicitarHuella(usuario: usuario?) {
+    private fun solicitarHuella(usuario: Usuario?) {
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
             object : BiometricPrompt.AuthenticationCallback() {
@@ -82,7 +81,7 @@ class IniciarSesionHuellaActivity : AppCompatActivity() {
         return hexString.toString()
     }
 
-    private fun guardarUsuarioEnFirebase(usuario: usuario?) {
+    private fun guardarUsuarioEnFirebase(usuario: Usuario?) {
 
     }
 

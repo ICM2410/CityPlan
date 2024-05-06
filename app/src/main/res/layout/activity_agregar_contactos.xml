@@ -1,34 +1,263 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/degradado"
+    android:background="@color/white"
     tools:context=".AgregarContactosActivity">
 
-    <ListView
-        android:id="@+id/listaContactos"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="100dp"
-        android:background="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-    <Button
-        android:id="@+id/añadirGrupo"
-        android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/añadirGrupo"
+            android:layout_width="118dp"
+            android:layout_height="39dp"
+            android:layout_gravity="right"
+            android:text="Listo!"
+            android:textSize="15dp"
+            android:backgroundTint="@color/rosado"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/user2"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="367dp"
+            android:layout_height="101dp"
+            android:layout_gravity="center"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            android:inputType="text"
+            android:padding="9dp"
+            app:startIconDrawable="@drawable/ic_find">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="buscar integrante"
+                android:paddingStart="50dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toogleButton"
+            android:layout_width="212dp"
+            android:layout_height="43dp"
+            app:singleSelection="true"
+            tools:layout_editor_absoluteX="48dp"
+            tools:layout_editor_absoluteY="159dp"
+            app:checkedButton="@id/contactos">
+
+            <Button
+                android:id="@+id/contactos"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Contactos"
+                tools:layout_editor_absoluteX="29dp"
+                tools:layout_editor_absoluteY="11dp" />
+
+            <Button
+                android:id="@+id/otros"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Otros"
+                tools:layout_editor_absoluteX="117dp"
+                tools:layout_editor_absoluteY="10dp" />
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <ListView
+            android:id="@+id/listaContactos"
+            android:layout_width="match_parent"
+            android:layout_height="438dp"
+            android:background="@color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/anadriGrupo"
-        android:textSize="25dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/listaContactos" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="10dp"
+            android:gravity="right"
+            android:id="@+id/opcionesFAB">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/nuevoView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nuevo Plan">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mas"
+                    android:tooltipText="crear"
+                    android:id="@+id/fab_crear_plan"
+                    app:menu="@menu/bottom_navigation_menu"
+                    android:tint="@color/rosaClaro">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/planesView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mis planes">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mis_planes"
+                    android:tooltipText="mis planes"
+                    android:id="@+id/fab_mis_planes"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/activoView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plan activo">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_activo"
+                    android:tooltipText="plan activo"
+                    android:id="@+id/fab_plan_activo"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/pasadosView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pasados">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_pasado"
+                    android:tooltipText="planes pasados"
+                    android:id="@+id/fab_planes_pasados"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:id="@+id/opPrincipales">
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="324dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:backgroundTint="@color/moradoClaro"
+                app:menu="@menu/bottom_navigation_menu" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_plan"
+                android:tooltipText="@string/planes"
+                android:id="@+id/fab_menu_plan"
+                android:backgroundTint="@color/rosaClaro">
+
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

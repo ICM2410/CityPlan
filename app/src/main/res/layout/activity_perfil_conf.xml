@@ -1,77 +1,159 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PerfilConfActivity"
-    android:background="@drawable/degradado">
+    android:background="@drawable/degradado_grupos"
+    tools:context=".PerfilConfActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="729dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/boton_plan"
+        android:gravity="center"
+        android:orientation="vertical">
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/user2"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            android:hint="Usuario"
+            android:inputType="text"
+            android:padding="9dp"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tel"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            android:hint="Telefono"
+            android:inputType="phone"
+            android:padding="9dp"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/telephone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/password2"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/boton_plan"
+            android:ems="10"
+            android:hint="@string/Contraseña"
+            android:inputType="text"
+            android:padding="9dp"
+            app:endIconMode="password_toggle"
+            app:errorEnabled="true"
+            app:helperText="">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/guardarperfil"
+                android:layout_width="151dp"
+                android:layout_height="74dp"
+                android:layout_marginRight="40dp"
+                android:text="@string/guardar"
+                android:textSize="20sp" />
+
+            <ImageButton
+                android:id="@+id/huella"
+                android:layout_width="61dp"
+                android:layout_height="67dp"
+                android:background="@drawable/huella_negra_fondo_blanco" />
+        </LinearLayout>
+
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.56"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/perfilconf" />
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        app:srcCompat="@drawable/perfilplan"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="35dp"/>
 
-    <EditText
-        android:id="@+id/user"
+
+        <ImageButton
+            android:id="@+id/cambiarperfil"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/editar_foto_perfil"
+            android:backgroundTint="@color/black"
+            android:layout_marginTop="160dp"
+            android:layout_marginStart="250dp"/>
+
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="70dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/boton_plan"
-        android:ems="10"
-        android:hint="@string/nombreUsuario"
-        android:inputType="text"
-        android:padding="9dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cambiarperfil" />
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
 
-    <EditText
-        android:id="@+id/password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="32dp"
-        android:ems="10"
-        android:background="@drawable/boton_plan"
-        android:padding="9dp"
-        android:hint="@string/Contraseña"
-        android:inputType="textPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/user" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:id="@+id/opPrincipales">
 
-    <Button
-        android:id="@+id/guardarperfil"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="32dp"
-        android:text="@string/guardar"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password" />
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="324dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:backgroundTint="@color/moradoClaro"
+                app:menu="@menu/bottom_navigation_menu" />
 
-    <Button
-        android:id="@+id/cambiarperfil"
-        android:layout_width="174dp"
-        android:layout_height="72dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/cambiar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView2" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_plan"
+                android:tooltipText="@string/planes"
+                android:id="@+id/fab_menu_plan"
+                android:backgroundTint="@color/grisOscuro">
+
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

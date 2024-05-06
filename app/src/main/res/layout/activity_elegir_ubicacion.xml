@@ -1,83 +1,268 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/moradoClaro"
     android:orientation="vertical"
-    tools:context=".ElegirUbicacionActivity"
-    android:background="@color/moradoClaro">
-
-
-    <TextView
-        android:id="@+id/tituloElegirUbicacion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/hazPin"
-        android:textAlignment="center"
-        android:textColor="@color/white"
-        android:textSize="30dp"
-        android:textStyle="bold"
-        android:layout_marginTop="20dp"/>
+    tools:context=".ElegirUbicacionActivity">
 
     <LinearLayout
-        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/moradoClaro">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
         <TextView
-            android:id="@+id/textView11"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:text="@string/asiloidentificarántodos"
-            android:textColor="@color/white"
-            android:textSize="20dp" />
-
-        <ImageView
-            android:id="@+id/pinElegirUbicacion"
-            android:layout_width="wrap_content"
-            android:layout_height="75dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="45dp"
-            android:layout_marginBottom="52dp"
-            app:srcCompat="@drawable/iconopin"
-            />
-
-
-
-    </LinearLayout>
-    <Button
-        android:id="@+id/verRecomendacion"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="52dp"
-        android:backgroundTint="@color/amarillo"
-        android:text="@string/Verrecomendacionesparamiplan" />
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <org.osmdroid.views.MapView
+            android:id="@+id/tituloElegirUbicacion"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/osmMap"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/hazPin"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="26dp"
+            android:textStyle="bold"
+            android:padding="10dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="109dp"
+            android:layout_marginTop="10dp"
+            android:background="@color/moradoClaro">
+
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:text="@string/asiloidentificarántodos"
+                android:textColor="@color/white"
+                android:textSize="20dp" />
+
+            <ImageView
+                android:id="@+id/pinElegirUbicacion"
+                android:layout_width="wrap_content"
+                android:layout_height="75dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="45dp"
+                android:layout_marginBottom="52dp"
+                app:srcCompat="@drawable/iconopin" />
+
+
+        </LinearLayout>
 
         <Button
-            android:id="@+id/guardar"
-            android:layout_width="match_parent"
+            android:id="@+id/verRecomendacion"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:text="@string/guardar"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="30dp"
+            android:backgroundTint="@color/amarillo"
+            android:text="@string/Verrecomendacionesparamiplan" />
 
-            android:layout_marginRight="50dp"
-            android:layout_marginLeft="50dp"
-            android:layout_marginBottom="20dp"
-            android:layout_gravity="bottom"
-            />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="390dp">
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/osmMap"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <Button
+                android:id="@+id/guardar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginBottom="20dp"
+                android:text="@string/guardar" />
 
 
-    </FrameLayout>
+        </FrameLayout>
+    </LinearLayout>
 
-</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="10dp"
+            android:gravity="right"
+            android:id="@+id/opcionesFAB">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/nuevoView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nuevo Plan">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mas"
+                    android:tooltipText="crear"
+                    android:id="@+id/fab_crear_plan"
+                    app:menu="@menu/bottom_navigation_menu"
+                    android:backgroundTint="@color/rosado">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/planesView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mis planes">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mis_planes"
+                    android:tooltipText="mis planes"
+                    android:id="@+id/fab_mis_planes"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/activoView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plan activo">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_activo"
+                    android:tooltipText="plan activo"
+                    android:id="@+id/fab_plan_activo"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/pasadosView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pasados">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_pasado"
+                    android:tooltipText="planes pasados"
+                    android:id="@+id/fab_planes_pasados"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:id="@+id/opPrincipales">
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="324dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:backgroundTint="@color/moradoClaro"
+                app:menu="@menu/bottom_navigation_menu" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_plan"
+                android:tooltipText="@string/planes"
+                android:id="@+id/fab_menu_plan"
+                android:backgroundTint="@color/rosado">
+
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>

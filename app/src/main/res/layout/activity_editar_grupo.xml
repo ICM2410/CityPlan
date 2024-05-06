@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,141 +7,302 @@
     tools:context=".VerGruposActivity">
 
     <LinearLayout
-        android:id="@+id/tituloGrupos"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@color/rosado"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="-11dp"
+        tools:layout_editor_absoluteY="64dp">
 
-        <TextView
-            android:id="@+id/CrearGrupo"
-            android:layout_width="308dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="50dp"
-            android:gravity="center"
-            android:text="@string/EditarGrupo"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="40sp"
-            android:textStyle="bold" />
+        <LinearLayout
+            android:id="@+id/tituloGrupos"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/rosado"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/botonConfiguracion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/transparente"
-            android:layout_marginTop="7dp"
-            app:srcCompat="@drawable/configuracion" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/CrearGrupo"
+                android:layout_width="322dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:text="@string/EditarGrupo"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="40sp"
+                android:textStyle="bold" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout5"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tituloGrupos">
+        </LinearLayout>
 
         <ImageButton
             android:id="@+id/buttonSeleccionarFoto"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             android:background="@drawable/circulo_gris"
-            app:srcCompat="@drawable/camara" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            app:srcCompat="@drawable/camara"
+            android:layout_marginTop="35dp" />
 
-    <EditText
-        android:id="@+id/editTextDescGrupo"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/user2"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/boton_plan"
+            android:backgroundTint="@color/transparente"
+            android:ems="10"
+            android:hint="@string/nombredelGrupo"
+            android:inputType="text"
+            android:padding="9dp"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextNombreGrupo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/user"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/boton_plan"
+            android:backgroundTint="@color/transparente"
+            android:ems="10"
+            android:hint="@string/descripciónDelGrupo"
+            android:inputType="text"
+            android:padding="9dp"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextDescGrupo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/buttonAgregarMiembros"
+            android:layout_width="299dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:padding="10dp"
+            android:text="@string/AgregarMiembrosalGrupo"
+            android:textSize="18sp"
+            android:backgroundTint="@color/moradoClaro"/>
+
+        <Button
+            android:id="@+id/buttonGuardar"
+            android:layout_width="299dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:padding="10dp"
+            android:text="@string/guardar"
+            android:textSize="18sp"
+            android:backgroundTint="@color/moradoClaro"/>
+
+        <Button
+            android:id="@+id/buttonSalir"
+            android:layout_width="299dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:padding="10dp"
+            android:text="@string/salirdelGrupo"
+            android:textSize="18sp"
+            android:backgroundTint="@color/moradoClaro" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="19dp"
-        android:layout_marginEnd="32dp"
-        android:ems="10"
-        android:hint="@string/nuevaDescripción"
-        android:inputType="text"
-        android:textColor="@color/moradoMedio"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextNombreGrupo" />
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/editTextNombreGrupo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="25dp"
-        android:hint="@string/nuevoNombre"
-        android:layout_marginEnd="32dp"
-        android:ems="10"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout5" />
+        <LinearLayout
+            android:id="@+id/opcionesFAB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="10dp"
+            android:gravity="right"
+            android:orientation="vertical">
 
-    <Button
-        android:id="@+id/buttonAgregarMiembros"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="25dp"
-        android:layout_marginEnd="40dp"
-        android:text="@string/agregarMiembrosalGrupo"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDescGrupo" />
+            <LinearLayout
+                android:id="@+id/nuevoView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/buttonGuardar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="32dp"
-        android:text="@string/guardar"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSalir" />
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
 
-    <Button
-        android:id="@+id/buttonSalir"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="40dp"
-        android:text="@string/salirdelGrupo"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonAgregarMiembros" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nuevo Plan">
 
-    <ImageButton
-        android:id="@+id/botonHome"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_gravity="right"
-        android:layout_marginStart="327dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="20dp"
-        android:background="@drawable/boton_menu"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/grupos" />
+                    </TextView>
+                </androidx.cardview.widget.CardView>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab_crear_plan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mas"
+                    android:tint="@color/rosaClaro"
+                    android:tooltipText="crear"
+                    app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/planesView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mis planes">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab_mis_planes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mis_planes"
+                    android:tooltipText="mis planes"
+                    app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/activoView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plan activo">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab_plan_activo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_activo"
+                    android:tooltipText="plan activo"
+                    android:backgroundTint="@color/rosaClaro"
+                    app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/pasadosView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pasados">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab_planes_pasados"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_pasado"
+                    android:tooltipText="planes pasados"
+                    app:menu="@menu/bottom_navigation_menu"></com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/opPrincipales"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="324dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:backgroundTint="@color/moradoClaro"
+                app:menu="@menu/bottom_navigation_menu" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_menu_plan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:backgroundTint="@color/rosaClaro"
+                android:src="@drawable/ic_plan"
+                android:tooltipText="@string/planes">
+
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

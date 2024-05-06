@@ -1,244 +1,432 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fechaFin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/moradoOscuro"
-    android:padding="15dp"
     tools:context=".CrearPlanActivity">
 
     <LinearLayout
-        android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/crearPlanTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/crearPlanTitle"
-            android:textColor="@color/white" />
-
-        <ImageView
-            android:id="@+id/imagenPlan"
-            android:layout_width="187dp"
-            android:layout_height="124dp"
-            android:layout_centerInParent="true"
-            android:layout_margin="30dp"
-            app:srcCompat="@drawable/perfilplan" />
-
-        <EditText
-            android:id="@+id/nombrePlan"
-            android:layout_width="250dp"
-            android:layout_height="40dp"
-            android:background="@drawable/puntas_blancas"
-            android:drawableRight="@drawable/edit"
-            android:ems="10"
-            android:gravity="center"
-            android:inputType="text"
-            android:paddingRight="10dp"
-            android:text="Salida a Varietale"
-            android:textColor="@color/black" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="57dp"
-        android:layout_marginBottom="50dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/crearplanButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
-
-        <TextView
-            android:id="@+id/fechaInicioTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/fechaInicioTitle"
-            android:textColor="@color/white" />
+        android:padding="15dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:id="@+id/linearLayout2"
+            android:layout_width="381dp"
+            android:layout_height="238dp"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/crearPlanTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/crearPlanTitle"
+                android:textColor="@color/white" />
 
             <ImageView
-                android:id="@+id/calendarioImg3"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:id="@+id/imagenPlan"
+                android:layout_width="187dp"
+                android:layout_height="124dp"
                 android:layout_centerInParent="true"
-                android:layout_margin="10dp"
-                app:srcCompat="@drawable/calendar" />
+                android:layout_margin="30dp"
+                app:srcCompat="@drawable/perfilplan" />
 
-            <Button
-                android:id="@+id/fechaInicio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/transparente"
-                android:text="fecha"/>
-            <Button
-                android:id="@+id/horaInicio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/transparente"
-                android:text="hora"/>
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/FechaFinTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/fechaFinTitle"
-            android:textColor="@color/white" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/calendarioImg2"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_centerInParent="true"
-                android:layout_margin="10dp"
-                app:srcCompat="@drawable/calendar"  />
-
-
-            <Button
-                android:id="@+id/editTextText66"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/transparente"
-                android:text="fecha"/>
-            <Button
-                android:id="@+id/horaFin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/transparente"
-                android:text="hora"/>
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/puntoEncuentroTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/puntoEncuentroTitle"
-            android:textColor="@color/white" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/pinImg"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_centerInParent="true"
-                android:layout_margin="10dp"
-                tools:srcCompat="@drawable/calendar" />
-
-            <Button
-                android:id="@+id/seleccionarUbicacion"
-                android:layout_width="wrap_content"
+            <EditText
+                android:id="@+id/nombrePlan"
+                android:layout_width="250dp"
                 android:layout_height="40dp"
-                android:layout_weight="2"
-                android:backgroundTint="@color/transparente"
-                android:gravity="center_vertical"
-                android:text="seleccionar ubicacion"
-                android:textColor="@color/white" />
+                android:background="@drawable/puntas_blancas"
+                android:drawableRight="@drawable/edit"
+                android:ems="10"
+                android:gravity="center"
+                android:inputType="text"
+                android:paddingRight="10dp"
+                android:text="Salida a Varietale"
+                android:textColor="@color/black" />
+
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/linearLayout3"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/editatActivoTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.5"
-                android:text="@string/editatActivoTitle"
-                android:textColor="@color/white" />
-
-            <Switch
-                android:id="@+id/switchPasos"
-                android:layout_width="127dp"
-                android:layout_height="46dp"
-                android:layout_below="@id/aunsiguesText"
-                android:layout_marginLeft="0dp"
-                android:layout_marginTop="6dp"
-                android:layout_toRightOf="@id/pasosLayOut"
-                android:checked="true"
-                android:thumb="@drawable/thumb_pasos"
-                android:track="@drawable/track" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:orientation="horizontal">
+            android:layout_marginBottom="20dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/crearplanButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
 
             <TextView
-                android:id="@+id/EditarFotoEncuentroTitle"
-                android:layout_width="wrap_content"
+                android:id="@+id/fechaInicioTitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="@string/editarFotoEncuentroTitle"
+                android:text="@string/fechaInicioTitle"
                 android:textColor="@color/white" />
 
-            <ImageView
-                android:id="@+id/pinPlanImg"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_centerInParent="true"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/calendarioImg3"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerInParent="true"
+                    android:layout_margin="10dp"
+                    app:srcCompat="@drawable/calendar" />
+
+                <Button
+                    android:id="@+id/fechaInicio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:backgroundTint="@color/transparente"
+                    android:text="fecha"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/horaInicio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:backgroundTint="@color/transparente"
+                    android:text="hora"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/FechaFinTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/fechaFinTitle"
+                android:textColor="@color/white" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/calendarioImg2"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerInParent="true"
+                    android:layout_margin="10dp"
+                    app:srcCompat="@drawable/calendar" />
+
+
+                <Button
+                    android:id="@+id/editTextText66"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:backgroundTint="@color/transparente"
+                    android:text="fecha"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/horaFin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:backgroundTint="@color/transparente"
+                    android:text="hora"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/puntoEncuentroTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/puntoEncuentroTitle"
+                android:textColor="@color/white" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/pinImg"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerInParent="true"
+                    android:layout_margin="10dp"
+                    tools:srcCompat="@drawable/calendar" />
+
+                <Button
+                    android:id="@+id/seleccionarUbicacion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_weight="2"
+                    android:backgroundTint="@color/transparente"
+                    android:gravity="center_vertical"
+                    android:text="seleccionar ubicacion"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/editatActivoTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.5"
+                    android:text="@string/editatActivoTitle"
+                    android:textColor="@color/white" />
+
+                <Switch
+                    android:id="@+id/switchPasos"
+                    android:layout_width="127dp"
+                    android:layout_height="46dp"
+                    android:layout_below="@id/aunsiguesText"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_toRightOf="@id/pasosLayOut"
+                    android:checked="true"
+                    android:thumb="@drawable/thumb_pasos"
+                    android:track="@drawable/track" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/EditarFotoEncuentroTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="@string/editarFotoEncuentroTitle"
+                    android:textColor="@color/white" />
+
+                <ImageView
+                    android:id="@+id/pinPlanImg"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerInParent="true"
+                    android:layout_margin="10dp"
+                    app:srcCompat="@drawable/iconopin" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/crearplanButton"
+            android:layout_width="271dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/amarillo"
+            android:text="@string/crearplanButton"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="10dp"
+            android:gravity="right"
+            android:id="@+id/opcionesFAB">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/nuevoView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nuevo Plan">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mas"
+                    android:tooltipText="crear"
+                    android:id="@+id/fab_crear_plan"
+                    app:menu="@menu/bottom_navigation_menu"
+                    android:backgroundTint="@color/rosado">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/planesView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mis planes">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_mis_planes"
+                    android:tooltipText="mis planes"
+                    android:id="@+id/fab_mis_planes"
+                    android:backgroundTint="@color/white"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/activoView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plan activo">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_activo"
+                    android:tooltipText="plan activo"
+                    android:id="@+id/fab_plan_activo"
+                    app:menu="@menu/bottom_navigation_menu"
+                    android:backgroundTint="@color/white">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/pasadosView">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardElevation="2dp"
+                    app:contentPadding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pasados">
+
+                    </TextView>
+                </androidx.cardview.widget.CardView>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_plan_pasado"
+                    android:tooltipText="planes pasados"
+                    android:id="@+id/fab_planes_pasados"
+                    android:backgroundTint="@color/white"
+                    app:menu="@menu/bottom_navigation_menu">
+                </com.google.android.material.floatingactionbutton.FloatingActionButton>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:id="@+id/opPrincipales">
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="328dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:backgroundTint="@color/moradoClaro"
+                app:menu="@menu/bottom_navigation_menu" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_margin="10dp"
-                app:srcCompat="@drawable/iconopin" />
+                android:src="@drawable/ic_plan"
+                android:tooltipText="@string/planes"
+                android:id="@+id/fab_menu_plan"
+                android:backgroundTint="@color/rosado">
+
+            </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
 
         </LinearLayout>
+
     </LinearLayout>
 
-    <Button
-        android:id="@+id/crearplanButton"
-        android:layout_width="271dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:backgroundTint="@color/amarillo"
-        android:text="@string/crearplanButton"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

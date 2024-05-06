@@ -1,15 +1,11 @@
 package com.example.primeraentrega
 
-import android.content.ContentValues.TAG
 import android.content.Intent
-import android.nfc.Tag
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
-import com.example.primeraentrega.databinding.ActivityIniciarSesionBinding
 import com.example.primeraentrega.databinding.ActivityRegistrarUsuarioBinding
-import com.example.primeraentrega.usuario.usuario
+import com.example.primeraentrega.usuario.Usuario
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth
@@ -40,7 +36,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
             val telefono = binding.telefono.text.toString()
             val correo = binding.correo.text.toString()
 
-            val usuario = usuario(user,telefono, password,"", correo, "")
+            val usuario = Usuario(user,telefono, password,"", correo, "")
 
 
             // Crea el usuario en la base de datos de Firebase
@@ -48,7 +44,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
 
         }
     }
-    private fun guardarUsuarioEnFirebase(usuario: usuario) {
+    private fun guardarUsuarioEnFirebase(usuario: Usuario) {
         if (usuario.user.isEmpty() || usuario.password.isEmpty() || usuario.telefono.isEmpty() || usuario.correo.isEmpty()) {
             Toast.makeText(baseContext, "Por favor, completa todos los campos", Toast.LENGTH_SHORT)
                 .show()
@@ -69,7 +65,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var usuarioEncontrado = false
                 for (child in snapshot.children) {
-                    val user = child.getValue<usuario>()
+                    val user = child.getValue<Usuario>()
 
                     if(user?.user.toString()!=usuario.user.toString() && user?.telefono.toString()!=usuario.telefono){
                         auth.createUserWithEmailAndPassword(usuario.correo, usuario.password)
@@ -108,7 +104,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
 
     }
 
-    private fun registrarUsuarioEnFirebase(usuario: usuario) {
+    private fun registrarUsuarioEnFirebase(usuario: Usuario) {
         // Validación de campos
 
 
