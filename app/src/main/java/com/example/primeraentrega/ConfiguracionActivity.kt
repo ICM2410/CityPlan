@@ -4,7 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.primeraentrega.databinding.ActivityConfiguracionBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 
 class ConfiguracionActivity : AppCompatActivity() {
     private lateinit var binding : ActivityConfiguracionBinding

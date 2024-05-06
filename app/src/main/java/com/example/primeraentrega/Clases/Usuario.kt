@@ -1,4 +1,4 @@
-package com.example.primeraentrega.usuario
+package com.example.primeraentrega.Clases
 
 import java.io.Serializable
 

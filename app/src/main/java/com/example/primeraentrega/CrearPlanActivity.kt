@@ -38,7 +38,7 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.SetOptions
