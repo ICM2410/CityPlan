@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import com.example.primeraentrega.databinding.ActivityRegistrarUsuarioBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth

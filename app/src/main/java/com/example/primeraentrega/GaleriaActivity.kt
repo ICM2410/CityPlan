@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.primeraentrega.databinding.ActivityGaleriaBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import java.io.File
 

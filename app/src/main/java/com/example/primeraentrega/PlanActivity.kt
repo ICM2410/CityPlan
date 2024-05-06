@@ -54,23 +54,16 @@ import com.google.firebase.storage.FirebaseStorage
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
 import org.osmdroid.config.Configuration
-import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 import kotlin.math.min
 import android.hardware.SensorEventListener
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import org.osmdroid.views.overlay.TilesOverlay
 

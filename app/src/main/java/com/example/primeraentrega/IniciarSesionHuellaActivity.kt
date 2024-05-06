@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.example.primeraentrega.databinding.ActivityIniciarSesionHuellaBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import java.security.MessageDigest

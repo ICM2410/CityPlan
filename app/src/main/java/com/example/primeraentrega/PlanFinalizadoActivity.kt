@@ -7,8 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.example.primeraentrega.databinding.ActivityPlanFinalizadoBinding
-import com.example.primeraentrega.databinding.ActivityVerGruposBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 
 class PlanFinalizadoActivity : AppCompatActivity() {

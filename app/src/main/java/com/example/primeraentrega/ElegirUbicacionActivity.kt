@@ -2,7 +2,6 @@ package com.example.primeraentrega
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -35,7 +34,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.databinding.ActivityElegirUbicacionBinding
-import com.example.primeraentrega.usuario.Usuario
+import com.example.primeraentrega.Clases.Usuario
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -55,22 +54,12 @@ import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
-import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants
-import org.osmdroid.tileprovider.modules.SqlTileWriter
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.tileprovider.util.Counters
-import org.osmdroid.tileprovider.util.StorageUtils
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.TilesOverlay
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlin.math.min
 
 class ElegirUbicacionActivity : AppCompatActivity() {
