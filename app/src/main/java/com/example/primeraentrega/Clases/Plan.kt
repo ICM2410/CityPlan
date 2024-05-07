@@ -1,20 +1,19 @@
 package com.example.primeraentrega.Clases
 
-import org.json.JSONObject
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import java.util.Date
 
 class Plan (
-    val dateInicio: Date,
-    val dateFinal: Date,
-    val latitude: Double,
-    val longitude: Double,
-    val AmigoMasActivo: Boolean,
-    val titulo: String,
-    val fotoEncuentro: String,
-    val fotopin: String,
-    val estado:Boolean
+    var dateInicio: Date = Date(),
+    var dateFinal: Date = Date(),
+    var latitude: Double = 0.0,
+    var longitude: Double = 0.0,
+    var AmigoMasActivo: Boolean = false,
+    var titulo: String = "",
+    var fotoEncuentro: String = "",
+    var fotopin: String = "",
+    var estado:Boolean = false,
+    var integrantes: Array<UsuarioAmigo> = arrayOf()
 ) {
-    
-    constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "", false)
-
+    constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "", false, arrayOf())
 }

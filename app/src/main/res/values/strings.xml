@@ -61,5 +61,6 @@
     <string name="cambiar">Cambiar</string>
     <string name="estadisticas">Estadísticas del plan</string>
     <string name="verRecuerdos">Ver Recuerdos</string>
+    <string name="title_activity_maps">MapsActivity</string>
 
 </resources>

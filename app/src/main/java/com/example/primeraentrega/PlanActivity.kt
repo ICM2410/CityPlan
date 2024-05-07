@@ -64,18 +64,28 @@ import java.io.ByteArrayOutputStream
 import kotlin.math.min
 import android.hardware.SensorEventListener
 import com.example.primeraentrega.Clases.Usuario
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.JointType
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.firebase.auth.FirebaseAuth
 import org.osmdroid.views.overlay.TilesOverlay
 
-class PlanActivity : AppCompatActivity(), SensorEventListener {
+class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallback {
 
     private lateinit var binding : ActivityPlanBinding
 
     //PARA POSICIONES
-    private var posActualGEO = GeoPoint(4.0, 72.0)
+    private lateinit var mMap: GoogleMap
     private var latActual:Double= 4.0
     private var longActual:Double= 72.0
-    private var posEncuentroGEO = GeoPoint(-122.084, 37.4219983 )
+    private var MarkerActual: com.google.android.gms.maps.model.Marker? = null
+    private var  myLocationMarker: com.google.android.gms.maps.model.Marker? = null
+    private var  planLocationMarker: com.google.android.gms.maps.model.Marker? = null
+    private val mapaDeParticipantes: HashMap<String, com.google.android.gms.maps.model.Marker?> = HashMap()
     private var latEncuentro:Double= -122.0
     private var longEncuentro:Double= 37.0
     private var pasosAvtivado=true
@@ -86,8 +96,12 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
     lateinit var location: FusedLocationProviderClient
 
+
+    val db = Firebase.firestore
+    val storage = FirebaseStorage.getInstance()
+    val storageRef = storage.reference
+
     //MAPA
-    lateinit var map : MapView
     private lateinit var geocoder: Geocoder
 
     //Sensores
@@ -161,19 +175,26 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallBack: LocationCallback
 
-    fun startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                localPermissionName
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            location.requestLocationUpdates(
-                locationRequest,
-                locationCallBack,
-                Looper.getMainLooper()
-            )
-        } else {
-            Toast.makeText(getApplicationContext(), "NO HAY PERMISO", Toast.LENGTH_LONG).show();
+    fun startLocationUpdates()
+    {
+        if(ActivityCompat.checkSelfPermission(this, localPermissionName)== PackageManager.PERMISSION_GRANTED)
+        {
+            location.requestLocationUpdates(locationRequest,locationCallBack, Looper.getMainLooper())
+
+            //PARA PONER LA POSICION INICIAL DEL USUARIO
+            location.lastLocation.addOnSuccessListener {
+                if (it != null) {
+                    latActual=it.latitude
+                    longActual=it.longitude
+                    //auth.currentUser?.uid?.let { databaseReference.child(it).child("latitud").setValue(latActual)}
+                    //auth.currentUser?.uid?.let { databaseReference.child(it).child("latitud").setValue(longActual)}
+
+                }
+            }
+        }
+        else
+        {
+            //Toast.makeText(getApplicationContext(), "NO HAY PERMISO", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -186,19 +207,21 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 super.onLocationResult(result)
                 val last=result.lastLocation
                 if(last!=null)
-                {
-                    //Toast.makeText(getApplicationContext(), "($last.latitude , $last.longitude)", Toast.LENGTH_LONG).show();
+                {//Toast.makeText(getApplicationContext(), "($last.latitude , $last.longitude)", Toast.LENGTH_LONG).show();
+
                     latActual=last.latitude
                     longActual=last.longitude
-                    posActualGEO=GeoPoint(latActual, longActual)
+
                     if(EstoyEnElPlan)
                     {
-                        myLocationOnMap(posActualGEO)
+                        var pos=LatLng(latActual,longActual)
+                        MarkerActual?.remove()
+                        MarkerActual=mMap.addMarker(MarkerOptions().position(pos).title("YO"))
+
                         if(firstTime)
                         {
                             firstTime=false
-                            map.controller.animateTo(posActualGEO)
-                            map.controller.setZoom(19.0)
+                            zoom()
                         }
                     }
                 }
@@ -207,6 +230,14 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
 
         return locationCallback
     }
+
+    private fun zoom() {
+        var pos=LatLng(latActual,longActual)
+        val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(pos, zoomLevel)
+        mMap.moveCamera(cameraUpdate)
+    }
+
     fun gestionarPermiso()
     {
         if(ActivityCompat.checkSelfPermission(this, localPermissionName)== PackageManager.PERMISSION_DENIED)
@@ -219,7 +250,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         }
         else
         {
-
             startLocationUpdates()
         }
     }
@@ -248,37 +278,58 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
 
         Log.e(TAG, "revisar $idPlan")
 
-        configurarMapa()
+        val mapFragment = supportFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
 
-        configurarLocalizacion()
-
-        configurarConFireBase()
+        //configurarConFireBase()
 
         configurarBotones();
 
-        activarOMS()
+        //configurarLocalizacion()
 
         configurarSensores()
-
-
     }
-    private fun configurarSensores(){
-        //Sensores
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        //Sensor Luz
-        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
-        lightEventListener = createLightSensorListener()
-        //Sensor Pasos
-        loadData()
-        resetSteps()
-
-
+    override fun onStop() {
+        super.onStop()
+        stopLocationUpdates()
     }
+    override fun onResume() {
+        super.onResume()
+        /*
+        running = true
+        // Registrar el SensorEventListener para el sensor de pasos
+        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        if (stepSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de pasos", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay podómetro para pasos")
+            stepSensorEventListener = createStepSensorListener()
+            sensorManager.registerListener(stepSensorEventListener, stepSensor, SensorManager.SENSOR_DELAY_UI)
+        }
 
-    val db = Firebase.firestore
-    val storage = FirebaseStorage.getInstance()
-    val storageRef = storage.reference
+        // Sensor temperatura
+        temperatureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
+        if (temperatureSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de temperatura", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay sensor de temperatura")
+            tempEventListener = createTemperatureSensorListener()
+            sensorManager.registerListener(tempEventListener, temperatureSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
 
+        // Registrar el SensorEventListener para el sensor de luz
+        sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+*/
+        //startLocationUpdates()
+    }
+    override fun onPause() {
+        super.onPause()
+        stopLocationUpdates()
+    }
+    private fun stopLocationUpdates() {
+        location.removeLocationUpdates(locationCallBack)
+    }
     private fun configurarConFireBase() {
 
         Log.d(ContentValues.TAG, "entreee $idPlan")
@@ -292,14 +343,12 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                     val plan = documentSnapshot.toObject<Plan>()
                     //AQUI SE OBTIENE LA INFORMACION PARA PONER
                     //TITULO DEL PLAN
-                    var titulo= plan?.titulo
-                    binding.tituloPlan.setText(titulo)
+                    binding.tituloPlan.setText(plan?.titulo)
                     //UBICACION DEL PLAN
                     if (plan != null) {
                         Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
                         latEncuentro=plan.latitude
                         longEncuentro=plan.longitude
-                        posEncuentroGEO=GeoPoint(latEncuentro, longEncuentro)
                         ponerUbicacionPlan()
                     }
                     //SI TIENE LO DE NUMERO DE PASOS
@@ -347,6 +396,17 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 Log.d(ContentValues.TAG, "get failed with ", exception)
             }
     }
+
+    private fun configurarSensores(){
+        //Sensores
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        //Sensor Luz
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
+        //lightEventListener = createLightSensorListener()
+        //Sensor Pasos
+        loadData()
+        resetSteps()
+    }
     fun createStepSensorListener() : SensorEventListener {
         return object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
@@ -361,7 +421,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             }
         }
     }
-    fun createLightSensorListener() : SensorEventListener{
+    /*fun createLightSensorListener() : SensorEventListener{
         val ret : SensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
                 if(this@PlanActivity::map.isInitialized){
@@ -380,8 +440,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             }
         }
         return ret
-    }
-
+    }*/
     fun createTemperatureSensorListener() : SensorEventListener {
         val ret : SensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
@@ -411,52 +470,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         }
         return ret
     }
-
-    override fun onStop() {
-        super.onStop()
-        stopLocationUpdates()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        running = true
-        // Registrar el SensorEventListener para el sensor de pasos
-        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        if (stepSensor == null) {
-            Toast.makeText(this, "No se detectó sensor de pasos", Toast.LENGTH_SHORT).show()
-        } else {
-            Log.i("Sensor", "Hay podómetro para pasos")
-            stepSensorEventListener = createStepSensorListener()
-            sensorManager.registerListener(stepSensorEventListener, stepSensor, SensorManager.SENSOR_DELAY_UI)
-        }
-
-        // Sensor temperatura
-        temperatureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
-        if (temperatureSensor == null) {
-            Toast.makeText(this, "No se detectó sensor de temperatura", Toast.LENGTH_SHORT).show()
-        } else {
-            Log.i("Sensor", "Hay sensor de temperatura")
-            tempEventListener = createTemperatureSensorListener()
-            sensorManager.registerListener(tempEventListener, temperatureSensor, SensorManager.SENSOR_DELAY_NORMAL)
-        }
-
-        // Registrar el SensorEventListener para el sensor de luz
-        sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
-
-        map.onResume()
-        map.controller.setZoom(19.0)
-        map.controller.animateTo(posActualGEO)
-        startLocationUpdates()
-    }
-    override fun onPause() {
-        super.onPause()
-        stopLocationUpdates()
-    }
-
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
 
     }
-
     override fun onSensorChanged(event: SensorEvent?) {
         if(running){
             totalSteps = event!!.values[0]
@@ -476,17 +492,14 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         editor.putFloat("Key", previousTotalSteps)
         editor.apply()
     }
-
     private fun loadData(){
         val sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
         val savedNumber = sharedPreferences.getFloat("KEY", 0f)
         Log.d("PlanActivity","$savedNumber")
         previousTotalSteps = savedNumber
     }
-    private fun stopLocationUpdates() {
-        location.removeLocationUpdates(locationCallBack)
-    }
 
+    //BOTONES MENU
     private var isFabOpen=false
     private var rotation=false
     private fun  configurarBotones()
@@ -557,7 +570,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             }
         }
     }
-
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
             startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
@@ -575,7 +587,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             startActivity(Intent(baseContext, PlanActivity::class.java))
         }
     }
-
     private fun initShowout (v: View){
         v.apply {
             visibility = View. GONE
@@ -583,7 +594,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             alpha = 0f
         }
     }
-
     private fun closeFabMenu() {
         rotation=rotateFAB()
         isFabOpen=false
@@ -592,7 +602,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         cerrar(binding.activoView)
         cerrar(binding.planesView)
     }
-
     private fun closeFabPlan() {
         rotation=rotateFAB()
         isFabOpen=false
@@ -618,7 +627,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 .start()
         }
     }
-
     private fun showFabMenu() {
         rotation=rotateFAB()
         isFabOpen=true
@@ -630,16 +638,13 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         mostrar(binding.planesView)
 
     }
-
     private fun showFabPlan() {
-        rotation=rotateFAB()
         isFabOpen=true
 
         mostrarPlan(binding.confView)
         mostrarPlan(binding.rutaView)
         mostrarPlan(binding.recuerdosView)
     }
-
     private fun mostrar(view: View) {
         view.apply {
             visibility= View.VISIBLE
@@ -653,7 +658,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 .start()
         }
     }
-
     private fun mostrarPlan(view: View) {
         view.apply {
             visibility= View.VISIBLE
@@ -667,7 +671,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 .start()
         }
     }
-
     private fun rotateFAB():Boolean {
         binding.fabMenuPlan.animate()
             .setDuration(200)
@@ -677,9 +680,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         return isFabOpen
     }
 
+
     private var switchRuta=false
     private fun configurarLocalizacion() {
-
+        Log.i("perrito","ji")
         location= LocationServices.getFusedLocationProviderClient(this);
         locationRequest=createLocationRequest()
         locationCallBack=createLocationCallback()
@@ -694,30 +698,31 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             if(!switchRuta) {
                 switchRuta=true
                 binding.mostrarRutaTxt.setText("Quitar ruta")
+                var posEncuentroGEO = GeoPoint(latEncuentro, longEncuentro )
+                var posActualGEO = GeoPoint(latActual, longActual )
                 mostrarRuta(posActualGEO, posEncuentroGEO)
             }
             else
             {
                 switchRuta=false
                 //quita la ruta si esta existe
-                if(roadOverlay != null){
-                    map.getOverlays().remove(roadOverlay);
-                }
+                if( polyline!=null) polyline!!.remove()
                 binding.mostrarRutaTxt.setText("Mostrar ruta")
             }
         }
 
         binding.puntoEncuentro.setOnClickListener{
             //lo centra a la ubicacion del punto de encuentro
-            map.controller.setZoom(19.0)
-            map.controller.animateTo(posEncuentroGEO)
+            var pos=LatLng(latEncuentro,longEncuentro)
+            val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(pos, zoomLevel)
+            mMap.moveCamera(cameraUpdate)
         }
 
         binding.milocalizacion.setOnClickListener{
             //lo centra a la ubicacion de mi ubicacion actual
             //centrarse
-            map.controller.setZoom(19.0)
-            map.controller.animateTo(posActualGEO)
+            zoom()
         }
 
         //ver si esta prendido o apagado
@@ -735,9 +740,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 binding.aunsiguesText.setText("Aun sigues en el plan")
                 EstoyEnElPlan=true
                 startLocationUpdates()
-                myLocationOnMap(posActualGEO)
-                map.controller.setZoom(19.0)
-                map.controller.animateTo(posActualGEO)
+                var pos=LatLng(latActual,longActual)
+                MarkerActual?.remove()
+                MarkerActual=mMap.addMarker(MarkerOptions().position(pos).title("YO"))
+                zoom()
             }
             else
             {
@@ -748,20 +754,17 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
                 binding.mostrarRutabutton.isVisible= false
                 binding.aunsiguesText.setText("Estas fuera del plan")
                 stopLocationUpdates()
-                if(myLocationMarker!=null)
-                    map.overlays.remove(myLocationMarker)
-                if(roadOverlay != null){
-                    map.getOverlays().remove(roadOverlay);
-                }
+                MarkerActual?.remove()
+                if( polyline!=null) polyline!!.remove()
             }
         }
     }
 
     private fun ponerUbicacionPlan() {
-        Log.d(ContentValues.TAG, "$posEncuentroGEO A VER QUE ")
-        planLocationOnMap(posEncuentroGEO)
+        var pos=LatLng(latActual,longActual)
+        planLocationMarker?.remove()
+        planLocationMarker=mMap.addMarker(MarkerOptions().position(pos).title("PLAN"))
     }
-
     private fun createLocationRequest():LocationRequest
     {
         val request=LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 7000)
@@ -770,36 +773,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
             .build()
 
         return request
-    }
-
-
-    //MARCADORES
-    private var  myLocationMarker: Marker? = null
-    fun myLocationOnMap(p: GeoPoint){
-        if(myLocationMarker!=null)
-            map.overlays.remove(myLocationMarker)
-        val address = findAddress(LatLng(p.latitude, p.longitude))
-        val snippet : String
-        if(address!=null) {
-            snippet = address
-        }else{
-            snippet = ""
-        }
-        addMarker(p, snippet, 0)
-    }
-
-    private var  planLocationMarker: Marker? = null
-    fun planLocationOnMap(p: GeoPoint){
-        if(planLocationMarker!=null)
-            map.overlays.remove(planLocationMarker)
-        val address = findAddress(LatLng(p.latitude, p.longitude))
-        val snippet : String
-        if(address!=null) {
-            snippet = address
-        }else{
-            snippet = ""
-        }
-        addMarker(p, snippet, 1)
     }
     fun findAddress (location : LatLng):String?{
         val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 2)
@@ -810,189 +783,52 @@ class PlanActivity : AppCompatActivity(), SensorEventListener {
         }
         return null
     }
-
-    fun addMarker(p: GeoPoint, snippet : String, tipo : Int){
-
-        //MY LOCATION
-        if(tipo==0){
-            myLocationMarker = createMarker(p, "Tu ubicacion", snippet, R.drawable.pinyo)
-
-            if (myLocationMarker != null) {
-                map.getOverlays().add(myLocationMarker)
-            }
-        }
-        else //localizacion plan
-        {
-            Log.i("MapsApp", "Route length: $p km")
-            planLocationMarker = createMarkerEncuentro(p, "Tu destino", snippet, R.drawable.iconopin)
-
-            if (planLocationMarker != null) {
-                map.getOverlays().add(planLocationMarker)
-            }
-        }
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        configurarLocalizacion()
+        var pos=LatLng(latActual,longActual)
+        val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(pos, zoomLevel)
+        mMap.moveCamera(cameraUpdate)
     }
 
-    val sizeInDp = 70
-    //val sizeInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp.toFloat(), resources.displayMetrics).toInt()
-    @SuppressLint("UseCompatLoadingForDrawables")
-    fun createMarkerEncuentro(p: GeoPoint, title: String, desc: String, iconID : Int) : Marker? {
-        var marker : Marker? = null;
-        if(map!=null) {
-            marker = Marker(map);
-            if (title != null) marker.setTitle(title);
-            if (desc != null) marker.setSubDescription(desc);
-            if (iconID != 0) {
-                val MAX_ICON_SIZE = 200
-                Thread(Runnable {
-                    val originalBitmap = BitmapFactory.decodeResource(resources, iconID)
-
-                    // Redimensionar la imagen manteniendo la forma circular
-                    val resizedBitmap = if (originalBitmap.width > MAX_ICON_SIZE || originalBitmap.height > MAX_ICON_SIZE) {
-                        val maxSize = min(originalBitmap.width, originalBitmap.height)
-                        val scaleFactor = MAX_ICON_SIZE.toFloat() / maxSize
-                        val scaledWidth = (originalBitmap.width * scaleFactor).toInt()
-                        val scaledHeight = (originalBitmap.height * scaleFactor).toInt()
-                        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
-
-                        // Recortar el bitmap para mantener la forma circular
-                        val outputBitmap = Bitmap.createBitmap(scaledBitmap.width, scaledBitmap.height, Bitmap.Config.ARGB_8888)
-                        val canvas = Canvas(outputBitmap)
-                        val paint = Paint().apply {
-                            isAntiAlias = true
-                            shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-                        }
-                        val diameter = min(scaledBitmap.width, scaledBitmap.height).toFloat()
-                        canvas.drawCircle(scaledBitmap.width / 2f, scaledBitmap.height / 2f, diameter / 2, paint)
-
-                        outputBitmap
-                    } else {
-                        val maxSize = min(originalBitmap.width, originalBitmap.height)
-                        val scaleFactor = MAX_ICON_SIZE.toFloat() / maxSize
-                        val scaledWidth = (originalBitmap.width * scaleFactor).toInt()
-                        val scaledHeight = (originalBitmap.height * scaleFactor).toInt()
-                        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
-
-                        // Recortar el bitmap para mantener la forma circular
-                        val outputBitmap = Bitmap.createBitmap(scaledBitmap.width, scaledBitmap.height, Bitmap.Config.ARGB_8888)
-                        val canvas = Canvas(outputBitmap)
-                        val paint = Paint().apply {
-                            isAntiAlias = true
-                            shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-                        }
-                        val diameter = min(scaledBitmap.width, scaledBitmap.height).toFloat()
-                        canvas.drawCircle(scaledBitmap.width / 2f, scaledBitmap.height / 2f, diameter / 2, paint)
-
-                        outputBitmap
-                    }
-
-                    // Comprimir y reducir la calidad de la imagen
-                    val compressedBitmapStream = ByteArrayOutputStream()
-                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, compressedBitmapStream) // Aquí puedes ajustar el nivel de compresión (0-100)
-
-                    // Convertir el bitmap comprimido en un BitmapDrawable
-                    val compressedBitmap = BitmapFactory.decodeStream(ByteArrayInputStream(compressedBitmapStream.toByteArray()))
-                    val drawable = BitmapDrawable(resources, compressedBitmap)
-
-                    // Establecer el BitmapDrawable como el icono del Marker
-                    marker.setIcon(drawable)
-
-                }).start()
-            }
-
-            marker.setPosition(p)
-            Log.i("MARKER ENCUENTRO", "Route length: "+p+" km")
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-
-            marker.setAnchor(
-                Marker.
-                ANCHOR_CENTER, Marker.
-                ANCHOR_BOTTOM);
-        }
-        return marker
-    }
-
-    fun createMarker(p: GeoPoint, title: String, desc: String, iconID : Int) : Marker? {
-        var marker : Marker? = null;
-        if(map!=null) {
-            marker = Marker(map);
-            if (title != null) marker.setTitle(title);
-            if (desc != null) marker.setSubDescription(desc);
-            if (iconID != 0) {
-                val bitmap = getBitmapFromDrawable(iconID, 60)
-                val drawable = BitmapDrawable(resources, bitmap)
-                marker.icon = drawable
-            }
-            marker.setPosition(p)
-            Log.i("MARKER", "Route length: "+p+" km")
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker.setAnchor(
-                Marker.
-                ANCHOR_CENTER, Marker.
-                ANCHOR_BOTTOM);
-        }
-        return marker
-    }
-    private fun getBitmapFromDrawable(iconID: Int, sizeInDp: Int): Bitmap {
-        val sizeInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp.toFloat(), resources.displayMetrics).toInt()
-        val drawable = BitmapFactory.decodeResource(resources, iconID)
-        return Bitmap.createScaledBitmap(drawable, sizeInPixels, sizeInPixels, false)
-    }
-    private fun scaleBitmap(bitmap: Bitmap, size: Int): Bitmap {
-        val scale = size.toFloat() / bitmap.width.toFloat()
-        val width = (bitmap.width * scale).toInt()
-        val height = (bitmap.height * scale).toInt()
-        return Bitmap.createScaledBitmap(bitmap, width, height, true)
-    }
-    private fun getCircularBitmap(bitmap: Bitmap): Bitmap {
-        val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(output)
-        val paint = Paint()
-        val rect = android.graphics.Rect(0, 0, bitmap.width, bitmap.height)
-        val shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        paint.isAntiAlias = true
-        paint.shader = shader
-        canvas.drawCircle(bitmap.width / 2f, bitmap.height / 2f, (bitmap.width / 2).toFloat(), paint)
-        return output
-    }
-
-    //MAPA
-    private fun configurarMapa() {
-        Configuration.getInstance().load(this,
-            androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
-        geocoder = Geocoder(baseContext)
-        map = binding.osmMap
-        map.setTileSource(TileSourceFactory.MAPNIK)
-        map.setMultiTouchControls(true)
-        //map.overlays.add(createOverlayEvents())
-    }
-
-
-    //OMS Y CREAR RUTA
-    private fun activarOMS() {
-        roadManager = OSRMRoadManager(this, "ANDROID")
-    }
-
-    private var roadOverlay: Polyline? = null
+    private val COLOR_BLACK_ARGB = -0x1000000
+    private val POLYLINE_STROKE_WIDTH_PX = 12
+    private var polyline: com.google.android.gms.maps.model.Polyline?=null
     private fun mostrarRuta(start : GeoPoint, finish : GeoPoint){
-
-        Thread(Runnable {var routePoints = ArrayList<GeoPoint>()
+        Thread(Runnable {
+            var routePoints = ArrayList<GeoPoint>()
             routePoints.add(start)
             routePoints.add(finish)
             val road = roadManager.getRoad(routePoints)
-            Log.i("MapsApp", "Route length: "+road.mLength+" km")
-            Log.i("MapsApp", "Duration: "+road.mDuration/60+" min")
-            if(map!=null){
-                if(roadOverlay != null){
-                    map.getOverlays().remove(roadOverlay);
-                }
-                roadOverlay = RoadManager.buildRoadOverlay(road)
-                roadOverlay!!.getOutlinePaint().setColor(
-                    Color.
-                    RED)
-                roadOverlay!!.getOutlinePaint().setStrokeWidth(10F)
-                map.getOverlays().add(roadOverlay)
+            Log.i("MapsApp", "Route length: " + road.mLength + " klm")
+            Log.i("MapsApp", "Duration: " + road.mDuration / 60 + " min")
+            Log.i("MapsApp", "Points: " + road.mRouteHigh + " min")
+            val puntos = road.mRouteHigh
+
+            // Crear una lista vacía para almacenar los LatLng resultantes
+            val listaLatLng = mutableListOf<LatLng>()
+
+            // Recorrer la lista de GeoPoints y convertir cada uno a LatLng
+            for (punto in puntos) {
+                val latLng = LatLng(punto.latitude, punto.longitude)
+                listaLatLng.add(latLng)
             }
 
+            // Actualizar el UI en el hilo principal
+            runOnUiThread {
+                // Usar la listaLatLng en la creación del Polyline
+                if( polyline!=null) polyline!!.remove()
+
+                polyline= mMap.addPolyline(
+                    PolylineOptions()
+                    .clickable(true)
+                    .addAll(listaLatLng))
+                polyline!!.setWidth(POLYLINE_STROKE_WIDTH_PX.toFloat())
+                polyline!!.setColor(COLOR_BLACK_ARGB)
+                polyline!!.setJointType(JointType.ROUND)
+            }
         }).start()
+
     }
 }
