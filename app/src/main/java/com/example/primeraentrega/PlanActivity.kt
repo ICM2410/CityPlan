@@ -785,6 +785,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        configurarConFireBase()
         configurarLocalizacion()
         var pos=LatLng(latActual,longActual)
         val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
