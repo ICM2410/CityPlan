@@ -18,7 +18,7 @@
         <LinearLayout
             android:id="@+id/linearLayout2"
             android:layout_width="381dp"
-            android:layout_height="238dp"
+            android:layout_height="268dp"
             android:gravity="center"
             android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
@@ -93,18 +93,17 @@
 
                 <Button
                     android:id="@+id/fechaInicio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
+                    android:layout_width="240dp"
+                    android:layout_height="60dp"
+
                     android:backgroundTint="@color/transparente"
                     android:text="fecha"
                     android:textColor="@color/white" />
 
                 <Button
                     android:id="@+id/horaInicio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
                     android:backgroundTint="@color/transparente"
                     android:text="hora"
                     android:textColor="@color/white" />
@@ -119,7 +118,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="46dp"
+                android:layout_height="60dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -134,18 +133,16 @@
 
                 <Button
                     android:id="@+id/editTextText66"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
+                    android:layout_width="240dp"
+                    android:layout_height="60dp"
                     android:backgroundTint="@color/transparente"
                     android:text="fecha"
                     android:textColor="@color/white" />
 
                 <Button
                     android:id="@+id/horaFin"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
+                    android:layout_width="80dp"
+                    android:layout_height="60dp"
                     android:backgroundTint="@color/transparente"
                     android:text="hora"
                     android:textColor="@color/white" />

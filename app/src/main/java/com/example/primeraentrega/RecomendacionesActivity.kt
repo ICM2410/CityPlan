@@ -64,21 +64,13 @@ class RecomendacionesActivity : AppCompatActivity() {
             val selectedLugar = establecimientos[position] // Obtiene el objeto Pais seleccionado
 
             var intent: Intent
-            //intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
+            intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
 
-            if(pantalla=="crear")
-            {
-                intent = Intent(baseContext, CrearPlanActivity::class.java)
-            }
-            else
-            {
-                intent = Intent(baseContext, EditarPlanActivity::class.java)
-            }
-
+            intent.putExtra("pantalla",pantalla)
             intent.putExtra("longitud",selectedLugar.getLongitude())
             intent.putExtra("latitud",selectedLugar.getLatitude())
             intent.putExtra("idPlan", idPlan)
-            intent.putExtra("pantalla","ubicacion")
+            intent.putExtra("recomendacion","recomendacion")
             Log.i(TAG, "Info enviar - Longitud: ${selectedLugar.getLongitude()}, Latitud: ${selectedLugar.getLatitude()}")
             // Pasa el objeto Pais como un extra del Intent
             startActivity(intent)

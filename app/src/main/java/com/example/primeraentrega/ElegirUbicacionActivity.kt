@@ -12,6 +12,8 @@ import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
@@ -24,6 +26,7 @@ import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
+import android.util.Base64
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
@@ -45,13 +48,21 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.location.Priority
 import com.google.android.gms.location.SettingsClient
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
+import org.json.JSONArray
+import org.json.JSONException
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -60,9 +71,14 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.TilesOverlay
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
+import java.util.Date
 import kotlin.math.min
 
-class ElegirUbicacionActivity : AppCompatActivity() {
+class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var binding : ActivityElegirUbicacionBinding
 
@@ -74,17 +90,19 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     private var rotation=false
 
     private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
+    private var MarkerActual: com.google.android.gms.maps.model.Marker? = null
     lateinit var location: FusedLocationProviderClient
 
     //MAPA
-    lateinit var map : MapView
+    private lateinit var mMap: GoogleMap
     private lateinit var geocoder: Geocoder
 
     //LOCALIZACION
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallBack: LocationCallback
 
-    private lateinit var bitmap:Bitmap
+    var imagenPin:Bitmap?=null
+    var imagenPin2:Bitmap?=null
 
     //Sensores
     private lateinit var sensorManager: SensorManager
@@ -145,8 +163,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
             }
         })
 
-    fun gestionarPermiso()
-    {
+    fun gestionarPermiso() {
         if(ActivityCompat.checkSelfPermission(this, localPermissionName)== PackageManager.PERMISSION_DENIED)
         {
             if(shouldShowRequestPermissionRationale(localPermissionName))
@@ -186,19 +203,26 @@ class ElegirUbicacionActivity : AppCompatActivity() {
                 val last=result.lastLocation
                 if(last!=null)
                 {
-                        posActualGEO=GeoPoint(last.latitude, last.longitude)
-
                         if(firstTime)
                         {
                             firstTime=false
-                            map.controller.animateTo(posActualGEO)
-                            map.controller.setZoom(19.0)
-                            selectedLocationOnMap(posActualGEO)
+                            latActual=last.latitude
+                            longActual=last.longitude
+                            var pos=LatLng(latActual,longActual)
+                            MarkerActual?.remove()
+                            MarkerActual=mMap.addMarker(
+                                MarkerOptions()
+                                .position(pos)
+                                .icon(imagenPin?.let { it1 -> BitmapDescriptorFactory.fromBitmap(it1) })
+                                .title("Pos seleccionada"))
+                                //.icon(BitmapDescriptorFactory.fromBitmap(mifoto))
+                            val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
+                            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(pos, zoomLevel)
+                            mMap.moveCamera(cameraUpdate)
                         }
                 }
             }
         }
-
         return locationCallback
     }
 
@@ -209,24 +233,65 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         binding= ActivityElegirUbicacionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
         pantalla= intent.getStringExtra("pantalla").toString()
         idPlan= intent.getStringExtra("idPlan").toString()
 
         inicializarBotones()
 
+        //Sensores
+        //sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        //Sensor Luz
+        //lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
+        //lightEventListener = createLightSensorListener()
+
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        //poner ubicacion seleccionada en recomendaciones
         inicializarImagen()
 
-        configurarMapa()
+
+        if("recomendacion".equals(intent.getStringExtra("recomendacion").toString()))
+        {
+            //poner la posicion
+            firstTime=false
+            longActual= intent.getDoubleExtra("longitud", 0.0)
+            latActual= intent.getDoubleExtra("latitud", 0.0)
+            var pos=LatLng(latActual,longActual)
+            MarkerActual?.remove()
+            MarkerActual=mMap.addMarker(
+                MarkerOptions()
+                    .position(pos)
+                    .icon(imagenPin?.let { it1 -> BitmapDescriptorFactory.fromBitmap(it1) })
+                    .title("Pos seleccionada"))
+            //.icon(BitmapDescriptorFactory.fromBitmap(mifoto))
+            val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(pos, zoomLevel)
+            mMap.moveCamera(cameraUpdate)
+        }
+
 
         configurarLocalizacion()
 
+        mMap.setOnMapLongClickListener {
 
-        //Sensores
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        //Sensor Luz
-        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
-        lightEventListener = createLightSensorListener()
-
+            MarkerActual?.remove()
+            //poner la foto
+            MarkerActual=mMap.addMarker(MarkerOptions()
+                .icon(imagenPin?.let { it1 -> BitmapDescriptorFactory.fromBitmap(it1) })
+                .position(it)
+                .title("Marker"))
+            latActual=it.latitude
+            longActual=it.longitude
+            var pos=LatLng(latActual,longActual)
+            val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(pos, zoomLevel)
+            mMap.moveCamera(cameraUpdate)
+        }
     }
 
     override fun onStop() {
@@ -234,31 +299,15 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         stopLocationUpdates()
 
     }
-
     override fun onResume() {
         super.onResume()
 
         // Registrar el SensorEventListener para el sensor de luz
-        sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
-
-        map.onResume()
-        map.controller.setZoom(19.0)
-        map.controller.animateTo(posActualGEO)
+        //sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+    }
+    override fun onRestart() {
+        super.onRestart()
         startLocationUpdates()
-        /*if (intent.hasExtra("recomendacion") && intent.getBooleanExtra("recomendacion", true)) {
-            map.getTileProvider().clearTileCache()
-            // Verificar si se recibió un intent con la bandera "recomendacion" establecida como verdadera
-            latActual = intent.getDoubleExtra("latitud", 0.0)
-            longActual = intent.getDoubleExtra("longitud", 0.0)
-            Log.i(ContentValues.TAG, "Info enviar - Longitud: $longActual, Latitud: $latActual")
-            // Usar la ubicación proporcionada en el intent
-            // Por ejemplo, podrías mostrar esta ubicación en el mapa
-            posActualGEO=GeoPoint(latActual, longActual)
-            map.controller.animateTo(posActualGEO)
-            map.controller.setZoom(19.0)
-            selectedLocationOnMap(posActualGEO)
-
-        } else {*/
     }
     override fun onPause() {
         super.onPause()
@@ -273,107 +322,79 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     val storage = FirebaseStorage.getInstance()
     val storageRef = storage.reference
     private fun inicializarImagen() {
-
-       val docRef = db.collection("Planes").document(idPlan)
-        docRef.get()
-            .addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    Log.d(ContentValues.TAG, "encontrado elegir - ${documentSnapshot.id} => ${documentSnapshot.data}")
-                    // Aquí puedes acceder a los datos del documento utilizando document.data
-                    val plan = documentSnapshot.toObject<Plan>()
-
-                    //obtener imagenes
-                    val pathReferencePin = plan?.let { storageRef.child(it.fotopin) }
-
-                    val ONE_MEGABYTE: Long = 1024 * 1024
-                    pathReferencePin?.getBytes(ONE_MEGABYTE)?.addOnSuccessListener { bytes ->
-                        // Los bytes de la imagen se han recuperado exitosamente
-
-                        if (bytes != null) {
-                            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-
-                            // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
-                            val squareBitmap = Bitmap.createBitmap(
-                                min(bitmap.width, bitmap.height),
-                                min(bitmap.width, bitmap.height),
-                                Bitmap.Config.ARGB_8888
-                            )
-
-                            // Crear un lienzo para dibujar en el bitmap cuadrado
-                            val canvas = Canvas(squareBitmap)
-
-                            // Dibujar la imagen original en el centro del bitmap cuadrado
-                            val left = (squareBitmap.width - bitmap.width) / 2f
-                            val top = (squareBitmap.height - bitmap.height) / 2f
-                            canvas.drawBitmap(bitmap, left, top, null)
-
-                            // Crear un bitmap circular
-                            val circleBitmap = Bitmap.createBitmap(
-                                squareBitmap.width,
-                                squareBitmap.height,
-                                Bitmap.Config.ARGB_8888
-                            )
-                            val paint = Paint().apply {
-                                isAntiAlias = true
-                                shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-                            }
-                            val rect = Rect(0, 0, squareBitmap.width, squareBitmap.height)
-                            val rectF = RectF(rect)
-                            val diameter = min(squareBitmap.width, squareBitmap.height).toFloat()
-                            canvas.setBitmap(circleBitmap)
-                            canvas.drawCircle(diameter / 2, diameter / 2, diameter / 2, paint)
-
-                            binding.pinElegirUbicacion.setImageBitmap(circleBitmap)
-
-                        } else {
-                            // Manejar el caso en el que no se haya pasado ningún byteArray en el intent
-                        }
-
-                    }?.addOnFailureListener {
-                        // Manejar cualquier error que ocurra durante la recuperación de la imagen
-                    }
-
-
-                } else {
-                    Log.d(ContentValues.TAG, "No such document")
-                }
+        try {
+            val file = File(getExternalFilesDir(null), "plan.json")
+            val json_string = file.bufferedReader().use {
+                it.readText()
             }
-            .addOnFailureListener { exception ->
-                Log.d(ContentValues.TAG, "get failed with ", exception)
+
+            val planJsonArray = JSONArray(json_string)
+
+            for (i in 0 until planJsonArray.length()) {
+
+                val jsonObject = planJsonArray.getJSONObject(i)
+
+                val fotopinBase64 = jsonObject.getString("fotoPinGrande")
+                val fotopinByteArray = Base64.decode(fotopinBase64, Base64.DEFAULT)
+                loadImage(ByteArrayInputStream(fotopinByteArray))
+
+                //OBTENER INFORMACION DE LA MINIS IMAGENES
+                //ACA SE USARAN PARA OTRA COSA
+                val MINIfotopinBase64 =jsonObject.getString("fotoPin")
+                val MINIfotopinByteArray = Base64.decode(MINIfotopinBase64, Base64.DEFAULT)
+                imagenPin= BitmapFactory.decodeStream(ByteArrayInputStream(MINIfotopinByteArray))
             }
+
+        } catch (e: IOException) {
+            Log.e("LOCATION", "Error al leer el archivo JSON: ${e.message}")
+        } catch (e: JSONException) {
+            Log.e("LOCATION", "Error al analizar el archivo JSON: ${e.message}")
+        }
+
     }
 
-    //MAPA
-    private fun configurarMapa() {
-        Configuration.getInstance().load(this,
-            androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
-        geocoder = Geocoder(baseContext)
-        map = binding.osmMap
-        map.setTileSource(TileSourceFactory.MAPNIK)
-        map.setMultiTouchControls(true)
-        map.overlays.add(createOverlayEvents())
+    private fun loadImage(imageStream:  InputStream?) {
+        var srcBitmap = BitmapFactory.decodeStream(imageStream)
+
+        srcBitmap=createCircledImage(srcBitmap)
+        binding.pinElegirUbicacion.setImageBitmap(srcBitmap)
+
+        imagenPin = Bitmap.createScaledBitmap(srcBitmap, 160, 160, true)
+
+        //srcBitmap.recycle()
+    }
+    private fun createCircledImage(srcBitmap: Bitmap?): Bitmap {
+        val squareBitmapWidth = min(srcBitmap!!.width, srcBitmap.height)
+
+        // Generate a bitmap with the above value as dimensions
+        val dstBitmap = Bitmap.createBitmap(
+            squareBitmapWidth,
+            squareBitmapWidth,
+            Bitmap.Config.ARGB_8888
+        )
+
+        // Initializing a Canvas with the above generated bitmap
+        val canvas = Canvas(dstBitmap)
+
+        // initializing Paint
+        val paint = Paint()
+        paint.isAntiAlias = true
+
+        // Generate a square (rectangle with all sides same)
+        val rect = Rect(0, 0, squareBitmapWidth, squareBitmapWidth)
+        val rectF = RectF(rect)
+
+        // Operations to draw a circle
+        canvas.drawOval(rectF, paint)
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        val left = ((squareBitmapWidth - srcBitmap.width) / 2).toFloat()
+        val top = ((squareBitmapWidth - srcBitmap.height) / 2).toFloat()
+        canvas.drawBitmap(srcBitmap, left, top, paint)
+
+        return srcBitmap;
     }
 
-    fun createOverlayEvents() : MapEventsOverlay {
-        val overlayEvents = MapEventsOverlay(object : MapEventsReceiver {
-            override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
-                return false
-            }
-            override fun longPressHelper(p: GeoPoint?): Boolean {
-                if(p!=null) {
-                    latActual=p.latitude
-                    longActual=p.longitude
-
-                    Log.i(ContentValues.TAG, "HELPER - Longitud: $longActual, Latitud: $latActual")
-
-                    selectedLocationOnMap(p)
-                }
-                return true
-            }
-        })
-        return overlayEvents
-    }
-
+    /*
     fun createLightSensorListener() : SensorEventListener{
         val ret : SensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
@@ -393,7 +414,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
             }
         }
         return ret
-    }
+    }*/
 
     private fun inicializarBotones() {
 
@@ -406,6 +427,7 @@ class ElegirUbicacionActivity : AppCompatActivity() {
         }
 
         binding.guardar.setOnClickListener {
+
             val intent: Intent = if(pantalla == "crear") {
                 Intent(baseContext, CrearPlanActivity::class.java)
             } else {
@@ -591,20 +613,6 @@ class ElegirUbicacionActivity : AppCompatActivity() {
     }
 
 
-    private var  selectedLocationMarker: Marker? = null
-    fun selectedLocationOnMap(p: GeoPoint){
-        if(selectedLocationMarker!=null)
-            map.overlays.remove(selectedLocationMarker)
-        val address = findAddress(LatLng(p.latitude, p.longitude))
-        val snippet : String
-        if(address!=null) {
-            snippet = address
-        }else{
-            snippet = ""
-        }
-        addMarker(p, snippet, 0)
-    }
-
     fun findAddress (location : LatLng):String?{
         val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 2)
         if(addresses != null && !addresses.isEmpty()){
@@ -613,46 +621,6 @@ class ElegirUbicacionActivity : AppCompatActivity() {
             return locname
         }
         return null
-    }
-
-    fun addMarker(p: GeoPoint, snippet : String, tipo : Int){
-        //MY LOCATION
-        selectedLocationMarker = createMarker(p, "Ubicacion seleccionada", snippet, R.drawable.pinyo)
-
-        if (selectedLocationMarker != null) {
-            map.getOverlays().add(selectedLocationMarker)
-        }
-    }
-
-    val sizeInDp = 70
-    //val sizeInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp.toFloat(), resources.displayMetrics).toInt()
-    //@SuppressLint("SuspiciousIndentation")
-    fun createMarker(p: GeoPoint, title: String, desc: String, iconID:Int): Marker? {//bitmap: Bitmap) : Marker? {
-        var marker : Marker? = null;
-        if(map!=null) {
-            marker = Marker(map);
-            if (title != null) marker.setTitle(title);
-            if (desc != null) marker.setSubDescription(desc);
-
-            if (iconID != 0) {
-                val bitmap = getBitmapFromDrawable(iconID, 60)
-                val drawable = BitmapDrawable(resources, bitmap)
-                marker.icon = drawable
-            }
-            val MAX_ICON_SIZE = 130
-            //val originalBitmap = bitmap
-            // Establecer el BitmapDrawable como el icono del Marker
-            //marker.setIcon(drawable)
-
-            marker.setPosition(p)
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker.setPosition(p);
-            marker.setAnchor(
-                Marker.
-                ANCHOR_CENTER, Marker.
-                ANCHOR_BOTTOM);
-        }
-        return marker
     }
 
     private fun getBitmapFromDrawable(iconID: Int, sizeInDp: Int): Bitmap {

@@ -10,5 +10,5 @@ class UsuarioAmigo (
     var activo: Boolean = false,
     var cantPasos:Int,
     var huella:String="",
-    var Planes: Array<Plan>
+    var imagen:String=""
 )

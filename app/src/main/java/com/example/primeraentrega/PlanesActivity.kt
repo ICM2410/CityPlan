@@ -29,7 +29,7 @@ class PlanesActivity : AppCompatActivity() {
     private fun inicializarBotones() {
         binding.botonPlanActivo.setOnClickListener {
             val intent =Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idPlan",idPlan)
+            intent.putExtra("idPlan","Salida a Varietale")
             startActivity(intent)
         }
 

@@ -2,7 +2,6 @@ package com.example.primeraentrega
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.ContentValues
 import android.content.ContentValues.TAG
@@ -11,12 +10,12 @@ import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.BitmapShader
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
+import android.graphics.RectF
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
@@ -25,7 +24,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
-import android.util.TypedValue
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
@@ -49,30 +47,30 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.Polyline
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import kotlin.math.min
 import android.hardware.SensorEventListener
+import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.Clases.Usuario
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.firebase.auth.FirebaseAuth
-import org.osmdroid.views.overlay.TilesOverlay
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.StorageReference
+import java.io.File
 
 class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallback {
 
@@ -92,14 +90,19 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private var EstoyEnElPlan=true
     private lateinit var roadManager: RoadManager
     private var firstTime=true
+    val miImagenResource = R.drawable.pinyo
+    // Luego, puedes cargar la imagen como un objeto Bitmap utilizando BitmapFactory
+    private lateinit var mifoto: Bitmap
+    private lateinit var fotoPlan:Bitmap
 
     private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
     lateinit var location: FusedLocationProviderClient
 
-
     val db = Firebase.firestore
-    val storage = FirebaseStorage.getInstance()
-    val storageRef = storage.reference
+    private lateinit var auth:FirebaseAuth
+    private lateinit var databaseReference: DatabaseReference
+    private lateinit var storageReference: StorageReference
+    private lateinit var database : FirebaseDatabase
 
     //MAPA
     private lateinit var geocoder: Geocoder
@@ -115,7 +118,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
     //SENSOR luz
     private lateinit var lightSensor : Sensor
-    private lateinit var lightEventListener: SensorEventListener
+   // private lateinit var lightEventListener: SensorEventListener
     //Sensor Temperatura
     private  var temperatureSensor: Sensor? = null
     private lateinit var tempEventListener: SensorEventListener
@@ -188,7 +191,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                     longActual=it.longitude
                     //auth.currentUser?.uid?.let { databaseReference.child(it).child("latitud").setValue(latActual)}
                     //auth.currentUser?.uid?.let { databaseReference.child(it).child("latitud").setValue(longActual)}
-
                 }
             }
         }
@@ -212,11 +214,17 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                     latActual=last.latitude
                     longActual=last.longitude
 
+                    //ACTUALIZAR MI UBICACION EN EL RTDB de plan
+
                     if(EstoyEnElPlan)
                     {
                         var pos=LatLng(latActual,longActual)
+                        actualizarPosicion()
                         MarkerActual?.remove()
-                        MarkerActual=mMap.addMarker(MarkerOptions().position(pos).title("YO"))
+                        MarkerActual=mMap.addMarker(MarkerOptions()
+                            .position(pos)
+                            .icon(BitmapDescriptorFactory.fromBitmap(mifoto))
+                            .title("YO"))
 
                         if(firstTime)
                         {
@@ -229,6 +237,11 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         }
 
         return locationCallback
+    }
+
+    //actualizao la posicion del usuario
+    private fun actualizarPosicion() {
+
     }
 
     private fun zoom() {
@@ -268,25 +281,27 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
 
     private lateinit var idPlan : String
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityPlanBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         idPlan=intent.getStringExtra("idPlan").toString()
-
         Log.e(TAG, "revisar $idPlan")
+
+        auth=FirebaseAuth.getInstance()
+        databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
+        database = FirebaseDatabase.getInstance()
+        mifoto= BitmapFactory.decodeResource(resources, miImagenResource)
+        fotoPlan= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, miImagenResource), 160, 160, true)
+
+        roadManager = OSRMRoadManager(this, "ANDROID")
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        //configurarConFireBase()
-
         configurarBotones();
-
-        //configurarLocalizacion()
 
         configurarSensores()
     }
@@ -294,9 +309,14 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         super.onStop()
         stopLocationUpdates()
     }
+    override fun onRestart() {
+        super.onRestart()
+        configurarConFireBaseFotos()
+        startLocationUpdates()
+    }
     override fun onResume() {
         super.onResume()
-        /*
+
         running = true
         // Registrar el SensorEventListener para el sensor de pasos
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
@@ -319,38 +339,30 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         }
 
         // Registrar el SensorEventListener para el sensor de luz
-        sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
-*/
+       // sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
         //startLocationUpdates()
     }
     override fun onPause() {
         super.onPause()
         stopLocationUpdates()
     }
+
     private fun stopLocationUpdates() {
         location.removeLocationUpdates(locationCallBack)
     }
     private fun configurarConFireBase() {
+        anadirPinUsuario()
+        val planRef = database.getReference("Planes").child(idPlan)
 
-        Log.d(ContentValues.TAG, "entreee $idPlan")
-
-        val docRef = db.collection("Planes").document(idPlan)
-        docRef.get()
-            .addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    Log.d(ContentValues.TAG, "encontrado - ${documentSnapshot.id} => ${documentSnapshot.data}")
-                    // Aquí puedes acceder a los datos del documento utilizando document.data
-                    val plan = documentSnapshot.toObject<Plan>()
-                    //AQUI SE OBTIENE LA INFORMACION PARA PONER
-                    //TITULO DEL PLAN
+        planRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Aquí puedes obtener los datos del usuario desde dataSnapshot
+                val plan = dataSnapshot.getValue(Plan::class.java)
+                if (plan != null) {
+                    // Haz lo que necesites con los datos del usuario
                     binding.tituloPlan.setText(plan?.titulo)
                     //UBICACION DEL PLAN
-                    if (plan != null) {
-                        Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                        latEncuentro=plan.latitude
-                        longEncuentro=plan.longitude
-                        ponerUbicacionPlan()
-                    }
+
                     //SI TIENE LO DE NUMERO DE PASOS
                     if (plan != null) {
                         pasosAvtivado=plan.AmigoMasActivo
@@ -361,15 +373,31 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                         }
                     }
 
-                    val pathReferencePin = plan?.let { storageRef.child(it.fotopin) }
+                    val localfile = File. createTempFile( "tempImage", "jpg")
 
-                    val ONE_MEGABYTE: Long = 1024 * 1024
-                    pathReferencePin?.getBytes(ONE_MEGABYTE)?.addOnSuccessListener { bytes ->
-                        // Los bytes de la imagen se han recuperado exitosamente
-                        val imageStream = ByteArrayInputStream(bytes)
-                        //loadImage(imageStream)
-                    }?.addOnFailureListener {
-                        // Manejar cualquier error que ocurra durante la recuperación de la imagen
+                    val storageRef = FirebaseStorage.getInstance().reference.child(plan.fotopin)
+
+
+                    storageRef.getFile(localfile).addOnSuccessListener {
+                        Log.i("fotoPin","ruta $plan.fotopin")
+                        var src = BitmapFactory.decodeFile(localfile.absolutePath)
+                        src=createCircledImage(src)
+                        fotoPlan = Bitmap.createScaledBitmap(src, 160, 160, true)
+                        if (plan != null) {
+                            Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                            latEncuentro=plan.latitude
+                            longEncuentro=plan.longitude
+                            ponerUbicacionPlan()
+                        }
+                        //clickLista()
+                    }.addOnFailureListener{
+                        Log.i("revisar", "no se pudo poner la foto del pin")
+                        if (plan != null) {
+                            Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                            latEncuentro=plan.latitude
+                            longEncuentro=plan.longitude
+                            ponerUbicacionPlan()
+                        }
                     }
 
                     //ESTO ES DEL USUARIO
@@ -390,11 +418,122 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                         binding.milocalizacion.isVisible=false
                         stopLocationUpdates()
                     }
+
+                    if (plan != null) {
+                        configurarmarkers(plan.integrantes)
+                    }
+
+                } else {
+                    println("No se encontraron datos para el plan con UID: $idPlan")
                 }
             }
-            .addOnFailureListener { exception ->
-                Log.d(ContentValues.TAG, "get failed with ", exception)
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos del usuario: ${databaseError.message}")
             }
+        })
+    }
+
+    private fun configurarConFireBaseFotos() {
+        anadirPinUsuario()
+        val planRef = database.getReference("Planes").child(idPlan)
+
+        planRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Aquí puedes obtener los datos del usuario desde dataSnapshot
+                val plan = dataSnapshot.getValue(Plan::class.java)
+                if (plan != null) {
+                    // Haz lo que necesites con los datos del usuario
+                    binding.tituloPlan.setText(plan?.titulo)
+                    //UBICACION DEL PLAN
+
+                    //SI TIENE LO DE NUMERO DE PASOS
+                    if (plan != null) {
+                        pasosAvtivado=plan.AmigoMasActivo
+                        if(!pasosAvtivado){
+
+                            // Hacer invisible el elemento binding.pasoscantText
+                            binding.pasoscantText.visibility = View.INVISIBLE
+                        }
+                    }
+
+                    val localfile = File. createTempFile( "tempImage", "jpg")
+
+                    val storageRef = FirebaseStorage.getInstance().reference.child(plan.fotopin)
+
+
+                    storageRef.getFile(localfile).addOnSuccessListener {
+                        Log.i("fotoPin","ruta $plan.fotopin")
+                        var src = BitmapFactory.decodeFile(localfile.absolutePath)
+                        src=createCircledImage(src)
+                        fotoPlan = Bitmap.createScaledBitmap(src, 160, 160, true)
+                        if (plan != null) {
+                            Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                            latEncuentro=plan.latitude
+                            longEncuentro=plan.longitude
+                            ponerUbicacionPlan()
+                        }
+                        //clickLista()
+                    }.addOnFailureListener{
+                        Log.i("revisar", "no se pudo poner la foto del pin")
+                        if (plan != null) {
+                            Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                            latEncuentro=plan.latitude
+                            longEncuentro=plan.longitude
+                            ponerUbicacionPlan()
+                        }
+                    }
+                } else {
+                    println("No se encontraron datos para el plan con UID: $idPlan")
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos del usuario: ${databaseError.message}")
+            }
+        })
+    }
+
+    private fun createCircledImage(srcBitmap: Bitmap?): Bitmap {
+        val squareBitmapWidth = min(srcBitmap!!.width-1, srcBitmap.height-1)
+
+        // Generate a bitmap with the above value as dimensions
+        val dstBitmap = Bitmap.createBitmap(
+            squareBitmapWidth,
+            squareBitmapWidth,
+            Bitmap.Config.ARGB_8888
+        )
+
+        // Initializing a Canvas with the above generated bitmap
+        val canvas = Canvas(dstBitmap)
+
+        // initializing Paint
+        val paint = Paint()
+        paint.isAntiAlias = true
+
+        // Generate a square (rectangle with all sides same)
+        val rect = Rect(0, 0, squareBitmapWidth, squareBitmapWidth)
+        val rectF = RectF(rect)
+
+        // Operations to draw a circle
+        canvas.drawOval(rectF, paint)
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        val left = ((squareBitmapWidth - srcBitmap.width-1) / 2).toFloat()
+        val top = ((squareBitmapWidth - srcBitmap.height-1) / 2).toFloat()
+        canvas.drawBitmap(srcBitmap, left, top, paint)
+
+        return srcBitmap;
+    }
+
+    private fun anadirPinUsuario() {
+        //consultar bien del usuario
+
+    }
+
+    private fun configurarmarkers(integrantes: List<PosAmigo>) {
+        //se crea un marker para cada uno de los integrantes
     }
 
     private fun configurarSensores(){
@@ -508,6 +647,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
             val intent=Intent(baseContext,EditarPlanActivity::class.java)
             intent.putExtra("idPlan",idPlan)
+            intent.putExtra("pantalla","plan")
             startActivity(intent)
         }
 
@@ -691,7 +831,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         //primero gestionar los permisos
         gestionarPermiso()
         gestionarPermisoActividad()
-        ponerUbicacionPlan()
 
         binding.mostrarRutabutton.setOnClickListener{
             //muestra la ruta con oms bonus
@@ -742,7 +881,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 startLocationUpdates()
                 var pos=LatLng(latActual,longActual)
                 MarkerActual?.remove()
-                MarkerActual=mMap.addMarker(MarkerOptions().position(pos).title("YO"))
+                MarkerActual=mMap.addMarker(MarkerOptions()
+                    .position(pos)
+                    .icon(BitmapDescriptorFactory.fromBitmap(mifoto))
+                    .title("YO"))
                 zoom()
             }
             else
@@ -759,11 +901,14 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             }
         }
     }
-
     private fun ponerUbicacionPlan() {
-        var pos=LatLng(latActual,longActual)
+        var pos=LatLng(latEncuentro,longEncuentro)
         planLocationMarker?.remove()
-        planLocationMarker=mMap.addMarker(MarkerOptions().position(pos).title("PLAN"))
+        planLocationMarker = mMap.addMarker(MarkerOptions()
+            .position(pos)
+            .icon(BitmapDescriptorFactory.fromBitmap(fotoPlan))
+            .title("PLAN"))
+
     }
     private fun createLocationRequest():LocationRequest
     {

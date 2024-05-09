@@ -12,16 +12,20 @@ import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.VectorDrawable
 import android.location.Geocoder
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,14 +41,26 @@ import android.view.View
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
+import android.widget.Toast
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
+import com.example.primeraentrega.Clases.PlanJson
 import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -62,6 +78,10 @@ class CrearPlanActivity : AppCompatActivity() {
     val db = Firebase.firestore
     val storage = FirebaseStorage.getInstance()
     val storageRef = storage.reference
+    private lateinit var databaseReference: DatabaseReference
+    private lateinit var storageReference: StorageReference
+
+    var imagenPin:Bitmap?=null
 
     val getContentGallery = registerForActivityResult(
         ActivityResultContracts.GetContent(),
@@ -84,9 +104,37 @@ class CrearPlanActivity : AppCompatActivity() {
         //de la pantalla elegir unicacion
         obtenerInformacionLocalizacion()
 
+        databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
+
         if (pantalla != null && "ubicacion".equals(intent.getStringExtra("pantalla"))) {
             // El extra "pantalla" existe y su valor es "crear"
             leerInfo()
+        }
+        else if(pantalla != null && "planes".equals(intent.getStringExtra("pantalla")))
+        {
+            borrarInfoJson()
+        }
+    }
+
+    private fun borrarInfoJson() {
+        try {
+            // Obtener la ruta del archivo plan.json en el directorio de archivos externos
+            val filename = "plan.json"
+            val file = File(baseContext.getExternalFilesDir(null), filename)
+
+            // Verificar si el archivo existe antes de borrarlo
+            if (file.exists()) {
+                // Borrar el contenido del archivo
+                BufferedWriter(FileWriter(file)).use { output ->
+                    output.write("") // Escribir una cadena vacía para borrar todo el contenido
+                }
+
+                Log.i("LOCATION", "File cleared at path: $file")
+            } else {
+                Log.i("LOCATION", "File does not exist: $file")
+            }
+        } catch (e: IOException) {
+            Log.e("LOCATION", "Error clearing file: ${e.message}")
         }
     }
 
@@ -100,93 +148,95 @@ class CrearPlanActivity : AppCompatActivity() {
             // La información de ubicación se recibió correctamente
             binding.seleccionarUbicacion.setText( findAddress (LatLng(latitud, longitud)))
         } else {
-            // No se recibió la información de ubicación
+            binding.seleccionarUbicacion.setText( "seleccionar ubicacion")
         }
     }
 
     private fun leerInfo() {
+        //leer info del json
 
-        documentId= intent.getStringExtra("idPlan").toString()
-        Log.d(TAG, "entreee $documentId")
+        try {
+            val file = File(getExternalFilesDir(null), "plan.json")
+            val json_string = file.bufferedReader().use {
+                it.readText()
+            }
 
-        val docRef = db.collection("Planes").document(documentId)
-        docRef.get()
-            .addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    Log.d(TAG, "encontrado - ${documentSnapshot.id} => ${documentSnapshot.data}")
-                    // Aquí puedes acceder a los datos del documento utilizando document.data
-                    val plan = documentSnapshot.toObject<Plan>()
+            val planJsonArray = JSONArray(json_string)
 
-                    if(latitud==3000.0)
-                    {
-                        if (plan != null) {
-                            binding.seleccionarUbicacion.setText( findAddress (LatLng(plan.latitude, plan.longitude)))
-                        }
-                    }
+            for (i in 0 until planJsonArray.length()) {
 
-                    // Convertir fecha de milisegundos a objeto Date
-                    val formatoFecha = SimpleDateFormat("dd/MM/yy", Locale.getDefault())
+                val jsonObject = planJsonArray.getJSONObject(i)
+                val dateInMillisInicio = jsonObject.getLong("dateInicio")
+                val dateInMillisFin = jsonObject.getLong("dateFinal")
 
-                    if (plan != null) {
-                        binding.switchPasos.isChecked= plan.AmigoMasActivo
-                    }
+                val latitude = jsonObject.getDouble("latitude")
+                val longitude = jsonObject.getDouble("longitude")
 
-                    if (plan != null) {
-                        binding.nombrePlan.setText(plan.titulo)
-                    }
-
-                    //obtener imagenes
-                    val pathReferencePin = plan?.let { storageRef.child(it.fotopin) }
-
-                    val ONE_MEGABYTE: Long = 1024 * 1024
-                    pathReferencePin?.getBytes(ONE_MEGABYTE)?.addOnSuccessListener { bytes ->
-                        // Los bytes de la imagen se han recuperado exitosamente
-                        destinationFoto=2
-                        val imageStream = ByteArrayInputStream(bytes)
-                        loadImage(imageStream)
-                    }?.addOnFailureListener {
-                        // Manejar cualquier error que ocurra durante la recuperación de la imagen
-                    }
-
-                    val pathReferencePlan = plan?.let { storageRef.child(it.fotoEncuentro) }
-                    pathReferencePlan?.getBytes(ONE_MEGABYTE)?.addOnSuccessListener { bytes ->
-                        // Los bytes de la imagen se han recuperado exitosamente
-                        destinationFoto=1
-                        val imageStream = ByteArrayInputStream(bytes)
-                        loadImage(imageStream)
-                    }?.addOnFailureListener {
-                        // Manejar cualquier error que ocurra durante la recuperación de la imagen
-                    }
-
-                    Log.e(TAG, "DATES ${plan?.dateInicio} Y ${plan?.dateFinal}?")
-                    val dateInicio = plan?.dateInicio
-                    val dateFin = plan?.dateFinal
-
-                    // Asegúrate de que las fechas no sean nulas antes de continuar
-                    if (dateInicio != null && dateFin != null) {
-                        // Configura el formato de fecha y hora
-                        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        val formatoHora = SimpleDateFormat("h:mm a", Locale.getDefault())
-
-                        // Establece la zona horaria a UTC si es necesario
-                        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
-                        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
-
-                        // Configura las fechas en las vistas
-                        binding.fechaInicio.setText(formatoFecha.format(dateInicio))
-                        binding.editTextText66.setText(formatoFecha.format(dateFin))
-                        binding.horaInicio.setText(formatoHora.format(dateInicio))
-                        binding.horaFin.setText(formatoHora.format(dateFin))
-                    }
-
-
-                } else {
-                    Log.d(TAG, "No such document")
+                if(latitud==3000.0)
+                {
+                    latitud=latitude
+                    longitud=longitude
+                    binding.seleccionarUbicacion.setText( findAddress (LatLng(latitude, longitude)))
                 }
+
+                binding.switchPasos.isChecked= jsonObject.getBoolean("AmigoMasActivo")
+
+                binding.nombrePlan.setText(jsonObject.getString("titulo"))
+
+                destinationFoto=1
+                // Decodificar la imagen de encuentro
+                val fotoEncuentroBase64 = jsonObject.getString("fotoEncuentro")
+                val fotoEncuentroByteArray = Base64.decode(fotoEncuentroBase64, Base64.DEFAULT)
+                loadImage(ByteArrayInputStream(fotoEncuentroByteArray))
+
+                destinationFoto=2
+                // Decodificar la imagen del pin
+                val fotopinBase64 = jsonObject.getString("fotoPinGrande")
+                val fotopinByteArray = Base64.decode(fotopinBase64, Base64.DEFAULT)
+                loadImage(ByteArrayInputStream(fotopinByteArray))
+
+// Formato de fecha que incluye la hora
+                val formatoFechaHora = SimpleDateFormat("d/M/yyyy HH:mm", Locale.getDefault())
+
+// Obtener la fecha y hora de inicio
+                val dateInicio = Date(dateInMillisInicio)
+                val fechaHoraInicio = formatoFechaHora.format(dateInicio)
+
+// Separar la fecha y la hora de inicio
+                val partesInicio = fechaHoraInicio.split(" ")
+                val fechaInicio = partesInicio[0]
+                val horaInicio = partesInicio[1]
+
+// Mostrar la fecha y la hora de inicio en el TextView correspondiente
+                binding.fechaInicio.setText(fechaInicio)
+                binding.horaInicio.setText(horaInicio)
+
+// Obtener la fecha y hora de fin
+                val dateFin = Date(dateInMillisFin)
+                val fechaHoraFin = formatoFechaHora.format(dateFin)
+
+// Separar la fecha y la hora de fin
+                val partesFin = fechaHoraFin.split(" ")
+                val fechaFin = partesFin[0]
+                val horaFin = partesFin[1]
+
+// Mostrar la fecha y la hora de fin en el TextView correspondiente
+                binding.editTextText66.setText(fechaFin)
+                binding.horaFin.setText(horaFin)
+
+
+                //OBTENER INFORMACION DE LA MINIS IMAGENES
+                //ACA SE USARAN PARA OTRA COSA
+                val MINIfotopinBase64 =jsonObject.getString("fotoPin")
+                val MINIfotopinByteArray = Base64.decode(MINIfotopinBase64, Base64.DEFAULT)
+                imagenPin= BitmapFactory.decodeStream(ByteArrayInputStream(MINIfotopinByteArray))
             }
-            .addOnFailureListener { exception ->
-                Log.d(TAG, "get failed with ", exception)
-            }
+
+        } catch (e: IOException) {
+            Log.e("LOCATION", "Error al leer el archivo JSON: ${e.message}")
+        } catch (e: JSONException) {
+            Log.e("LOCATION", "Error al analizar el archivo JSON: ${e.message}")
+        }
     }
 
     fun findAddress (location : LatLng):String?{
@@ -204,26 +254,38 @@ class CrearPlanActivity : AppCompatActivity() {
     private fun inicializarBotones() {
 
         binding.crearplanButton.setOnClickListener {
+            if("seleccionar ubicacion".equals(binding.seleccionarUbicacion.text.toString()))
+            {
+                //falta revisar concordancia de fechas
+
+                //revisar si hay un plan del grupo que inicia al mismo tiempo que este
+
+                Toast.makeText(this, "Debe llenar todos los datos", Toast.LENGTH_LONG ).show()
+            }
+            else if(!concordanciaFechas(binding.fechaInicio, binding.horaInicio,binding.editTextText66, binding.horaFin))
+            {
+                Toast.makeText(this, "Fechas incorrectas", Toast.LENGTH_LONG ).show()
+            }
+            else
+            {
                 //editar la informacion
-                editarInformacion { documentId ->
+                guardarInformacionFirebase { documentId ->
                     val intent = Intent(baseContext, PlanesActivity::class.java)
                     intent.putExtra("idPlan", documentId)
                     startActivity(intent)
                 }
-
-            //ENVIAR A FIRE BASE EL NUEVO PLAN CREADO
-            //EVALUAR SI TODA LA INFORMACION ESTA COMPLETA
+            }
         }
 
         binding.seleccionarUbicacion.setOnClickListener {
             //GUARDAR EN MEMORIA INTERNA EN UN JSON LA INFORMACION DEL PLAN
             //BORRAR LA INFORMACION DEL ARCHIVO SI ES QUE HAY
-            guardarInformacion { documentId ->
-                val intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
-                intent.putExtra("idPlan", documentId)
-                intent.putExtra("pantalla","crear")
-                startActivity(intent)
-            }
+            guardarInformacion()
+
+            val intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
+            intent.putExtra("idPlan", documentId)
+            intent.putExtra("pantalla","crear")
+            startActivity(intent)
         }
 
         binding.imagenPlan.setOnClickListener{
@@ -282,6 +344,58 @@ class CrearPlanActivity : AppCompatActivity() {
         fabClicks()
     }
 
+    private fun concordanciaFechas(fechaTexto1: View, horaTexto1: View, fechaTexto2: View, horaTexto2: View): Boolean {
+
+        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        // Parsear la fecha y la hora de los TextView
+        val fecha = formatoFecha.parse((fechaTexto1 as Button).text.toString())
+        val hora = formatoHora.parse((horaTexto1 as Button).text.toString())
+
+        // Combinar la fecha y la hora en un solo objeto Date
+        val calendar = Calendar.getInstance()
+        calendar.time = fecha
+        val horaCalendar = Calendar.getInstance()
+        horaCalendar.time = hora
+        calendar.set(Calendar.HOUR_OF_DAY, horaCalendar.get(Calendar.HOUR_OF_DAY))
+        calendar.set(Calendar.MINUTE, horaCalendar.get(Calendar.MINUTE))
+
+        // Obtener la fecha y hora actual
+        val fechaActual = Date()
+
+        // Validar si la fecha y hora ingresadas son posteriores a la fecha y hora actual
+        return calendar.time.after(fechaActual) && segundaEsMayorQuePrimera(fechaTexto1, horaTexto1, fechaTexto2, horaTexto2)
+    }
+    fun segundaEsMayorQuePrimera(fechaTexto1: View, horaTexto1: View, fechaTexto2: View, horaTexto2: View): Boolean {
+        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        // Parsear la fecha y la hora de los TextView
+        val fecha1 = formatoFecha.parse((fechaTexto1 as Button).text.toString())
+        val hora1 = formatoHora.parse((horaTexto1 as Button).text.toString())
+        val fecha2 = formatoFecha.parse((fechaTexto2 as Button).text.toString())
+        val hora2 = formatoHora.parse((horaTexto2 as Button).text.toString())
+
+        // Combinar la fecha y la hora en un solo objeto Date
+        val calendar1 = Calendar.getInstance()
+        calendar1.time = fecha1
+        val horaCalendar1 = Calendar.getInstance()
+        horaCalendar1.time = hora1
+        calendar1.set(Calendar.HOUR_OF_DAY, horaCalendar1.get(Calendar.HOUR_OF_DAY))
+        calendar1.set(Calendar.MINUTE, horaCalendar1.get(Calendar.MINUTE))
+
+        val calendar2 = Calendar.getInstance()
+        calendar2.time = fecha2
+        val horaCalendar2 = Calendar.getInstance()
+        horaCalendar2.time = hora2
+        calendar2.set(Calendar.HOUR_OF_DAY, horaCalendar2.get(Calendar.HOUR_OF_DAY))
+        calendar2.set(Calendar.MINUTE, horaCalendar2.get(Calendar.MINUTE))
+
+        // Comparar las fechas y horas
+        return calendar2.time.after(calendar1.time)
+    }
+
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
             startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
@@ -299,7 +413,6 @@ class CrearPlanActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, PlanActivity::class.java))
         }
     }
-
     private fun initShowout (v: View){
         v.apply {
             visibility = View. GONE
@@ -307,7 +420,6 @@ class CrearPlanActivity : AppCompatActivity() {
             alpha = 0f
         }
     }
-
     private fun closeFabMenu() {
         rotation=rotateFAB()
         isFabOpen=false
@@ -316,7 +428,6 @@ class CrearPlanActivity : AppCompatActivity() {
         cerrar(binding.activoView)
         cerrar(binding.planesView)
     }
-
     private fun cerrar(view: View) {
         view.apply {
             visibility= View.VISIBLE
@@ -335,7 +446,6 @@ class CrearPlanActivity : AppCompatActivity() {
                 .start()
         }
     }
-
     private fun showFabMenu() {
         rotation=rotateFAB()
         isFabOpen=true
@@ -347,7 +457,6 @@ class CrearPlanActivity : AppCompatActivity() {
         mostrar(binding.planesView)
 
     }
-
     private fun mostrar(view: View) {
         view.apply {
             visibility= View.VISIBLE
@@ -361,7 +470,6 @@ class CrearPlanActivity : AppCompatActivity() {
                 .start()
         }
     }
-
     private fun rotateFAB():Boolean {
         binding.fabMenuPlan.animate()
             .setDuration(200)
@@ -370,7 +478,6 @@ class CrearPlanActivity : AppCompatActivity() {
 
         return isFabOpen
     }
-
     private fun inicializarPickers() {
 
         val calendar = Calendar.getInstance()
@@ -399,7 +506,6 @@ class CrearPlanActivity : AppCompatActivity() {
             openTimeDialogue(binding.horaFin.context,binding.horaFin)
         }
     }
-
     fun openDateDialogue(context: Context, view: View) {
         // Aquí irá el código para mostrar el diálogo de selección de fecha
         val calendar = Calendar.getInstance()
@@ -419,7 +525,6 @@ class CrearPlanActivity : AppCompatActivity() {
 
         dialog.show()
     }
-
     fun openTimeDialogue(context: Context,view: View) {
         // Aquí irá el código para mostrar el diálogo de selección de fecha
         // Aquí irá el código para mostrar el diálogo de selección de tiempo
@@ -438,136 +543,69 @@ class CrearPlanActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    // Modifica la función guardarInformacion() para que acepte una función de devolución de llamada
-    private fun guardarInformacion(callback: (String) -> Unit) {
+    private fun guardarInformacion() {
+        //obtener el drwable a bitmap
+        val bitmapPinPlanImg = (binding.pinPlanImg.drawable as BitmapDrawable).bitmap
+        val streamPinPlanImgGrande = ByteArrayOutputStream()
+        bitmapPinPlanImg.compress(Bitmap.CompressFormat.PNG, 100, streamPinPlanImgGrande)
+        val byteArrayPinPlanImgGrande = streamPinPlanImgGrande.toByteArray()
 
-        val drawablepin = binding.pinPlanImg.drawable
-        var imageUri: Uri? = null
+        //hacerle resize a 60x60px
+        var resizedbitmapPinPlanImg = createCircledImage(bitmapPinPlanImg)
+        resizedbitmapPinPlanImg = Bitmap.createScaledBitmap(resizedbitmapPinPlanImg, 60, 60, true)
+        val streamPinPlanImg = ByteArrayOutputStream()
+        resizedbitmapPinPlanImg.compress(Bitmap.CompressFormat.PNG, 100, streamPinPlanImg)
+        val byteArrayPinPlanImg = streamPinPlanImg.toByteArray()
+        resizedbitmapPinPlanImg.recycle()
 
-        //var imgUrlpin: String? =null
-        var direccionpin="images/pin.png"
-        val pinImagesRef = storageRef.child(direccionpin)
+        val bitmapImagenPlan= (binding.imagenPlan.drawable as BitmapDrawable).bitmap
+        val streamImagenPlanGrande = ByteArrayOutputStream()
+        bitmapImagenPlan.compress(Bitmap.CompressFormat.PNG, 100, streamImagenPlanGrande)
+        val byteArrayImagenPlanGrande = streamImagenPlanGrande.toByteArray()
 
-        if (drawablepin != null) {
-            if (drawablepin is BitmapDrawable) {
-                // Si el Drawable es un BitmapDrawable, puedes obtener el Bitmap y luego su URI
-                val bitmap = drawablepin.bitmap
-                imageUri = bitmapToUri(this, bitmap)
-                pinImagesRef.putFile(imageUri).addOnSuccessListener { task ->
-                    //imgUrlpin = task.getMetadata()?.getReference()?.getDownloadUrl().toString()
-                }
-            } else if (drawablepin is VectorDrawable || drawablepin is VectorDrawableCompat) {
-                // Si el Drawable es un VectorDrawable, no se puede convertir directamente a URI
-                // Puedes hacer algo aquí para manejar este caso si es necesario
-            }
-        }
-
-        var direccionplan="images/plan.png"
-        val planImagesRef = storageRef.child(direccionplan)
-        val drawableplan = binding.imagenPlan.drawable
-        //var imgUrlplan: String? =null
-
-        if (drawableplan != null) {
-            if (drawableplan is BitmapDrawable) {
-                // Si el Drawable es un BitmapDrawable, puedes obtener el Bitmap y luego su URI
-                val bitmap = drawableplan.bitmap
-                imageUri = bitmapToUri(this, bitmap)
-                planImagesRef.putFile(imageUri).addOnSuccessListener { task ->
-                    pinImagesRef.downloadUrl.addOnSuccessListener { uri ->
-                        // Uri es la URL de la imagen subida en Firebase Storage
-                        //imgUrlplan= uri.toString()
-                        // Una vez que se haya guardado la información, llamamos a la función de devolución de llamada
-                        callback.invoke(documentId)
-                    }
-                }
-            } else if (drawableplan is VectorDrawable || drawableplan is VectorDrawableCompat) {
-                // Si el Drawable es un VectorDrawable, no se puede convertir directamente a URI
-                // Puedes hacer algo aquí para manejar este caso si es necesario
-            }
-        }
-
-        val myPlan = Plan(
+        val myPlan = PlanJson(
             textoAFecha(binding.fechaInicio, binding.horaInicio),
             textoAFecha(binding.editTextText66, binding.horaFin),
-            latitud,
             longitud,
+            latitud,
             binding.switchPasos.isChecked,
             binding.nombrePlan.text.toString(),
-            direccionplan,
-            direccionpin
+            byteArrayImagenPlanGrande,
+            byteArrayPinPlanImg,
+            byteArrayPinPlanImgGrande
         )
 
-        val plan= hashMapOf(
-            "dateInicio" to myPlan.dateInicio,
-            "dateFinal" to myPlan.dateFinal,
-            "latitude" to myPlan.latitude,
-            "longitude" to myPlan.longitude,
-            "AmigoMasActivo" to myPlan.AmigoMasActivo,
-            "titulo" to myPlan.titulo,
-            "fotoEncuentro" to myPlan.fotoEncuentro,
-            "fotopin" to myPlan.fotopin,
-        )
+        writeJSONObject(myPlan);
+    }
+    private fun writeJSONObject(myPlan: PlanJson) {
+        val plan = mutableListOf<JSONObject>()
 
-        db.collection("Planes")
-            .add(plan)
-            .addOnSuccessListener { documentReference ->
-                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-                documentId=documentReference.id
-                // Una vez que se haya guardado la información, llamamos a la función de devolución de llamada
-                callback.invoke(documentId)
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Error adding document", e)
+        try {
+            // Agregar la nueva ubicación a la lista de ubicaciones
+            plan.add(myPlan.toJSON())
+
+            // Convertir la lista de objetos JSON a una cadena JSON
+            val jsonArray = JSONArray(plan)
+
+            // Obtener la ruta del archivo locations.json en el directorio de archivos externos
+            val filename = "plan.json"
+            val file = File(baseContext.getExternalFilesDir(null), filename)
+
+            // Escribir la cadena JSON en el archivo
+            BufferedWriter(FileWriter(file)).use { output ->
+                output.write(jsonArray.toString())
             }
 
+            Log.i("LOCATION", "File modified at path: $file")
+        } catch (e: IOException) {
+            Log.e("LOCATION", "Error writing to file: ${e.message}")
+        }
     }
 
-    private fun editarInformacion(callback: (String) -> Unit) {
-
-        val drawablepin = binding.pinPlanImg.drawable
-        var imageUri: Uri? = null
-
-        //var imgUrlpin: String? =null
-        var direccionpin="images/pin.png"
+    private fun guardarInformacionFirebase(callback: (String) -> Unit) {
+        var direccionpin = "pines/${binding.nombrePlan.text.toString()}-pin.png"
+        var direccionplan = "planes/${binding.nombrePlan.text.toString()}-plan.png"
         val pinImagesRef = storageRef.child(direccionpin)
-
-        if (drawablepin != null) {
-            if (drawablepin is BitmapDrawable) {
-                // Si el Drawable es un BitmapDrawable, puedes obtener el Bitmap y luego su URI
-                val bitmap = drawablepin.bitmap
-                imageUri = bitmapToUri(this, bitmap)
-                pinImagesRef.putFile(imageUri).addOnSuccessListener { task ->
-                    //imgUrlpin = task.getMetadata()?.getReference()?.getDownloadUrl().toString()
-                }
-            } else if (drawablepin is VectorDrawable || drawablepin is VectorDrawableCompat) {
-                // Si el Drawable es un VectorDrawable, no se puede convertir directamente a URI
-                // Puedes hacer algo aquí para manejar este caso si es necesario
-            }
-        }
-
-        var direccionplan="images/plan.png"
-        val planImagesRef = storageRef.child(direccionplan)
-        val drawableplan = binding.imagenPlan.drawable
-        //var imgUrlplan: String? =null
-
-        if (drawableplan != null) {
-            if (drawableplan is BitmapDrawable) {
-                // Si el Drawable es un BitmapDrawable, puedes obtener el Bitmap y luego su URI
-                val bitmap = drawableplan.bitmap
-                imageUri = bitmapToUri(this, bitmap)
-                planImagesRef.putFile(imageUri).addOnSuccessListener { task ->
-                    pinImagesRef.downloadUrl.addOnSuccessListener { uri ->
-                        // Uri es la URL de la imagen subida en Firebase Storage
-                        //imgUrlplan= uri.toString()
-                        // Una vez que se haya guardado la información, llamamos a la función de devolución de llamada
-                        callback.invoke(documentId)
-                    }
-                }
-            } else if (drawableplan is VectorDrawable || drawableplan is VectorDrawableCompat) {
-                // Si el Drawable es un VectorDrawable, no se puede convertir directamente a URI
-                // Puedes hacer algo aquí para manejar este caso si es necesario
-            }
-        }
 
         val myPlan = Plan(
             textoAFecha(binding.fechaInicio, binding.horaInicio),
@@ -580,22 +618,54 @@ class CrearPlanActivity : AppCompatActivity() {
             direccionpin
         )
 
-        val plan= hashMapOf(
-            "dateInicio" to myPlan.dateInicio,
-            "dateFinal" to myPlan.dateFinal,
-            "latitude" to myPlan.latitude,
-            "longitude" to myPlan.longitude,
-            "AmigoMasActivo" to myPlan.AmigoMasActivo,
-            "titulo" to myPlan.titulo,
-            "fotoEncuentro" to myPlan.fotoEncuentro,
-            "fotopin" to myPlan.fotopin,
-        )
+        databaseReference.child(binding.nombrePlan.text.toString()).setValue(myPlan).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val drawableplan = binding.imagenPlan.drawable
+                uploadFoto(drawableplan, direccionplan)
 
-        val planMap: Map<String, Any> = plan.toMap()
-        db.collection("Planes").document(documentId)
-            .set(plan, SetOptions.merge())
-            .addOnSuccessListener { Log.d(TAG, "Document successfully updated!") }
-            .addOnFailureListener { e -> Log.w(TAG, "Error updating document", e) }
+                val drawablepin = binding.pinPlanImg.drawable
+                uploadFoto(drawablepin, direccionpin)
+
+                // Llamar al callback con el documentId
+                callback(binding.nombrePlan.text.toString())
+            } else {
+                Toast.makeText(this, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        //guardar plan en el grupo
+        //anadir todos los integrantes del grupo al plan
+        guardarPlanAlGrupo()
+    }
+    private fun guardarPlanAlGrupo() {
+        guardarIntegrantes()
+    }
+    private fun guardarIntegrantes() {
+
+    }
+    private fun uploadFoto(drawableFoto: Drawable, nombre:String) {
+        var imageUri: Uri? = null
+
+        //var imgUrlplan: String? =null
+
+        storageReference=FirebaseStorage.getInstance().getReference(nombre)
+
+        if (drawableFoto != null) {
+            if (drawableFoto is BitmapDrawable) {
+                // Si el Drawable es un BitmapDrawable, puedes obtener el Bitmap y luego su URI
+                val bitmap = drawableFoto.bitmap
+                imageUri = bitmapToUri(this, bitmap)
+                storageReference.putFile(imageUri).addOnSuccessListener {
+                    //hideProgressBar()
+                    //Toast.makeText(this, "Usuario guardado correctamente", Toast.LENGTH_LONG ).show()
+                }.addOnFailureListener()
+                {
+                    //hideProgressBar()
+                    Toast.makeText(this, "Fallo en guardar la informacion del usuario", Toast.LENGTH_LONG ).show()
+                }
+
+            }
+        }
     }
     fun bitmapToUri(context: Context, bitmap: Bitmap): Uri {
         val bytes = ByteArrayOutputStream()
@@ -621,46 +691,47 @@ class CrearPlanActivity : AppCompatActivity() {
         return calendario.time
     }
 
-
     private fun loadImage(imageStream:  InputStream?) {
-        val originalBitmap = BitmapFactory.decodeStream(imageStream)
+        var srcBitmap = BitmapFactory.decodeStream(imageStream)
 
-        // Crear un bitmap cuadrado con el tamaño máximo entre el ancho y el alto de la imagen
-        val squareBitmap = Bitmap.createBitmap(
-            min(originalBitmap.width, originalBitmap.height),
-            min(originalBitmap.width, originalBitmap.height),
-            Bitmap.Config.ARGB_8888
-        )
-
-        // Crear un lienzo para dibujar en el bitmap cuadrado
-        val canvas = Canvas(squareBitmap)
-
-        // Dibujar la imagen original en el centro del bitmap cuadrado
-        val left = (squareBitmap.width - originalBitmap.width) / 2f
-        val top = (squareBitmap.height - originalBitmap.height) / 2f
-        canvas.drawBitmap(originalBitmap, left, top, null)
-
-        // Crear un bitmap circular
-        val circleBitmap = Bitmap.createBitmap(
-            squareBitmap.width,
-            squareBitmap.height,
-            Bitmap.Config.ARGB_8888
-        )
-        val paint = Paint().apply {
-            isAntiAlias = true
-            shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        }
-        val rect = Rect(0, 0, squareBitmap.width, squareBitmap.height)
-        val rectF = RectF(rect)
-        val diameter = min(squareBitmap.width, squareBitmap.height).toFloat()
-        canvas.setBitmap(circleBitmap)
-        canvas.drawCircle(diameter / 2, diameter / 2, diameter / 2, paint)
+        srcBitmap=createCircledImage(srcBitmap)
+        //srcBitmap.recycle()
 
         // Establecer la imagen circular en la vista correspondiente
         if (destinationFoto == 1) {
-            binding.imagenPlan.setImageBitmap(circleBitmap)
+            binding.imagenPlan.setImageBitmap(srcBitmap)
         } else {
-            binding.pinPlanImg.setImageBitmap(circleBitmap)
+            binding.pinPlanImg.setImageBitmap(srcBitmap)
         }
+    }
+    private fun createCircledImage(srcBitmap: Bitmap?): Bitmap {
+        val squareBitmapWidth = min(srcBitmap!!.width, srcBitmap.height)
+
+        // Generate a bitmap with the above value as dimensions
+        val dstBitmap = Bitmap.createBitmap(
+            squareBitmapWidth,
+            squareBitmapWidth,
+            Bitmap.Config.ARGB_8888
+        )
+
+        // Initializing a Canvas with the above generated bitmap
+        val canvas = Canvas(dstBitmap)
+
+        // initializing Paint
+        val paint = Paint()
+        paint.isAntiAlias = true
+
+        // Generate a square (rectangle with all sides same)
+        val rect = Rect(0, 0, squareBitmapWidth, squareBitmapWidth)
+        val rectF = RectF(rect)
+
+        // Operations to draw a circle
+        canvas.drawOval(rectF, paint)
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        val left = ((squareBitmapWidth - srcBitmap.width) / 2).toFloat()
+        val top = ((squareBitmapWidth - srcBitmap.height) / 2).toFloat()
+        canvas.drawBitmap(srcBitmap, left, top, paint)
+
+        return srcBitmap;
     }
 }

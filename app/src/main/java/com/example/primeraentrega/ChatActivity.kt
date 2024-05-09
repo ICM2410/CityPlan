@@ -80,7 +80,9 @@ class ChatActivity : AppCompatActivity() {
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+            var intent = Intent(baseContext, CrearPlanActivity::class.java)
+            intent.putExtra("pantalla", "planes")
+            startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
