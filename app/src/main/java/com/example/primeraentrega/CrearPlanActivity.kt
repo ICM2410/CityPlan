@@ -618,18 +618,21 @@ class CrearPlanActivity : AppCompatActivity() {
             direccionpin
         )
 
-        databaseReference.child(binding.nombrePlan.text.toString()).setValue(myPlan).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val drawableplan = binding.imagenPlan.drawable
-                uploadFoto(drawableplan, direccionplan)
+        val childId = databaseReference.child("Planes").push().key
+        if (childId != null) {
+            databaseReference.child(childId).setValue(myPlan).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val drawableplan = binding.imagenPlan.drawable
+                    uploadFoto(drawableplan, direccionplan)
 
-                val drawablepin = binding.pinPlanImg.drawable
-                uploadFoto(drawablepin, direccionpin)
+                    val drawablepin = binding.pinPlanImg.drawable
+                    uploadFoto(drawablepin, direccionpin)
 
-                // Llamar al callback con el documentId
-                callback(binding.nombrePlan.text.toString())
-            } else {
-                Toast.makeText(this, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                    // Llamar al callback con el documentId
+                    callback(binding.nombrePlan.text.toString())
+                } else {
+                    Toast.makeText(this, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                }
             }
         }
 

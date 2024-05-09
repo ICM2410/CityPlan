@@ -754,7 +754,7 @@ class EditarPlanActivity : AppCompatActivity() {
             direccionpin
         )
 
-        databaseReference.child(binding.nombrePlan.text.toString()).setValue(myPlan).addOnCompleteListener { task ->
+        databaseReference.child(idPlan).setValue(myPlan).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val drawableplan = binding.imagenPlan.drawable
                 uploadFoto(drawableplan, direccionplan)

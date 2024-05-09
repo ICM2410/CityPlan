@@ -1,28 +1,105 @@
 package com.example.primeraentrega
 
+import android.content.ContentValues
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
+import com.example.primeraentrega.Clases.Grupo
+import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.databinding.ActivityVerGruposBinding
 import com.example.primeraentrega.Clases.Usuario
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 
 class VerGruposActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityVerGruposBinding
+    private lateinit var database : FirebaseDatabase
 
     private var isFabOpen=false
     private var rotation=false
+    private lateinit var databaseReference: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityVerGruposBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        database = FirebaseDatabase.getInstance()
+        databaseReference= FirebaseDatabase.getInstance().getReference("Grupos")
         val usuario = intent.getSerializableExtra("user") as? Usuario
 
         inicializarBotones(usuario)
+
+        crearInfoSophie()
+
+    }
+
+    private fun crearInfoSophie() {
+        //obtener todos los usuarios
+        val userRef = database.getReference("users")
+        val listaUsuarios = mutableListOf<Usuario>()
+
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val userId = userSnapshot.key // El ID del usuario
+                    val userData = userSnapshot.getValue(Usuario::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $userId")
+                    println("Datos de usuario: $userData")
+
+                    // Agrega el usuario a la lista si los datos no son nulos
+                    if (userId != null && userData != null) {
+                        listaUsuarios.add(userData)
+                    }
+
+                }
+                //de ahi se crea un grupo y se guardan ahi todos los usuarios
+                val grupo = Grupo(
+                    "nos gusta explorar el mundo",
+                    "aventureros",
+                    "grupos/img1.png",
+                    listaUsuarios
+                )
+                val childId = databaseReference.child("Grupos").push().key
+
+                if (childId != null) {
+                    databaseReference.child(childId).setValue(grupo).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+
+
+                        } else {
+                            Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos del usuario: ${databaseError.message}")
+            }
+        })
+
 
     }
 
