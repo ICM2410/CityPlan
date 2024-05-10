@@ -168,7 +168,10 @@ class EditarPlanActivity : AppCompatActivity() {
                 loadImage(ByteArrayInputStream(fotopinByteArray))
 
                 // Formato de fecha que incluye la hora
-                val formatoFechaHora = SimpleDateFormat("d/M/yyyy HH:mm", Locale.getDefault())
+                val formatoFechaHora = SimpleDateFormat("M/d/yyyy HH:mm", Locale.getDefault())
+
+// Establecer la zona horaria como UTC
+                formatoFechaHora.timeZone = TimeZone.getTimeZone("UTC")
 
 // Obtener la fecha y hora de inicio
                 val dateInicio = Date(dateInMillisInicio)
@@ -195,7 +198,6 @@ class EditarPlanActivity : AppCompatActivity() {
 // Mostrar la fecha y la hora de fin en el TextView correspondiente
                 binding.editTextText66.setText(fechaFin)
                 binding.horaFin.setText(horaFin)
-
 
                 //OBTENER INFORMACION DE LA MINIS IMAGENES
                 //ACA SE USARAN PARA OTRA COSA
@@ -276,7 +278,7 @@ class EditarPlanActivity : AppCompatActivity() {
 
                     if (dateInicio != null && dateFin != null) {
                         // Configura el formato de fecha y hora
-                        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
                         val formatoHora = SimpleDateFormat("h:mm a", Locale.getDefault())
 
                         // Establece la zona horaria a UTC si es necesario
@@ -682,20 +684,23 @@ class EditarPlanActivity : AppCompatActivity() {
     }
 
     fun textoAFecha(fechaTexto: View, horaTexto: View): Date {
-        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         val fecha = formatoFecha.parse((fechaTexto as Button).text.toString())
+
+        // Especificar la zona horaria como UTC para la hora
+        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
         val hora = formatoHora.parse((horaTexto as Button).text.toString())
 
         val calendario = Calendar.getInstance()
         fecha?.let { calendario.time = it }
         hora?.let {
-            calendario.set(Calendar.HOUR_OF_DAY, it.hours)
-            calendario.set(Calendar.MINUTE, it.minutes)
+            val horaCalendario = Calendar.getInstance().apply { time = it }
+            calendario.set(Calendar.HOUR_OF_DAY, horaCalendario.get(Calendar.HOUR_OF_DAY))
+            calendario.set(Calendar.MINUTE, horaCalendario.get(Calendar.MINUTE))
         }
         return calendario.time
-
     }
 
     private fun loadImage(imageStream:  InputStream?) {

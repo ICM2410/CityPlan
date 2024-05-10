@@ -206,7 +206,10 @@ class CrearPlanActivity : AppCompatActivity() {
                 loadImage(ByteArrayInputStream(fotopinByteArray))
 
 // Formato de fecha que incluye la hora
-                val formatoFechaHora = SimpleDateFormat("d/M/yyyy HH:mm", Locale.getDefault())
+                val formatoFechaHora = SimpleDateFormat("M/d/yyyy HH:mm", Locale.getDefault())
+
+// Establecer la zona horaria como UTC
+                formatoFechaHora.timeZone = TimeZone.getTimeZone("UTC")
 
 // Obtener la fecha y hora de inicio
                 val dateInicio = Date(dateInMillisInicio)
@@ -738,10 +741,13 @@ class CrearPlanActivity : AppCompatActivity() {
     }
 
     fun textoAFecha(fechaTexto: View, horaTexto: View): Date {
-        val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         val fecha = formatoFecha.parse((fechaTexto as Button).text.toString())
+
+        // Especificar la zona horaria como UTC para la hora
+        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
         val hora = formatoHora.parse((horaTexto as Button).text.toString())
 
         val calendario = Calendar.getInstance()
@@ -753,6 +759,7 @@ class CrearPlanActivity : AppCompatActivity() {
         }
         return calendario.time
     }
+
 
     private fun loadImage(imageStream:  InputStream?) {
         var srcBitmap = BitmapFactory.decodeStream(imageStream)
