@@ -28,6 +28,7 @@ class GaleriaActivity : AppCompatActivity() {
     private lateinit var photoGalleryAdapter: PhotoGalleryAdapter
     private var isFabOpen=false
     private var rotation=false
+    private lateinit var idGrupo : String
 
     val getContentGallery = registerForActivityResult(
         ActivityResultContracts.GetContent(),
@@ -47,6 +48,8 @@ class GaleriaActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding= ActivityGaleriaBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        idGrupo=intent.getStringExtra("idGrupo").toString()
 
         val file = File(getFilesDir(), "picFromCamera");
         uriCamera = FileProvider.getUriForFile(baseContext,baseContext.packageName + ".fileprovider", file)
@@ -114,19 +117,28 @@ class GaleriaActivity : AppCompatActivity() {
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+            var intent = Intent(baseContext, CrearPlanActivity::class.java)
+            intent.putExtra("pantalla", "planes")
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
 

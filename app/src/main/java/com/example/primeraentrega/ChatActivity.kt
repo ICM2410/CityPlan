@@ -5,6 +5,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.primeraentrega.databinding.ActivityChatBinding
@@ -16,10 +17,13 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var binding : ActivityChatBinding
     private var isFabOpen=false
     private var rotation=false
+    private lateinit var idGrupo : String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        idGrupo=intent.getStringExtra("idGrupo").toString()
+        Log.i("idGrupo","revisar Chat $idGrupo")
         inicializarBotones()
         //binding.bottomNavigation.selectedItemId = R.id.cuenta_bar // Establecer elemento seleccionado
     }
@@ -27,8 +31,11 @@ class ChatActivity : AppCompatActivity() {
     private fun inicializarBotones() {
 
         binding.configGrupo.setOnClickListener {
-            startActivity(Intent(baseContext, EditarGrupoActivity::class.java))
+            var intent = Intent(baseContext, EditarGrupoActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
+
         val usuario: Usuario = Usuario()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
@@ -76,21 +83,28 @@ class ChatActivity : AppCompatActivity() {
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
             var intent = Intent(baseContext, CrearPlanActivity::class.java)
             intent.putExtra("pantalla", "planes")
+            intent.putExtra("idGrupo", idGrupo)
             startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
 

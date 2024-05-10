@@ -97,6 +97,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
     private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
     lateinit var location: FusedLocationProviderClient
+    private lateinit var idGrupo : String
 
     val db = Firebase.firestore
     private lateinit var auth:FirebaseAuth
@@ -287,7 +288,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         setContentView(binding.root)
 
         idPlan=intent.getStringExtra("idPlan").toString()
+        idGrupo=intent.getStringExtra("idGrupo").toString()
         Log.e(TAG, "revisar $idPlan")
+        Log.e("idGrupo", "revisar $idGrupo")
 
         auth=FirebaseAuth.getInstance()
         databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
@@ -532,7 +535,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
     }
 
-    private fun configurarmarkers(integrantes: List<PosAmigo>) {
+    private fun configurarmarkers(integrantes: Map<String,PosAmigo>) {
         //se crea un marker para cada uno de los integrantes
     }
 
@@ -648,11 +651,15 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             val intent=Intent(baseContext,EditarPlanActivity::class.java)
             intent.putExtra("idPlan",idPlan)
             intent.putExtra("pantalla","plan")
+            intent.putExtra("idGrupo", idGrupo)
             startActivity(intent)
         }
 
         binding.botonCamara.setOnClickListener{
-            startActivity(Intent(baseContext,GaleriaActivity::class.java))
+            val intent=Intent(baseContext,GaleriaActivity::class.java)
+            intent.putExtra("idPlan",idPlan)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         val usuario: Usuario = Usuario()
@@ -712,19 +719,28 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+            var intent = Intent(baseContext, CrearPlanActivity::class.java)
+            intent.putExtra("pantalla", "planes")
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
     private fun initShowout (v: View){

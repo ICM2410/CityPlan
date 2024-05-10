@@ -32,7 +32,9 @@ class CrearGrupoActivity : AppCompatActivity() {
         }
 
         binding.buttonAgregarMiembros.setOnClickListener {
-            startActivity(Intent(baseContext, AgregarContactosActivity::class.java))
+            var intent = Intent(baseContext, AgregarContactosActivity::class.java)
+            intent.putExtra("pantalla", "crear")
+            startActivity(intent)
         }
 
         binding.buttonGuardar.setOnClickListener {

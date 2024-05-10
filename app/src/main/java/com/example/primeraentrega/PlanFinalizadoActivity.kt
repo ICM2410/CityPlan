@@ -16,19 +16,22 @@ class PlanFinalizadoActivity : AppCompatActivity() {
 
     private var isFabOpen=false
     private var rotation=false
+    private lateinit var idGrupo : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlanFinalizadoBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        idGrupo=intent.getStringExtra("idGrupo").toString()
         inicializarBotones()
     }
 
     private fun inicializarBotones() {
 
         binding.botonVerRecuerdos.setOnClickListener {
-            startActivity(Intent(baseContext, GaleriaActivity::class.java))
+            var intent = Intent(baseContext, GaleriaActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         val usuario: Usuario = Usuario()
@@ -76,19 +79,28 @@ class PlanFinalizadoActivity : AppCompatActivity() {
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+            var intent = Intent(baseContext, CrearPlanActivity::class.java)
+            intent.putExtra("pantalla", "planes")
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
 

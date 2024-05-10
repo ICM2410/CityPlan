@@ -5,33 +5,113 @@ import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import com.example.primeraentrega.Adapters.Adapterplan
+import com.example.primeraentrega.Clases.Plan
+import com.example.primeraentrega.Clases.PlanLista
 import com.example.primeraentrega.databinding.ActivityPlanesBinding
 import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import java.util.Date
 
-class PlanesActivity : AppCompatActivity() {
+class PlanesActivity<Date> : AppCompatActivity() {
     private lateinit var binding : ActivityPlanesBinding
     private lateinit var idPlan : String
+    private lateinit var idGrupo : String
     private var isFabOpen=false
     private var rotation=false
+    private lateinit var databaseReference: DatabaseReference
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityPlanesBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         idPlan=intent.getStringExtra("idPlan").toString()
+        idGrupo=intent.getStringExtra("idGrupo").toString()
+
+        Log.i("idGrupo","revisar mis Planes $idGrupo")
 
         inicializarBotones()
 
-        //obtenerPlanes()
+        obtenerPlanes()
     }
-    private fun inicializarBotones() {
-        binding.botonPlanActivo.setOnClickListener {
-            val intent =Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idPlan","Salida a Varietale")
+
+    override fun onRestart() {
+        super.onRestart()
+        var adapter = Adapterplan(applicationContext,planes);
+        binding.listPlan.adapter = adapter
+    }
+
+    val planes: MutableList<PlanLista> = mutableListOf()
+    private fun obtenerPlanes() {
+        databaseReference = FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReference.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val planId = userSnapshot.key // El ID del usuario
+                    val planData = userSnapshot.getValue(Plan::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $planId")
+                    println("Datos de usuario: $planData")
+
+                    // Crea un objeto PosAmigo con la información del usuario
+                    var status=""
+                    val plan = planData?.let {
+                        status=planAcrivo(planData.dateInicio,planData.dateFinal)
+                        PlanLista(planData.dateInicio,planData.dateFinal,planData.titulo,planData.fotoEncuentro,planData.id, status)
+                    }
+
+                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                    if (planId != null &&  plan != null && status!="Cerrado") {
+                        planes.add(plan)
+                    }
+                }
+                //poner los planes e la list view
+                var adapter = Adapterplan(applicationContext,planes);
+                binding.listPlan.adapter = adapter
+
+                clickLista(planes)
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
+    }
+
+    private fun clickLista(planes: MutableList<PlanLista>) {
+        binding.listPlan.setOnItemClickListener { parent, view, position, id ->
+
+            val selectedPlan = planes[position] // Obtiene el objeto Pais seleccionado
+            val intent = Intent(baseContext, PlanActivity::class.java)
+
+            intent.putExtra("idPlan",selectedPlan.id)
+            intent.putExtra("idGrupo",idGrupo)
+            // Pasa el objeto Pais como un extra del Intent
             startActivity(intent)
         }
+    }
+
+    private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
+        val fechaActual = Date()
+
+        return when {
+            fechaActual.before(dateInicio) -> "Activo"
+            fechaActual.after(dateFinal) -> "Cerrado"
+            else -> "Abierto"
+        }
+    }
+
+    private fun inicializarBotones() {
 
         val usuario: Usuario = Usuario()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
@@ -78,19 +158,28 @@ class PlanesActivity : AppCompatActivity() {
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+            var intent = Intent(baseContext, CrearPlanActivity::class.java)
+            intent.putExtra("pantalla", "planes")
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
 

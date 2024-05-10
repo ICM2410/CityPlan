@@ -36,6 +36,7 @@ class VerGruposActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private lateinit var databaseReference: DatabaseReference
+    private var childId:String?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +56,8 @@ class VerGruposActivity : AppCompatActivity() {
     private fun crearInfoSophie() {
         //obtener todos los usuarios
         val userRef = database.getReference("users")
-        val listaUsuarios = mutableListOf<Usuario>()
+        val listaUsuarios: MutableMap<String, Usuario> = mutableMapOf()
+        val listaPlanes: MutableMap<String, Plan> = mutableMapOf()
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -70,7 +72,7 @@ class VerGruposActivity : AppCompatActivity() {
 
                     // Agrega el usuario a la lista si los datos no son nulos
                     if (userId != null && userData != null) {
-                        listaUsuarios.add(userData)
+                        listaUsuarios+=(userData.userid to userData)
                     }
 
                 }
@@ -79,12 +81,13 @@ class VerGruposActivity : AppCompatActivity() {
                     "nos gusta explorar el mundo",
                     "aventureros",
                     "grupos/img1.png",
-                    listaUsuarios
+                    listaUsuarios,
+                    listaPlanes
                 )
-                val childId = databaseReference.child("Grupos").push().key
+                childId = databaseReference.child("Grupos").push().key
 
                 if (childId != null) {
-                    databaseReference.child(childId).setValue(grupo).addOnCompleteListener { task ->
+                    databaseReference.child(childId!!).setValue(grupo).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
 
 
@@ -134,7 +137,10 @@ class VerGruposActivity : AppCompatActivity() {
         }
 
         binding.grupoChocmelos.setOnClickListener {
-            startActivity(Intent(baseContext, ChatActivity::class.java))
+            val intent = Intent(baseContext, ChatActivity::class.java)
+            Log.i("idGrupo","revisar Ver grupos $childId")
+            intent.putExtra("idGrupo", childId)
+            startActivity(intent)
         }
 
         binding.botonAgregarGrupo.setOnClickListener {

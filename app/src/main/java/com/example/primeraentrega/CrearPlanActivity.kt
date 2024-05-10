@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
@@ -43,12 +44,17 @@ import android.widget.DatePicker
 import android.widget.TimePicker
 import android.widget.Toast
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
+import com.example.primeraentrega.Clases.Grupo
 import com.example.primeraentrega.Clases.PlanJson
+import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
@@ -75,11 +81,12 @@ class CrearPlanActivity : AppCompatActivity() {
     private var latitud=0.0
     private var documentId=""
     private var pantalla=null
-    val db = Firebase.firestore
     val storage = FirebaseStorage.getInstance()
     val storageRef = storage.reference
     private lateinit var databaseReference: DatabaseReference
     private lateinit var storageReference: StorageReference
+    private lateinit var idGrupo : String
+    private lateinit var database : FirebaseDatabase
 
     var imagenPin:Bitmap?=null
 
@@ -98,6 +105,9 @@ class CrearPlanActivity : AppCompatActivity() {
         geocoder = Geocoder(baseContext)
 
         val pantalla = intent.getStringExtra("pantalla")
+        idGrupo=intent.getStringExtra("idGrupo").toString()
+        Log.i("idGrupo","revisar Crear $idGrupo")
+        database = FirebaseDatabase.getInstance()
 
         inicializarBotones()
 
@@ -256,10 +266,6 @@ class CrearPlanActivity : AppCompatActivity() {
         binding.crearplanButton.setOnClickListener {
             if("seleccionar ubicacion".equals(binding.seleccionarUbicacion.text.toString()))
             {
-                //falta revisar concordancia de fechas
-
-                //revisar si hay un plan del grupo que inicia al mismo tiempo que este
-
                 Toast.makeText(this, "Debe llenar todos los datos", Toast.LENGTH_LONG ).show()
             }
             else if(!concordanciaFechas(binding.fechaInicio, binding.horaInicio,binding.editTextText66, binding.horaFin))
@@ -272,6 +278,7 @@ class CrearPlanActivity : AppCompatActivity() {
                 guardarInformacionFirebase { documentId ->
                     val intent = Intent(baseContext, PlanesActivity::class.java)
                     intent.putExtra("idPlan", documentId)
+                    intent.putExtra("idGrupo", idGrupo)
                     startActivity(intent)
                 }
             }
@@ -285,6 +292,7 @@ class CrearPlanActivity : AppCompatActivity() {
             val intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
             intent.putExtra("idPlan", documentId)
             intent.putExtra("pantalla","crear")
+            intent.putExtra("idGrupo", idGrupo)
             startActivity(intent)
         }
 
@@ -398,19 +406,25 @@ class CrearPlanActivity : AppCompatActivity() {
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
     private fun initShowout (v: View){
@@ -603,49 +617,95 @@ class CrearPlanActivity : AppCompatActivity() {
     }
 
     private fun guardarInformacionFirebase(callback: (String) -> Unit) {
-        var direccionpin = "pines/${binding.nombrePlan.text.toString()}-pin.png"
-        var direccionplan = "planes/${binding.nombrePlan.text.toString()}-plan.png"
-        val pinImagesRef = storageRef.child(direccionpin)
 
-        val myPlan = Plan(
-            textoAFecha(binding.fechaInicio, binding.horaInicio),
-            textoAFecha(binding.editTextText66, binding.horaFin),
-            latitud,
-            longitud,
-            binding.switchPasos.isChecked,
-            binding.nombrePlan.text.toString(),
-            direccionplan,
-            direccionpin
-        )
+        val userRef = database.getReference("Grupos")
+        val integrantesMap = mutableMapOf<String,PosAmigo>()
 
-        val childId = databaseReference.child("Planes").push().key
-        if (childId != null) {
-            databaseReference.child(childId).setValue(myPlan).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val drawableplan = binding.imagenPlan.drawable
-                    uploadFoto(drawableplan, direccionplan)
+        userRef.child(idGrupo).child("integrantes").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val userId = userSnapshot.key // El ID del usuario
+                    val userData = userSnapshot.getValue(Usuario::class.java) // Los datos del usuario convertidos a objeto Usuario
 
-                    val drawablepin = binding.pinPlanImg.drawable
-                    uploadFoto(drawablepin, direccionpin)
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $userId")
+                    println("Datos de usuario: $userData")
 
-                    // Llamar al callback con el documentId
-                    callback(binding.nombrePlan.text.toString())
-                } else {
-                    Toast.makeText(this, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                    // Crea un objeto PosAmigo con la información del usuario
+                    val posUsuario = userData?.let {
+                        PosAmigo(0.0, 0.0, it.userid, "", it.user)
+                    }
+
+                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                    if (userId != null && posUsuario != null) {
+                        integrantesMap[userId] = posUsuario
+                    }
                 }
+
+                val childId = databaseReference.child("Planes").push().key.toString()
+                //de ahi se crea un grupo y se guardan ahi todos los usuarios
+                var direccionpin = "pines/$childId-pin.png"
+                var direccionplan = "planes/$childId-plan.png"
+                val pinImagesRef = storageRef.child(direccionpin)
+
+                val myPlan = Plan(
+                    textoAFecha(binding.fechaInicio, binding.horaInicio),
+                    textoAFecha(binding.editTextText66, binding.horaFin),
+                    latitud,
+                    longitud,
+                    binding.switchPasos.isChecked,
+                    binding.nombrePlan.text.toString(),
+                    direccionplan,
+                    direccionpin,
+                    true,
+                    integrantesMap,
+                    childId
+                )
+
+                if (childId != null) {
+                    databaseReference.child(childId).setValue(myPlan).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val drawableplan = binding.imagenPlan.drawable
+                            uploadFoto(drawableplan, direccionplan)
+
+                            val drawablepin = binding.pinPlanImg.drawable
+                            uploadFoto(drawablepin, direccionpin)
+                            val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo!!)
+                            val planId = grupoRef.child("planes").push().key
+
+                            if (planId != null) {
+                                // Guardar el nuevo plan en el mapa de planes
+                                grupoRef.child("planes").child(planId).setValue(myPlan)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            // El plan se guardó correctamente
+                                            callback(childId)
+                                        } else {
+                                            // Hubo un error al guardar el plan
+                                            Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                            } else {
+                                // No se pudo generar un ID para el plan
+                                Toast.makeText(applicationContext, "Fallo en generar ID para el plan", Toast.LENGTH_LONG).show()
+                            }
+
+
+                        } else {
+                            Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+
             }
-        }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos del usuario: ${databaseError.message}")
+            }
+        })
+    }
 
-        //guardar plan en el grupo
-        //anadir todos los integrantes del grupo al plan
-        guardarPlanAlGrupo()
-    }
-    private fun guardarPlanAlGrupo() {
-        guardarIntegrantes()
-    }
-    private fun guardarIntegrantes() {
-
-    }
     private fun uploadFoto(drawableFoto: Drawable, nombre:String) {
         var imageUri: Uri? = null
 

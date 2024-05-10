@@ -6,8 +6,8 @@ class Grupo(
     var descripcion: String = "",
     var titulo: String = "",
     var fotoGrupo: String = "",
-    var integrantes: List<Usuario> = listOf(),
-    var planes: List<String> = listOf(),
+    var integrantes: Map<String, Usuario> = emptyMap(),
+    var planes: Map<String, Plan> = emptyMap(),
 ){
-    constructor() : this("", "", "",  listOf(),listOf())
+    constructor() : this("", "", "", emptyMap(),emptyMap())
 }

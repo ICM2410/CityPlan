@@ -36,6 +36,7 @@ class RecomendacionesActivity : AppCompatActivity() {
     private lateinit var pantalla: String
     private var isFabOpen=false
     private var rotation=false
+    private lateinit var idGrupo : String
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -43,7 +44,7 @@ class RecomendacionesActivity : AppCompatActivity() {
         geocoder = Geocoder(baseContext)
         //binding representa toda la actividad
         setContentView(binding.root)
-
+        idGrupo=intent.getStringExtra("idGrupo").toString()
         idPlan= intent.getStringExtra("idPlan").toString()
         Log.i(TAG, "ENCONTRADO JEJE - $idPlan")
 
@@ -70,6 +71,7 @@ class RecomendacionesActivity : AppCompatActivity() {
             intent.putExtra("longitud",selectedLugar.getLongitude())
             intent.putExtra("latitud",selectedLugar.getLatitude())
             intent.putExtra("idPlan", idPlan)
+            intent.putExtra("idGrupo", idGrupo)
             intent.putExtra("recomendacion","recomendacion")
             Log.i(TAG, "Info enviar - Longitud: ${selectedLugar.getLongitude()}, Latitud: ${selectedLugar.getLatitude()}")
             // Pasa el objeto Pais como un extra del Intent
@@ -227,19 +229,28 @@ class RecomendacionesActivity : AppCompatActivity() {
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+            var intent = Intent(baseContext, CrearPlanActivity::class.java)
+            intent.putExtra("pantalla", "planes")
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
 

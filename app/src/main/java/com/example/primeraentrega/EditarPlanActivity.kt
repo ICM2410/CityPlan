@@ -10,17 +10,14 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.VectorDrawable
 import android.location.Geocoder
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -35,10 +32,9 @@ import android.widget.TimePicker
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.isVisible
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.PlanJson
+import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.databinding.ActivityEditarPlanBinding
 import com.example.primeraentrega.Clases.Usuario
 import com.google.android.gms.maps.model.LatLng
@@ -49,9 +45,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import org.json.JSONArray
@@ -75,6 +69,7 @@ class EditarPlanActivity : AppCompatActivity() {
     private lateinit var binding : ActivityEditarPlanBinding
     private var destinationFoto=1
     private lateinit var geocoder: Geocoder
+    private lateinit var idGrupo : String
 
     private var longitud=0.0
     private var latitud=0.0
@@ -105,6 +100,7 @@ class EditarPlanActivity : AppCompatActivity() {
         geocoder = Geocoder(baseContext)
 
         idPlan= intent.getStringExtra("idPlan").toString()
+        idGrupo=intent.getStringExtra("idGrupo").toString()
         Log.d(ContentValues.TAG, "ID RECIBIDO $idPlan")
 
         databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
@@ -126,7 +122,6 @@ class EditarPlanActivity : AppCompatActivity() {
             //lee desde el json
             leerInfo()
         }
-
     }
 
     private fun leerInfo() {
@@ -421,19 +416,28 @@ class EditarPlanActivity : AppCompatActivity() {
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+            var intent = Intent(baseContext, CrearPlanActivity::class.java)
+            intent.putExtra("pantalla", "planes")
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
 
@@ -739,39 +743,101 @@ class EditarPlanActivity : AppCompatActivity() {
     }
 
     private fun guardarInformacionFirebase(callback: (String) -> Unit) {
-        var direccionpin = "pines/${binding.nombrePlan.text.toString()}-pin.png"
-        var direccionplan = "planes/${binding.nombrePlan.text.toString()}-plan.png"
+        var direccionpin = "pines/$idPlan-pin.png"
+        var direccionplan = "planes/$idPlan-plan.png"
         val pinImagesRef = storageRef.child(direccionpin)
 
-        val myPlan = Plan(
-            textoAFecha(binding.fechaInicio, binding.horaInicio),
-            textoAFecha(binding.editTextText66, binding.horaFin),
-            latitud,
-            longitud,
-            binding.switchPasos.isChecked,
-            binding.nombrePlan.text.toString(),
-            direccionplan,
-            direccionpin
-        )
+        obtenerParticipantes { documentId ->
+            val myPlan = Plan(
+                textoAFecha(binding.fechaInicio, binding.horaInicio),
+                textoAFecha(binding.editTextText66, binding.horaFin),
+                latitud,
+                longitud,
+                binding.switchPasos.isChecked,
+                binding.nombrePlan.text.toString(),
+                direccionplan,
+                direccionpin,
+                true,
+                documentId
+            )
 
-        databaseReference.child(idPlan).setValue(myPlan).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val drawableplan = binding.imagenPlan.drawable
-                uploadFoto(drawableplan, direccionplan)
+            databaseReference.child(idPlan).setValue(myPlan).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val drawableplan = binding.imagenPlan.drawable
+                    uploadFoto(drawableplan, direccionplan)
 
-                val drawablepin = binding.pinPlanImg.drawable
-                uploadFoto(drawablepin, direccionpin)
+                    val drawablepin = binding.pinPlanImg.drawable
+                    uploadFoto(drawablepin, direccionpin)
 
-                // Llamar al callback con el documentId
-                callback(binding.nombrePlan.text.toString())
-            } else {
-                Toast.makeText(this, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                    //guardar plan en el grupo
+                    //anadir todos los integrantes del grupo al plan
+                    //guardarPlanAlGrupo(myPlan)
+                    val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+                    Log.i("idGrupo","$idPlan")
+// Obtener la referencia al nodo "planes" dentro del grupo
+                    val planesRef = grupoRef.child("planes")
+
+// Realizar una consulta para encontrar el plan con el atributo "id" igual a "idPlan"
+                    val query = planesRef.orderByChild("id").equalTo(idPlan)
+
+                    Log.i("idplan","$idPlan")
+
+                    query.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                // La consulta encontró al menos un resultado
+                                for (planSnapshot in dataSnapshot.children) {
+                                    // Obtener la referencia al plan que coincide con el "id" especificado
+                                    val planRef = planesRef.child(planSnapshot.key!!)
+
+                                    // Actualizar el plan en la base de datos
+                                    planRef.setValue(myPlan)
+                                        .addOnSuccessListener {
+                                            // La actualización fue exitosa
+                                            Log.d(TAG, "Plan actualizado correctamente.")
+                                            // Llamar al callback con el documentId
+                                            callback(idPlan)
+                                        }
+                                        .addOnFailureListener { e ->
+                                            // Ocurrió un error al actualizar el plan
+                                            Log.e(TAG, "Error al actualizar el plan: ${e.message}", e)
+                                        }
+                                }
+                            } else {
+                                // No se encontraron resultados para la consulta
+                                Log.d(TAG, "No se encontraron resultados para la consulta.")
+                            }
+                        }
+
+                        override fun onCancelled(databaseError: DatabaseError) {
+                            // Manejar el error en caso de que la consulta sea cancelada
+                            Log.e(TAG, "Error al realizar la consulta: ${databaseError.message}")
+                        }
+                    })
+
+                } else {
+                    Toast.makeText(this, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                }
             }
         }
 
-        //guardar plan en el grupo
-        //anadir todos los integrantes del grupo al plan
-        guardarPlanAlGrupo()
+
+    }
+
+    private fun obtenerParticipantes(callback: (Map<String,PosAmigo>) -> Unit) {
+        databaseReference.child(idPlan).addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val planData=dataSnapshot.getValue(Plan::class.java)
+                if (planData != null) {
+                    callback(planData.integrantes)
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
     }
 
     private fun uploadFoto(drawableFoto: Drawable, nombre:String) {
@@ -799,11 +865,40 @@ class EditarPlanActivity : AppCompatActivity() {
         }
     }
 
-    private fun guardarPlanAlGrupo() {
-        guardarIntegrantes()
-    }
-    private fun guardarIntegrantes() {
+    private fun guardarPlanAlGrupo(myPlan: Plan) {
+        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
 
+// Obtener la referencia al nodo "planes" dentro del grupo
+        val planesRef = grupoRef.child("planes")
+
+// Realizar una consulta para encontrar el plan con el atributo "id" igual a "idPlan"
+        val query = planesRef.orderByChild("id").equalTo(idPlan)
+
+        query.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Iterar sobre los resultados de la consulta
+                for (planSnapshot in dataSnapshot.children) {
+                    // Obtener la referencia al plan que coincide con el "id" especificado
+                    val planRef = planesRef.child(planSnapshot.key!!)
+
+                    // Actualizar el plan en la base de datos
+                    planRef.setValue(myPlan)
+                        .addOnSuccessListener {
+                            // La actualización fue exitosa
+                            Log.d(TAG, "Plan actualizado correctamente.")
+                        }
+                        .addOnFailureListener { e ->
+                            // Ocurrió un error al actualizar el plan
+                            Log.e(TAG, "Error al actualizar el plan: ${e.message}", e)
+                        }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Manejar el error en caso de que la consulta sea cancelada
+                Log.e(TAG, "Error al realizar la consulta: ${databaseError.message}")
+            }
+        })
     }
 
     fun bitmapToUri(context: Context, bitmap: Bitmap): Uri {

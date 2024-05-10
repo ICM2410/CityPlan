@@ -102,7 +102,7 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var locationCallBack: LocationCallback
 
     var imagenPin:Bitmap?=null
-    var imagenPin2:Bitmap?=null
+    private lateinit var idGrupo : String
 
     //Sensores
     private lateinit var sensorManager: SensorManager
@@ -238,7 +238,8 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
 
         pantalla= intent.getStringExtra("pantalla").toString()
         idPlan= intent.getStringExtra("idPlan").toString()
-
+        idGrupo=intent.getStringExtra("idGrupo").toString()
+        Log.e("idGrupo", "revisar seleccionar Ubicacion $idGrupo")
         inicializarBotones()
 
         //Sensores
@@ -423,6 +424,7 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
             val intent=Intent(baseContext, RecomendacionesActivity::class.java)
             intent.putExtra("pantalla",pantalla)
             intent.putExtra("idPlan", idPlan)
+            intent.putExtra("idGrupo", idGrupo)
             startActivity(intent)
         }
 
@@ -439,6 +441,7 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
             intent.putExtra("latitud", latActual)
             intent.putExtra("pantalla", "ubicacion")
             intent.putExtra("idPlan", idPlan)
+            intent.putExtra("idGrupo", idGrupo)
 
 // Iniciar la siguiente actividad con el Intent modificado
             startActivity(intent)
@@ -489,19 +492,28 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesPasadosActivity::class.java))
+            var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
-            startActivity(Intent(baseContext, CrearPlanActivity::class.java))
+            var intent = Intent(baseContext, CrearPlanActivity::class.java)
+            intent.putExtra("pantalla", "planes")
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
-            startActivity(Intent(baseContext, PlanesActivity::class.java))
+            var intent = Intent(baseContext, PlanesActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            startActivity(Intent(baseContext, PlanActivity::class.java))
+            var intent = Intent(baseContext, PlanActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
         }
     }
 

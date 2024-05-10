@@ -13,7 +13,8 @@ class Plan (
     var fotoEncuentro: String = "",
     var fotopin: String = "",
     var estado:Boolean = false,
-    var integrantes: List<PosAmigo> = listOf(),
+    var integrantes: Map<String, PosAmigo> = emptyMap(),
+    var id: String=""
 ) {
-    constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "", false, listOf())
+    constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "", false, emptyMap())
 }
