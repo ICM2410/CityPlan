@@ -1,6 +1,7 @@
 package com.example.primeraentrega
 
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
@@ -14,6 +15,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.getValue
+import com.google.firebase.storage.FirebaseStorage
 
 class RegistrarUsuarioActivity : AppCompatActivity() {
 
@@ -102,24 +104,47 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
         // Obtiene el UID del usuario
         val uid = usuario.uid
 
-        // Inicializa la referencia a la base de datos
-        myRef = database.getReference("Usuario")
+        // Obteniendo el ID de la imagen desde la carpeta "drawable"
+        val drawableResourceId = resources.getIdentifier("contacto_default", "drawable", packageName)
 
-        // Guardar el usuario en Firebase Realtime Database con el UID como clave
-        uid?.let {
-            myRef.child(it).setValue(usuario)
-                .addOnSuccessListener {
-                    // Registro exitoso en Firebase Realtime Database
-                    Toast.makeText(baseContext, "Usuario registrado con éxito", Toast.LENGTH_LONG).show()
-                    startActivity(Intent(baseContext, IniciarSesionActivity::class.java))
+        // Construyendo el URI utilizando el recurso drawable
+        val uri = Uri.parse("android.resource://$packageName/$drawableResourceId")
+
+        // Subir la imagen a Firebase Storage
+        val storageReference = FirebaseStorage.getInstance().reference
+        val imageRef = storageReference.child("images/$uid.jpg") // Nombre de la imagen en Firebase Storage
+        val uploadTask = imageRef.putFile(uri)
+
+        uploadTask.addOnSuccessListener { taskSnapshot ->
+            // Obtener el URI de la imagen en Firebase Storage
+            imageRef.downloadUrl.addOnSuccessListener { uri ->
+                // Asignar el URI a la propiedad imagen del usuario
+                usuario.imagen = "images/"+usuario.uid
+
+                // Inicializa la referencia a la base de datos
+                val myRef = database.getReference("Usuario")
+
+                // Guardar el usuario en Firebase Realtime Database con el UID como clave
+                uid?.let {
+                    myRef.child(it).setValue(usuario)
+                        .addOnSuccessListener {
+                            // Registro exitoso en Firebase Realtime Database
+                            Toast.makeText(baseContext, "Usuario registrado con éxito", Toast.LENGTH_LONG).show()
+                            startActivity(Intent(baseContext, IniciarSesionActivity::class.java))
+                        }
+                        .addOnFailureListener { e ->
+                            // Error al registrar en Firebase Realtime Database
+                            Toast.makeText(baseContext, "Error al registrar en Firebase Realtime Database", Toast.LENGTH_SHORT).show()
+                        }
+                } ?: run {
+                    // Si no se proporciona el UID del usuario
+                    Toast.makeText(baseContext, "UID del usuario no válido", Toast.LENGTH_SHORT).show()
                 }
-                .addOnFailureListener { e ->
-                    // Error al registrar en Firebase Realtime Database
-                    Toast.makeText(baseContext, "Error al registrar en Firebase Realtime Database", Toast.LENGTH_SHORT).show()
-                }
-        } ?: run {
-            // Si no se proporciona el UID del usuario
-            Toast.makeText(baseContext, "UID del usuario no válido", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener { exception ->
+                // Manejar errores al obtener el URI de la imagen
+            }
+        }.addOnFailureListener { exception ->
+            // Manejar errores al subir la imagen a Firebase Storage
         }
     }
 
