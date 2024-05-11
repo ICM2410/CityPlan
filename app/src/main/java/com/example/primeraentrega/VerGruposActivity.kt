@@ -128,7 +128,6 @@ class VerGruposActivity : AppCompatActivity() {
                                 // Aquí puedes realizar alguna acción después de la autenticación exitosa
                                 // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
                                 var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                                intent.putExtra("user", usuario)
                                 startActivity(intent)
                                 //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
                                 //startActivity(Intent(baseContext, VerGruposActivity::class.java))

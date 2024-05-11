@@ -51,53 +51,18 @@
             android:layout_weight="5">
 
             <LinearLayout
+                android:id="@+id/comentarioTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="25dp" />
+
+            <LinearLayout
                 android:id="@+id/mensajes"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-
-                <LinearLayout
-                    android:id="@+id/comentarioTotal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="25dp">
-
-                    <LinearLayout
-                        android:id="@+id/BurbujaChat"
-                        android:layout_width="200dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/comentario_shape"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-
-                        <TextView
-                            android:id="@+id/autorMensaje"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="4dp"
-                            android:text="@string/remitente"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                            android:textColor="@color/rosaClaro"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/textoMensaje"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/textMensaje"
-                            android:textColor="@color/white" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/horaComentario"
-                        android:layout_width="200dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="right"
-                        android:text="@string/hora" />
-                </LinearLayout>
 
                 <ListView
                     android:id="@+id/chat"

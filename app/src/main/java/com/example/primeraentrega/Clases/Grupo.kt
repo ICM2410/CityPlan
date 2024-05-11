@@ -8,6 +8,7 @@ class Grupo(
     var fotoGrupo: String = "",
     var integrantes: Map<String, Usuario> = emptyMap(),
     var planes: Map<String, Plan> = emptyMap(),
+    var mensajes: List<Mensaje> = emptyList()
 ){
     constructor() : this("", "", "", emptyMap(),emptyMap())
 }
