@@ -1214,6 +1214,14 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                     {
                         binding.tituloPlan.text= dataSnapshot.getValue().toString()
                     }
+                    if(dataSnapshot.key=="latitude")
+                    {
+                        obtenerInfoCompletaPlan()
+                    }
+                    if(dataSnapshot.key=="longitude")
+                    {
+                        obtenerInfoCompletaPlan()
+                    }
                     //revisar cambio de posicion del plan
 
                 }
@@ -1225,6 +1233,34 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 override fun onCancelled(databaseError: DatabaseError) {
                 }
             })
+    }
+
+    private fun obtenerInfoCompletaPlan() {
+        // Realiza la consulta para obtener otros datos del usuario usando su UID
+        // Por ejemplo, podrías usar una referencia a la base de datos para buscar los datos
+        val planRef = database.getReference("Planes").child(idPlan)
+
+        planRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Aquí puedes obtener los datos del usuario desde dataSnapshot
+                val Plan = dataSnapshot.getValue(Plan::class.java)
+                if (Plan != null) {
+                    // Haz lo que necesites con los datos del usuario
+
+                    longEncuentro=Plan.longitude
+                    latEncuentro=Plan.longitude
+                    ponerUbicacionPlan()
+
+                } else {
+                    println("No se encontraron datos para el usuario con UID: $idPlan")
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos del usuario: ${databaseError.message}")
+            }
+        })
     }
 
     private fun obtenerDatosInicialesAmigos() {
