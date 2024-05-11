@@ -65,7 +65,9 @@ class IniciarSesionActivity : AppCompatActivity() {
                 .addOnSuccessListener { authResult ->
                     // Inicio de sesión exitoso
                     val userId = authResult.user?.uid
+                    val user=authResult.user
                     var intent= Intent(baseContext, VerGruposActivity::class.java)
+                    intent.putExtra("user", user)
 
                     startActivity(intent)
                     // Aquí puedes agregar lógica adicional después del inicio de sesión exitoso
