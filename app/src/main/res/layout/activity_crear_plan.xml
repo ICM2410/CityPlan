@@ -93,7 +93,7 @@
 
                 <Button
                     android:id="@+id/fechaInicio"
-                    android:layout_width="240dp"
+                    android:layout_width="230dp"
                     android:layout_height="60dp"
 
                     android:backgroundTint="@color/transparente"
@@ -102,7 +102,7 @@
 
                 <Button
                     android:id="@+id/horaInicio"
-                    android:layout_width="80dp"
+                    android:layout_width="100dp"
                     android:layout_height="60dp"
                     android:backgroundTint="@color/transparente"
                     android:text="hora"
@@ -133,7 +133,7 @@
 
                 <Button
                     android:id="@+id/editTextText66"
-                    android:layout_width="240dp"
+                    android:layout_width="230dp"
                     android:layout_height="60dp"
                     android:backgroundTint="@color/transparente"
                     android:text="fecha"
@@ -141,7 +141,7 @@
 
                 <Button
                     android:id="@+id/horaFin"
-                    android:layout_width="80dp"
+                    android:layout_width="100dp"
                     android:layout_height="60dp"
                     android:backgroundTint="@color/transparente"
                     android:text="hora"

@@ -3,6 +3,7 @@ package com.example.primeraentrega.Adapters
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -14,6 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Clases.PlanLista
 import com.example.primeraentrega.R
 import com.example.primeraentrega.R.layout.celda_plan
@@ -44,7 +46,7 @@ class Adapterplan(context: Context, usuarioList: MutableList<PlanLista>) : Array
         plan?.let { planCelda ->
             tv.text = planCelda.titulo
 
-            val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
             val formatoHora = SimpleDateFormat("h:mm a", Locale.getDefault())
 
             // Establece la zona horaria a UTC si es necesario
@@ -57,7 +59,7 @@ class Adapterplan(context: Context, usuarioList: MutableList<PlanLista>) : Array
 
             if(planCelda.actual=="Abierto")
             {
-                layoutPlan.setBackgroundColor(context.resources.getColor(R.color.rosaClaro))
+                layoutPlan.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.rosaClaro))
             }
 
 

@@ -778,8 +778,6 @@ class EditarPlanActivity : AppCompatActivity() {
                     //anadir todos los integrantes del grupo al plan
                     //guardarPlanAlGrupo(myPlan)
                     val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
-                    Log.i("idGrupo","$idPlan")
-// Obtener la referencia al nodo "planes" dentro del grupo
                     val planesRef = grupoRef.child("planes")
 
 // Realizar una consulta para encontrar el plan con el atributo "id" igual a "idPlan"
