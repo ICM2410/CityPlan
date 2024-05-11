@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import com.example.primeraentrega.Adapters.Adapterplan
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.PlanLista
@@ -92,12 +93,20 @@ class PlanesActivity<Date> : AppCompatActivity() {
         binding.listPlan.setOnItemClickListener { parent, view, position, id ->
 
             val selectedPlan = planes[position] // Obtiene el objeto Pais seleccionado
-            val intent = Intent(baseContext, PlanActivity::class.java)
 
-            intent.putExtra("idPlan",selectedPlan.id)
-            intent.putExtra("idGrupo",idGrupo)
-            // Pasa el objeto Pais como un extra del Intent
-            startActivity(intent)
+            if(selectedPlan.actual=="Abierto")
+            {
+                val intent = Intent(baseContext, PlanActivity::class.java)
+
+                intent.putExtra("idPlan",selectedPlan.id)
+                intent.putExtra("idGrupo",idGrupo)
+                // Pasa el objeto Pais como un extra del Intent
+                startActivity(intent)
+            }
+            else if(selectedPlan.actual=="Activo"){
+                Toast.makeText(applicationContext, "El plan todavia no se ha iniciado", Toast.LENGTH_LONG).show()
+            }
+
         }
     }
 
