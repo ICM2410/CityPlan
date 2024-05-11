@@ -101,7 +101,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private lateinit var idGrupo : String
 
     private lateinit var auth:FirebaseAuth
-    private lateinit var databaseReference: DatabaseReference
+    private lateinit var databaseReferencePlanes: DatabaseReference
+    private lateinit var databaseReferenceGrupos: DatabaseReference
+    private lateinit var databaseReferenceUsers: DatabaseReference
     private lateinit var database : FirebaseDatabase
 
     //MAPA
@@ -227,7 +229,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                             .title("YO"))
 
                         auth.currentUser?.uid?.let { userId ->
-                            databaseReference.child(userId).apply {
+                            databaseReferenceUsers.child(userId).apply {
                                 child("latitud").setValue(latActual)
                                 child("longitud").setValue(longActual)
                             }
@@ -242,9 +244,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                         )
 
                         //aqui actualizo mi posicion en el plan
-                        databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
                         auth.currentUser?.let {
-                            databaseReference.child(idPlan).child("integrantes").child(
+                            databaseReferencePlanes.child(idPlan).child("integrantes").child(
                                 it.uid).setValue(myPos).addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     Log.i("mi pos","posicion actualizada $latActual,$longActual")
@@ -316,7 +317,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         Log.e("idGrupo", "revisar $idGrupo")
 
         auth=FirebaseAuth.getInstance()
-        databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
+        databaseReferencePlanes= FirebaseDatabase.getInstance().getReference("Planes")
+        databaseReferenceGrupos= FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReferenceUsers= FirebaseDatabase.getInstance().getReference("users")
         database = FirebaseDatabase.getInstance()
         mifoto= BitmapFactory.decodeResource(resources, miImagenResource)
         fotoPlan= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, miImagenResource), 160, 160, true)
@@ -946,9 +949,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private fun salirDelPlan() {
         //aqui me quito de la lista de integrantes del plan
         //me quito del plan como tal
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes")
         auth.currentUser?.let {
-            val usuarioRef = databaseReference.child(idPlan).child("integrantes").child(it.uid)
+            val usuarioRef = databaseReferencePlanes.child(idPlan).child("integrantes").child(it.uid)
             usuarioRef.removeValue()
                 .addOnSuccessListener {
                     // El usuario fue eliminado exitosamente
@@ -960,7 +962,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 }
         }
         //me quito del plan del grupo
-        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+        val grupoRef = databaseReferenceGrupos.child(idGrupo)
         val planesRef = grupoRef.child("planes")
         val query = planesRef.orderByChild("id").equalTo(idPlan)
 
@@ -968,17 +970,21 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // Iterar sobre los resultados de la consulta
                 for (planSnapshot in dataSnapshot.children) {
+
+                    Log.i("plan sanpshot","$planSnapshot")
                     // Eliminar el plan encontrado utilizando removeValue()
-                    auth.currentUser?.uid?.let {
-                        planSnapshot.ref.child("integrantes").child(it).removeValue()
-                            .addOnSuccessListener {
-                                // El plan fue eliminado exitosamente
-                                Log.d(TAG, "Integrante eliminado correctamente del plan del grupo")
-                            }
-                            .addOnFailureListener { e ->
-                                // Ocurrió un error al intentar eliminar el plan
-                                Log.e(TAG, "Error al eliminar integrante del plan del grupo: ${e.message}", e)
-                            }
+                    auth.currentUser?.uid?.let {uid ->
+                        planSnapshot.key?.let { idPlan ->
+                            planesRef.child(idPlan).child("integrantes").child(uid).removeValue()
+                                .addOnSuccessListener {
+                                    // El plan fue eliminado exitosamente
+                                    Log.d(TAG, "Integrante eliminado correctamente del plan del grupo")
+                                }
+                                .addOnFailureListener { e ->
+                                    // Ocurrió un error al intentar eliminar el plan
+                                    Log.e(TAG, "Error al eliminar integrante del plan del grupo: ${e.message}", e)
+                                }
+                        }
                     }
                 }
             }
@@ -999,9 +1005,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             nombreUsuario
         )
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes")
         auth.currentUser?.let {
-            databaseReference.child(idPlan).child("integrantes").child(it.uid).setValue(myPos)
+            databaseReferencePlanes.child(idPlan).child("integrantes").child(it.uid).setValue(myPos)
                 .addOnSuccessListener {
                     // El usuario fue eliminado exitosamente
                     Log.d(TAG, "Usuario anadido correctamnte en 'integrantes'")
@@ -1075,65 +1080,63 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
 
     private fun subscribirseACambiosDeAmigos() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes").child(idPlan).child("integrantes")
+        val databaseReference = databaseReferencePlanes.child(idPlan).child("integrantes")
 
         //se va a escuchar el plan y se vera que se cambia
         //se evalua si se cambia algo de info del plan o tambien info de un usuario
         databaseReference.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-                Log.i("snapshot"," pos added: $dataSnapshot")
                 if(dataSnapshot.key!= auth.currentUser?.uid)
                 {
-                    val posAmigoActualizado = dataSnapshot.getValue(PosAmigo::class.java)
-
-                    if(posAmigoActualizado!=null)
+                    if(dataSnapshot.key=="integrantes")
                     {
-                        //actualizar pin del usuario en especifico
-                        val markerOptions = MarkerOptions()
-                            .position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.latitud)) // Establecer la posición del marcador
-                            .title(posAmigoActualizado.nombre)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-
-                        val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
-
-                        mapaDeParticipantes[dataSnapshot.key]=marker
+                        for (childSnapshot in dataSnapshot.children) {
+                            val posAmigoActualizado = childSnapshot.getValue(PosAmigo::class.java)
+                            if (posAmigoActualizado != null && posAmigoActualizado.uid != auth.currentUser?.uid) {
+                                // Procesar solo si el UID no es igual a "t6rbpb1u2CS2rCJShRF2LJ4PO0l1"
+                                // Aquí añades tu lógica para añadir un nuevo marcador al mapa
+                                anadirAmigo(childSnapshot)
+                            }
+                        }
+                    }
+                    else if(dataSnapshot.key!= auth.currentUser?.uid)
+                    {
+                        anadirAmigo(dataSnapshot)
                     }
                 }
             }
             override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-
-                Log.i("snapshot"," pos changed: $dataSnapshot")
-                if(dataSnapshot.key!= auth.currentUser?.uid)
+                if(dataSnapshot.key=="integrantes")
                 {
-                    val posAmigoActualizado = dataSnapshot.getValue(PosAmigo::class.java)
-
-                    if(posAmigoActualizado!=null)
-                    {
-                        //actualizar pin del usuario en especifico
-                        val markerOptions = MarkerOptions()
-                            .position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.latitud)) // Establecer la posición del marcador
-                            .title(posAmigoActualizado.nombre)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-                        // Agregar el marcador al mapa de participantes
-                        mapaDeParticipantes[dataSnapshot.key]?.remove()
-
-                        val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
-
-                        mapaDeParticipantes[dataSnapshot.key]=marker
+                    for (childSnapshot in dataSnapshot.children) {
+                        val posAmigoActualizado = childSnapshot.getValue(PosAmigo::class.java)
+                        if (posAmigoActualizado != null && posAmigoActualizado.uid != auth.currentUser?.uid) {
+                            // Procesar solo si el UID no es igual a "t6rbpb1u2CS2rCJShRF2LJ4PO0l1"
+                            // Aquí añades tu lógica para añadir un nuevo marcador al mapa
+                            actualizarAmigo(childSnapshot)
+                        }
                     }
+                }
+                else if(dataSnapshot.key!= auth.currentUser?.uid)
+                {
+                    actualizarAmigo(dataSnapshot)
                 }
             }
             override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-                Log.i("snapshot"," pos removed: $dataSnapshot")
-                if(dataSnapshot.key!= auth.currentUser?.uid)
+                if(dataSnapshot.key=="integrantes")
                 {
-                    val posAmigoActualizado = dataSnapshot.getValue(PosAmigo::class.java)
-
-                    if(posAmigoActualizado!=null)
-                    {
-                        //actualizar pin del usuario en especifico
-                        mapaDeParticipantes[dataSnapshot.key]?.remove()
+                    for (childSnapshot in dataSnapshot.children) {
+                        val posAmigoActualizado = childSnapshot.getValue(PosAmigo::class.java)
+                        if (posAmigoActualizado != null && posAmigoActualizado.uid != auth.currentUser?.uid) {
+                            // Procesar solo si el UID no es igual a "t6rbpb1u2CS2rCJShRF2LJ4PO0l1"
+                            // Aquí añades tu lógica para añadir un nuevo marcador al mapa
+                            eliminarAmigo(childSnapshot)
+                        }
                     }
+                }
+                else if(dataSnapshot.key!= auth.currentUser?.uid)
+                {
+                    eliminarAmigo(dataSnapshot)
                 }
             }
             override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
@@ -1143,8 +1146,60 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         })
     }
 
+    private fun eliminarAmigo(dataSnapshot: DataSnapshot?) {
+        val posAmigoActualizado = dataSnapshot?.getValue(PosAmigo::class.java)
+
+        if(posAmigoActualizado!=null)
+        {
+            Log.i("posAmigoActualizado REMOVED"," posAmigoActualizado added: ${posAmigoActualizado.latitud}, ${posAmigoActualizado.longitud}")
+            //actualizar pin del usuario en especifico
+            if (dataSnapshot != null) {
+                mapaDeParticipantes[dataSnapshot.key]?.remove()
+            }
+        }
+    }
+
+    private fun anadirAmigo(dataSnapshot: DataSnapshot?) {
+        val posAmigoActualizado = dataSnapshot?.getValue(PosAmigo::class.java)
+
+        if(posAmigoActualizado!=null)
+        {
+            Log.i("posAmigoActualizado ADDED"," posAmigoActualizado added: ${posAmigoActualizado.latitud}, ${posAmigoActualizado.longitud}")
+            //actualizar pin del usuario en especifico
+            val markerOptions = MarkerOptions()
+                .position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.longitud)) // Establecer la posición del marcador
+                .title(posAmigoActualizado.nombre)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+
+            val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
+
+
+            mapaDeParticipantes[dataSnapshot.key]=marker
+
+        }
+    }
+    private fun actualizarAmigo(dataSnapshot: DataSnapshot) {
+        Log.i("amigo actualizado CHANGED","$dataSnapshot")
+        val posAmigoActualizado = dataSnapshot.getValue(PosAmigo::class.java)
+        if(posAmigoActualizado!=null)
+        {
+            Log.i("posAmigoActualizado CHANGED"," posAmigoActualizado: ${posAmigoActualizado.latitud}, ${posAmigoActualizado.longitud}")
+            //actualizar pin del usuario en especifico
+            val markerOptions = MarkerOptions()
+                .position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.longitud)) // Establecer la posición del marcador
+                .title(posAmigoActualizado.nombre)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+            // Agregar el marcador al mapa de participantes
+            mapaDeParticipantes[dataSnapshot.key]?.remove()
+
+            val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
+
+            mapaDeParticipantes[dataSnapshot.key]=marker
+        }
+    }
+
     private fun subscribirseACambiosDePlan() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes").child(idPlan)
+        val databaseReference = databaseReferencePlanes.child(idPlan)
 
         //se va a escuchar el plan y se vera que se cambia
         //se evalua si se cambia algo de info del plan o tambien info de un usuario
@@ -1154,21 +1209,12 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 }
                 override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                    Log.i("snapshot"," pos: $dataSnapshot")
-                    if(dataSnapshot.key=="latitude")
-                    {
-                        //latActualOtro= dataSnapshot.value as Double;
-                        //obtenerOtrosDatosUsuario()
-                    }
-                    else if (dataSnapshot.key=="longitde")
-                    {
-                        //longActualOtro= dataSnapshot.value as Double;
-                        //obtenerOtrosDatosUsuario2()
-                    }
-                    else if(dataSnapshot.key=="titulo")
+                    Log.i("snapshot PLAN"," pos: $dataSnapshot")
+                    if(dataSnapshot.key=="titulo")
                     {
                         binding.tituloPlan.text= dataSnapshot.getValue().toString()
                     }
+                    //revisar cambio de posicion del plan
 
                 }
                 override fun onChildRemoved(dataSnapshot: DataSnapshot) {
@@ -1182,9 +1228,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
 
     private fun obtenerDatosInicialesAmigos() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes")
         auth.currentUser?.let {
-            databaseReference.child(idPlan).child("integrantes")
+            databaseReferencePlanes.child(idPlan).child("integrantes")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                         for (userSnapshot in dataSnapshot.children) {
