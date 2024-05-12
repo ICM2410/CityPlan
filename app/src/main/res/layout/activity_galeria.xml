@@ -80,7 +80,7 @@
             <LinearLayout
                 android:id="@+id/linearLayout4"
                 android:layout_width="match_parent"
-                android:layout_height="388dp"
+                android:layout_height="440dp"
                 android:background="@drawable/puntas_blancas"
                 android:orientation="vertical"
                 android:padding="25dp">
@@ -97,8 +97,10 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/photoGalleryRecyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="4" />
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:spanCount="3"/>
 
 
             </LinearLayout>

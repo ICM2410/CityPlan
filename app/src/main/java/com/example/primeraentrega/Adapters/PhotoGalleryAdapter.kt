@@ -11,8 +11,7 @@ class PhotoGalleryAdapter(private val photoList: List<Uri>) :
     RecyclerView.Adapter<PhotoGalleryAdapter.PhotoViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_photo_gallery, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_photo_gallery, parent, false)
         return PhotoViewHolder(view)
     }
 
@@ -21,12 +20,15 @@ class PhotoGalleryAdapter(private val photoList: List<Uri>) :
         Glide.with(holder.itemView.context)
             .load(photoUri)
             .placeholder(R.drawable.camara)
+            .override(500, 500) // Ajustar el tamaño de la imagen aquí (ancho, alto)
             .into(holder.imageViewPhoto)
     }
+
 
     override fun getItemCount(): Int = photoList.size
 
     class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageViewPhoto: ImageView = itemView.findViewById(R.id.imageViewPhoto)
     }
+
 }

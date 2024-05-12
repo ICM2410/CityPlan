@@ -12,7 +12,9 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.primeraentrega.Clases.GridSpacingItemDecoration
 import com.example.primeraentrega.databinding.ActivityGaleriaBinding
 import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
@@ -46,38 +48,39 @@ class GaleriaActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= ActivityGaleriaBinding.inflate(layoutInflater)
+        binding = ActivityGaleriaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        idGrupo=intent.getStringExtra("idGrupo").toString()
+        idGrupo = intent.getStringExtra("idGrupo").toString()
 
-        val file = File(getFilesDir(), "picFromCamera");
-        uriCamera = FileProvider.getUriForFile(baseContext,baseContext.packageName + ".fileprovider", file)
+        val file = File(getFilesDir(), "picFromCamera")
+        uriCamera = FileProvider.getUriForFile(baseContext, baseContext.packageName + ".fileprovider", file)
 
         // Configurar RecyclerView
-        binding.photoGalleryRecyclerView.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        val layoutManager = GridLayoutManager(this, 3, GridLayoutManager.VERTICAL, false)
+        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return 1 // Devolver 1 para que cada elemento ocupe una columna
+            }
+        }
+        binding.photoGalleryRecyclerView.layoutManager = layoutManager
+
+        val spacingInPixels = resources.getDimensionPixelSize(R.dimen.spacing) // Definir el espaciado entre las imágenes
+        binding.photoGalleryRecyclerView.addItemDecoration(GridSpacingItemDecoration(3, spacingInPixels, true))
+
         photoGalleryAdapter = PhotoGalleryAdapter(photoList)
         binding.photoGalleryRecyclerView.adapter = photoGalleryAdapter
-
 
         binding.buttonSeleccionarFoto.setOnClickListener {
             getContentGallery.launch("image/*")
         }
 
-        /*
-        binding.buttonTomarFoto.setOnClickListener {
-            // Permiso de cámara concedido, lanzar la actividad de la cámara
-            getContentCamera.launch(uriCamera)
-        }
-        */
         val usuario: Usuario = Usuario()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when(item.itemId) {
+            when (item.itemId) {
                 R.id.Grupos_bar -> {
                     // Respond to navigation item 1 click
                     startActivity(Intent(baseContext, VerGruposActivity::class.java))
-
                     true
                 }
                 R.id.cuenta_bar -> {
@@ -102,18 +105,16 @@ class GaleriaActivity : AppCompatActivity() {
         initShowout(binding.activoView)
         initShowout(binding.planesView)
         binding.fabMenuPlan.setOnClickListener {
-            if(!isFabOpen)
-            {
+            if (!isFabOpen) {
                 showFabMenu();
-            }
-            else
-            {
+            } else {
                 closeFabMenu();
             }
         }
 
         fabClicks()
     }
+
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
