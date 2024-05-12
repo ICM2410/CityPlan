@@ -60,6 +60,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
@@ -118,6 +119,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private var running = false
     private var totalSteps = 0f
     private var previousTotalSteps = 0f
+
+
+    //Giroscopio
+    private var orientationSensor: Sensor? = null
 
     //SENSOR luz
     private lateinit var lightSensor : Sensor
@@ -332,6 +337,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         )
         // Registrar el SensorEventListener para el sensor de pasos
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        orientationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
         //stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         if (stepSensor == null) {
@@ -340,6 +346,14 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             Log.i("Sensor", "Hay podómetro para pasos")
             //stepSensorEventListener = createStepSensorListener()
             sensorManager.registerListener(stepSensorEventListener, stepSensor, SensorManager.SENSOR_DELAY_UI)
+        }
+
+        if (orientationSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de orientacion", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay orientacion")
+            //stepSensorEventListener = createStepSensorListener()
+            sensorManager.registerListener(orientationEventListener, orientationSensor, SensorManager.SENSOR_DELAY_NORMAL)
         }
 
         // Sensor temperatura
@@ -356,6 +370,46 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
        // sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
         //startLocationUpdates()
     }
+
+    private val rotationMatrix = FloatArray(9)
+    private val orientationValues = FloatArray(3)
+
+    private val orientationEventListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                SensorManager.getOrientation(rotationMatrix, orientationValues)
+
+                // El ángulo de orientación se encuentra en orientationValues[0] en radianes
+                // Convierte el ángulo de radianes a grados
+                val azimuthDegrees = Math.toDegrees(orientationValues[0].toDouble()).toFloat()
+
+                // Actualizar la orientación del mapa en Google Maps con el ángulo de azimuth en grados
+                updateMapOrientation(azimuthDegrees)
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+            // No necesitas implementar esto para este ejemplo
+        }
+    }
+
+    private fun updateMapOrientation(azimuth: Float) {
+        if (::mMap.isInitialized) {
+            // Girar el mapa en Google Maps utilizando el ángulo de azimuth
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(
+                CameraPosition.builder()
+                    .target(mMap.cameraPosition.target) // Mantener el mismo centro del mapa
+                    .zoom(mMap.cameraPosition.zoom) // Mantener el mismo nivel de zoom
+                    .bearing(azimuth) // Girar el mapa según el ángulo de azimuth
+                    .tilt(0f) // Mantener el mismo ángulo de inclinación
+                    .build()
+            ))
+        }
+    }
+
+
+
     override fun onPause() {
         super.onPause()
         running = false
