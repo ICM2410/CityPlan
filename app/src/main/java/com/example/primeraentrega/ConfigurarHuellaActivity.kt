@@ -4,9 +4,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityConfigurarHuellaBinding
 
-import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth
 import java.security.MessageDigest
@@ -23,7 +23,7 @@ class ConfigurarHuellaActivity : AppCompatActivity() {
         binding = ActivityConfigurarHuellaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val usuario = intent.getSerializableExtra("user") as? Usuario
+        val usuario = intent.getSerializableExtra("user") as? UsuarioAmigo
 
         // Inicializar Firebase
         auth = FirebaseAuth.getInstance()
@@ -33,7 +33,7 @@ class ConfigurarHuellaActivity : AppCompatActivity() {
         solicitarHuella(usuario)
     }
 
-    private fun solicitarHuella(usuario: Usuario?) {
+    private fun solicitarHuella(usuario: UsuarioAmigo?) {
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
             object : BiometricPrompt.AuthenticationCallback() {
@@ -44,7 +44,7 @@ class ConfigurarHuellaActivity : AppCompatActivity() {
                     val biometricId = generateBiometricId(biometricData)
 
                     // Asignar el ID de la huella dactilar al usuario
-                    usuario?.fingerprintId = biometricId
+                    usuario?.huella = biometricId
 
 
                     // Guardar el usuario actualizado en Firebase
@@ -80,7 +80,7 @@ class ConfigurarHuellaActivity : AppCompatActivity() {
         return hexString.toString()
     }
 
-    private fun guardarUsuarioEnFirebase(usuario: Usuario?) {
+    private fun guardarUsuarioEnFirebase(usuario: UsuarioAmigo?) {
        
     }
 

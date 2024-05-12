@@ -1,9 +1,6 @@
 package com.example.primeraentrega
 
-import android.content.ContentValues
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -13,22 +10,13 @@ import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Clases.Grupo
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.databinding.ActivityVerGruposBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.example.primeraentrega.Clases.UsuarioAmigo
-import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.storage.FirebaseStorage
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 
 
 class VerGruposActivity : AppCompatActivity() {
@@ -52,14 +40,15 @@ class VerGruposActivity : AppCompatActivity() {
 
         inicializarBotones(usuario)
 
+        childId="-Nxds2b-dh--IP1NUNhP"
         //crearInfoSophie()
 
     }
 
     private fun crearInfoSophie() {
         //obtener todos los usuarios
-        val userRef = database.getReference("users")
-        val listaUsuarios: MutableMap<String, Usuario> = mutableMapOf()
+        val userRef = database.getReference("Usuario")
+        val listaUsuarios: MutableMap<String?, String?> = mutableMapOf()
         val listaPlanes: MutableMap<String, Plan> = mutableMapOf()
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -67,7 +56,7 @@ class VerGruposActivity : AppCompatActivity() {
                 for (userSnapshot in dataSnapshot.children) {
                     // Obtiene los datos de cada usuario
                     val userId = userSnapshot.key // El ID del usuario
-                    val userData = userSnapshot.getValue(Usuario::class.java) // Los datos del usuario convertidos a objeto Usuario
+                    val userData = userSnapshot.getValue(UsuarioAmigo::class.java) // Los datos del usuario convertidos a objeto Usuario
 
                     // Aquí puedes realizar cualquier operación con los datos del usuario
                     println("ID de usuario: $userId")
@@ -75,7 +64,7 @@ class VerGruposActivity : AppCompatActivity() {
 
                     // Agrega el usuario a la lista si los datos no son nulos
                     if (userId != null && userData != null) {
-                        listaUsuarios+=(userData.userid to userData)
+                        listaUsuarios+=(userData.uid to userData.uid)
                     }
 
                 }

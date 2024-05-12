@@ -11,8 +11,8 @@ import android.widget.Toast
 import com.example.primeraentrega.Adapters.Adapterplan
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.PlanLista
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityPlanesBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -122,7 +122,7 @@ class PlanesActivity<Date> : AppCompatActivity() {
 
     private fun inicializarBotones() {
 
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {

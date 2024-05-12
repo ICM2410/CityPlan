@@ -21,7 +21,7 @@ import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.example.primeraentrega.Clases.Usuario
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import org.json.JSONException
@@ -183,7 +183,7 @@ class RecomendacionesActivity : AppCompatActivity() {
     }
 
     private fun inicializarBotones() {
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {

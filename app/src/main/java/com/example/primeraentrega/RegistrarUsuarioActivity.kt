@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import com.example.primeraentrega.databinding.ActivityRegistrarUsuarioBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -14,7 +13,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
 import com.google.firebase.storage.FirebaseStorage
 
 class RegistrarUsuarioActivity : AppCompatActivity() {
@@ -40,7 +38,6 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
             val correo = binding.correo.text.toString()
 
             val usuario = UsuarioAmigo(user, correo, telefono, 0.0, 0.0, "", false, 0, "", "")
-
 
             // Crea el usuario en la base de datos de Firebase
             guardarUsuarioEnFirebase(usuario, password)
@@ -112,14 +109,14 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
 
         // Subir la imagen a Firebase Storage
         val storageReference = FirebaseStorage.getInstance().reference
-        val imageRef = storageReference.child("images/$uid.jpg") // Nombre de la imagen en Firebase Storage
+        val imageRef = storageReference.child("usuarios/$uid.jpg") // Nombre de la imagen en Firebase Storage
         val uploadTask = imageRef.putFile(uri)
 
         uploadTask.addOnSuccessListener { taskSnapshot ->
             // Obtener el URI de la imagen en Firebase Storage
             imageRef.downloadUrl.addOnSuccessListener { uri ->
                 // Asignar el URI a la propiedad imagen del usuario
-                usuario.imagen = "images/"+usuario.uid
+                usuario.imagen = "usuarios/"+usuario.uid
 
                 // Inicializa la referencia a la base de datos
                 val myRef = database.getReference("Usuario")
