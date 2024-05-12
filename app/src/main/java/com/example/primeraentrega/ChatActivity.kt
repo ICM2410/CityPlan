@@ -4,35 +4,52 @@ package com.example.primeraentrega
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.example.primeraentrega.Adapters.GroupAdapter
+import com.example.primeraentrega.Clases.Grupo
+import com.example.primeraentrega.Clases.ListGroup
 import com.example.primeraentrega.databinding.ActivityChatBinding
 import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import java.io.File
 
 class ChatActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityChatBinding
     private var isFabOpen=false
     private var rotation=false
-    private lateinit var idGrupo : String
+    private lateinit var groupID : String
+    private lateinit var databaseReference: DatabaseReference
+    private lateinit var database: FirebaseDatabase
+    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        idGrupo=intent.getStringExtra("idGrupo").toString()
-        Log.i("idGrupo","revisar Chat $idGrupo")
+        groupID = intent.getStringExtra("groupId").toString()
         inicializarBotones()
         //binding.bottomNavigation.selectedItemId = R.id.cuenta_bar // Establecer elemento seleccionado
+        auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance()
+
+        initializeGroup(groupID)
     }
 
     private fun inicializarBotones() {
 
         binding.configGrupo.setOnClickListener {
             var intent = Intent(baseContext, EditarGrupoActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
+            intent.putExtra("idGrupo", groupID)
             startActivity(intent)
         }
 
@@ -84,26 +101,26 @@ class ChatActivity : AppCompatActivity() {
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
             var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
+            intent.putExtra("idGrupo", groupID)
             startActivity(intent)
         }
 
         binding.fabCrearPlan.setOnClickListener {
             var intent = Intent(baseContext, CrearPlanActivity::class.java)
             intent.putExtra("pantalla", "planes")
-            intent.putExtra("idGrupo", idGrupo)
+            intent.putExtra("idGrupo", groupID)
             startActivity(intent)
         }
 
         binding.fabMisPlanes.setOnClickListener {
             var intent = Intent(baseContext, PlanesActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
+            intent.putExtra("idGrupo", groupID)
             startActivity(intent)
         }
 
         binding.fabPlanActivo.setOnClickListener {
             var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
+            intent.putExtra("idGrupo", groupID)
             startActivity(intent)
         }
     }
@@ -178,4 +195,38 @@ class ChatActivity : AppCompatActivity() {
 
         return isFabOpen
     }
+
+    private fun initializeGroup(groupId: String) {
+        val groupReference = FirebaseDatabase.getInstance().getReference("Groups").child(groupId)
+
+        groupReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    val grupo = dataSnapshot.getValue(Grupo::class.java)
+                    if (grupo != null) {
+                        // Update UI with the new data
+                        binding.nombreGrupoChat.text = grupo.titulo
+
+                        // Load the image from Firebase Storage
+                        val storageRef = FirebaseStorage.getInstance().reference.child(grupo.fotoGrupo)
+                        val localFile = File.createTempFile("tempImage", "jpg")
+                        storageRef.getFile(localFile).addOnSuccessListener {
+                            // Load the downloaded image into the ImageView
+                            val bitmap = BitmapFactory.decodeFile(localFile.absolutePath)
+                            binding.imagenGrupoChat.setImageBitmap(bitmap)
+                        }.addOnFailureListener { exception ->
+                            // Handle any errors while downloading the image
+                            Log.e("ChatActivity", "Error downloading group image: ${exception.message}")
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle any errors
+                Log.e("ChatActivity", "Error retrieving group data: ${error.message}")
+            }
+        })
+    }
+
 }

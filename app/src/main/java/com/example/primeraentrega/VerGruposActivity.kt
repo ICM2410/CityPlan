@@ -45,6 +45,7 @@ class VerGruposActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private var childId:String?=null
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityVerGruposBinding.inflate(layoutInflater)
