@@ -12,7 +12,6 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
-
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -23,7 +22,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PrimeraEntrega"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ImageDetailActivity"
+            android:exported="false" />
         <!--
              TODO: Before you run your application, you need a Google Maps API key.
 
@@ -101,10 +102,10 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".EditarPlanActivity"
             android:exported="false" />
@@ -125,8 +126,7 @@
             android:exported="false" />
         <activity
             android:name=".IniciarSesionActivity"
-            android:exported="false">
-        </activity>
+            android:exported="false"></activity>
     </application>
 
 </manifest>
