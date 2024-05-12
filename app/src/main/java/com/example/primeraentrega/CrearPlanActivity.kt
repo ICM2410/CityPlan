@@ -18,6 +18,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -38,6 +39,8 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import android.widget.Toast
+import com.example.primeraentrega.Alarms.AlarmItem
+import com.example.primeraentrega.Alarms.AndroidAlarmScheduler
 import com.example.primeraentrega.Clases.PlanJson
 import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.Clases.UsuarioAmigo
@@ -56,10 +59,15 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.math.BigInteger
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.math.abs
 
 class CrearPlanActivity : AppCompatActivity() {
 
@@ -78,7 +86,11 @@ class CrearPlanActivity : AppCompatActivity() {
     private lateinit var database : FirebaseDatabase
 
     var imagenPin:Bitmap?=null
+    private var idPlan : String=""
 
+    private lateinit var scheduler: AndroidAlarmScheduler
+    var alarmItem:AlarmItem?=null
+    
     val getContentGallery = registerForActivityResult(
         ActivityResultContracts.GetContent(),
         ActivityResultCallback {
@@ -97,6 +109,8 @@ class CrearPlanActivity : AppCompatActivity() {
         idGrupo=intent.getStringExtra("idGrupo").toString()
         Log.i("idGrupo","revisar Crear $idGrupo")
         database = FirebaseDatabase.getInstance()
+
+        scheduler=AndroidAlarmScheduler(this)
 
         inicializarBotones()
 
@@ -268,6 +282,7 @@ class CrearPlanActivity : AppCompatActivity() {
             {
                 //editar la informacion
                 guardarInformacionFirebase { documentId ->
+                    ponerAlarma(documentId)
                     val intent = Intent(baseContext, PlanesActivity::class.java)
                     intent.putExtra("idPlan", documentId)
                     intent.putExtra("idGrupo", idGrupo)
@@ -344,6 +359,72 @@ class CrearPlanActivity : AppCompatActivity() {
         fabClicks()
     }
 
+    private fun ponerAlarma(documentId: String) {
+        alarmItem=AlarmItem(
+            textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
+            "El plan ${binding.nombrePlan.text.toString()} ha iniciado",
+            binding.nombrePlan.text.toString(),
+           123, //generateUniqueCode(documentId),
+            documentId,
+            idGrupo
+        )
+
+        alarmItem?.let (scheduler::schedule)
+    }
+
+    fun textoAFechaAlarma(fechaTexto: View, horaTexto: View): LocalDateTime {
+        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        val fecha = formatoFecha.parse((fechaTexto as Button).text.toString())
+
+        // Especificar la zona horaria como UTC para la hora
+        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
+        val hora = formatoHora.parse((horaTexto as Button).text.toString())
+
+        val calendario = Calendar.getInstance()
+        fecha?.let { calendario.time = it }
+        hora?.let {
+            val horaCalendario = Calendar.getInstance().apply { time = it }
+            calendario.set(Calendar.HOUR_OF_DAY, horaCalendario.get(Calendar.HOUR_OF_DAY))
+            calendario.set(Calendar.MINUTE, horaCalendario.get(Calendar.MINUTE))
+        }
+
+        // Convertir de Date a LocalDateTime
+        val zonaHorariaLocal = ZoneId.systemDefault()
+        val instante = calendario.time.toInstant()
+        return LocalDateTime.ofInstant(instante, zonaHorariaLocal)
+    }
+
+    fun generateUniqueCode(text: String): Int {
+        // Create a MessageDigest instance for SHA-256
+        val digest = MessageDigest.getInstance("SHA-256")
+
+        // Compute the hash value of the text
+        val hashBytes = digest.digest(text.toByteArray())
+
+        // Convert the hash bytes to a hexadecimal string
+        val hexString = StringBuilder()
+        for (byte in hashBytes) {
+            // Convert each byte to a hexadecimal string representation
+            val hex = Integer.toHexString(0xff and byte.toInt())
+            if (hex.length == 1) {
+                hexString.append('0')
+            }
+            hexString.append(hex)
+        }
+
+        // Take the first 10 characters as the unique code
+        val first10Digits = hexString.substring(0, 10)
+
+        // Convert the hexadecimal string to an integer
+        val bigInt = Integer.parseInt(first10Digits, 16)
+
+        // Ensure the integer is positive and has 10 digits
+        return abs(bigInt) % 1000000000
+    }
+
+
     private fun concordanciaFechas(fechaTexto1: View, horaTexto1: View, fechaTexto2: View, horaTexto2: View): Boolean {
 
         val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -414,9 +495,64 @@ class CrearPlanActivity : AppCompatActivity() {
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+            revisarActivo()
+        }
+    }
+
+    private fun revisarActivo() {
+        var existe=false
+        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val planId = userSnapshot.key // El ID del usuario
+                    val planData = userSnapshot.getValue(Plan::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $planId")
+                    println("Datos de usuario: $planData")
+
+                    // Crea un objeto PosAmigo con la información del usuario
+                    var status=""
+                    val plan = planData?.let {
+                        status=planAcrivo(planData.dateInicio,planData.dateFinal)
+                    }
+
+                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                    if (planId != null &&  plan != null && status!="Activo") {
+                        existe=true
+                        idPlan=planId
+                    }
+                }
+
+                if(existe)
+                {
+                    var intent = Intent(baseContext, PlanActivity::class.java)
+                    intent.putExtra("idGrupo", idGrupo)
+                    intent.putExtra("idPlan", idPlan)
+                    startActivity(intent)
+                }
+                else
+                {
+                    Toast.makeText(applicationContext, "No hay planes activos", Toast.LENGTH_LONG).show()
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
+    }
+
+    private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
+        val fechaActual = Date()
+
+        return when {
+            fechaActual.before(dateInicio) -> "Activo"
+            fechaActual.after(dateFinal) -> "Cerrado"
+            else -> "Abierto"
         }
     }
     private fun initShowout (v: View){

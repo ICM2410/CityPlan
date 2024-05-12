@@ -7,10 +7,17 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityChatBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import java.util.Date
 
 class ChatActivity : AppCompatActivity() {
 
@@ -18,6 +25,7 @@ class ChatActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private lateinit var idGrupo : String
+    private var idPlan : String=""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityChatBinding.inflate(layoutInflater)
@@ -102,9 +110,64 @@ class ChatActivity : AppCompatActivity() {
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+            revisarActivo()
+        }
+    }
+
+    private fun revisarActivo() {
+        var existe=false
+        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val planId = userSnapshot.key // El ID del usuario
+                    val planData = userSnapshot.getValue(Plan::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $planId")
+                    println("Datos de usuario: $planData")
+
+                    // Crea un objeto PosAmigo con la información del usuario
+                    var status=""
+                    val plan = planData?.let {
+                        status=planAcrivo(planData.dateInicio,planData.dateFinal)
+                    }
+
+                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                    if (planId != null &&  plan != null && status!="Activo") {
+                        existe=true
+                        idPlan=planId
+                    }
+                }
+
+                if(existe)
+                {
+                    var intent = Intent(baseContext, PlanActivity::class.java)
+                    intent.putExtra("idGrupo", idGrupo)
+                    intent.putExtra("idPlan", idPlan)
+                    startActivity(intent)
+                }
+                else
+                {
+                    Toast.makeText(applicationContext, "No hay planes activos", Toast.LENGTH_LONG).show()
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
+    }
+
+    private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
+        val fechaActual = Date()
+
+        return when {
+            fechaActual.before(dateInicio) -> "Activo"
+            fechaActual.after(dateFinal) -> "Cerrado"
+            else -> "Abierto"
         }
     }
 

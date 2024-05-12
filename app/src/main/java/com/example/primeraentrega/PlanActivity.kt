@@ -797,9 +797,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+
         }
     }
     private fun initShowout (v: View){
@@ -1291,11 +1289,11 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                     {
                         binding.tituloPlan.text= dataSnapshot.getValue().toString()
                     }
-                    if(dataSnapshot.key=="latitude")
+                    else if(dataSnapshot.key=="latitude")
                     {
                         obtenerInfoCompletaPlan()
                     }
-                    if(dataSnapshot.key=="longitude")
+                    else if(dataSnapshot.key=="longitude")
                     {
                         obtenerInfoCompletaPlan()
                     }
