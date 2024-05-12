@@ -10,13 +10,16 @@ import android.util.Log
 import android.widget.Toast
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import com.example.primeraentrega.Adapters.GroupAdapter
 import com.example.primeraentrega.Clases.Grupo
+import com.example.primeraentrega.Clases.ListGroup
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.databinding.ActivityVerGruposBinding
 import com.example.primeraentrega.Clases.Usuario
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -39,6 +42,7 @@ class VerGruposActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private lateinit var databaseReference: DatabaseReference
+    private lateinit var auth: FirebaseAuth
     private var childId:String?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +56,16 @@ class VerGruposActivity : AppCompatActivity() {
 
         inicializarBotones(usuario)
 
+        auth = FirebaseAuth.getInstance()
         //crearInfoSophie()
+        llenarLista()
+
+        binding.gruposList.setOnItemClickListener { parent, view, position, id ->
+            val group = groupList[position] // Get the clicked group from the list
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("groupId", group.uid) // Pass the group ID to ChatActivity
+            startActivity(intent)
+        }
 
     }
 
@@ -156,15 +169,68 @@ class VerGruposActivity : AppCompatActivity() {
             }
         }
 
-        binding.grupoChocmelos.setOnClickListener {
+        /*binding.grupoChocmelos.setOnClickListener {
             val intent = Intent(baseContext, ChatActivity::class.java)
             Log.i("idGrupo","revisar Ver grupos $childId")
             intent.putExtra("idGrupo", childId)
             startActivity(intent)
-        }
+        }*/
 
         binding.botonAgregarGrupo.setOnClickListener {
             startActivity(Intent(baseContext, AgregarContactosActivity::class.java))
+        }
+
+    }
+
+    val groupList: MutableList<ListGroup> = mutableListOf()
+    private fun llenarLista() {
+
+        databaseReference = FirebaseDatabase.getInstance().getReference("Groups")
+
+        auth.currentUser?.uid?.let { currentUserUid ->
+            databaseReference.addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+
+                    // Obtener el usuario de dataSnapshot
+                    val grupo = dataSnapshot.getValue(Grupo::class.java)
+                    Log.e("Referencia", "Aqui llegue a Grupo")
+                    Log.e("GrupoImagen", "Imagen: ${grupo?.fotoGrupo}")
+                    // Verificar si el usuario no es el usuario actual antes de agregarlo a la lista
+                    if (grupo != null && grupo.integrantes.containsKey(currentUserUid)) {
+
+                        Log.e("Referencia", "Apunto de pedir storageRef")
+                        val storageRef = FirebaseStorage.getInstance().reference.child(grupo.fotoGrupo)
+                        Log.e("Referencia", "Ya pedi")
+                        val localfile = File. createTempFile( "tempImage", "jpg")
+
+                        Log.e("GetFile", "Pedire local file")
+                        storageRef.getFile(localfile).addOnSuccessListener {
+                            Log.e("Entre", "ENTRE")
+                            val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
+                            var groupADD= ListGroup(grupo.titulo, dataSnapshot.key, bitmap)
+                            groupList.add(groupADD)
+
+                            //Lista
+                            val adapter = GroupAdapter(applicationContext,groupList);
+                            binding.gruposList.adapter = adapter
+
+                        }.addOnFailureListener{
+                            Log.e("Error", "User could not be found")
+                        }
+
+                    }
+                }
+                override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+
+                }
+                override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+
+                }
+                override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                }
+            })
         }
 
     }
