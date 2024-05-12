@@ -22,6 +22,8 @@ import com.example.primeraentrega.databinding.ContactrowBinding
 
 
 class UserAdapter(context: Context?, usuarioList: MutableList<ListUser>) : ArrayAdapter<ListUser>(context!!, contactrow, usuarioList) {
+    // List to keep track of selected users
+    private val selectedUsers: MutableList<ListUser> = mutableListOf()
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var convertView = convertView
         val usuario = getItem(position)
@@ -46,19 +48,20 @@ class UserAdapter(context: Context?, usuarioList: MutableList<ListUser>) : Array
 
                 // Realizar acciones basadas en el estado de la casilla de verificación
                 if (isChecked) {
-                    // El usuario ha marcado la casilla de verificación, puedes realizar las acciones necesarias aquí
-                    // Por ejemplo, agregar este usuario a una lista de usuarios seleccionados para ser invitados al grupo
-                    // O mostrar un mensaje al usuario
-                    Toast.makeText(context, "Usuario ${usuario?.nombre} seleccionado para ser invitado al grupo", Toast.LENGTH_SHORT).show()
+                    // If checkbox is checked, add the user to selectedUsers list
+                    selectedUsers.add(usuarioCelda)
                 } else {
-                    // El usuario ha desmarcado la casilla de verificación, puedes realizar las acciones necesarias aquí
-                    // Por ejemplo, eliminar este usuario de la lista de usuarios seleccionados
-                    // O mostrar un mensaje al usuario
-                    Toast.makeText(context, "Usuario ${usuario?.nombre} deseleccionado para ser invitado al grupo", Toast.LENGTH_SHORT).show()
+                    // If checkbox is unchecked, remove the user from selectedUsers list
+                    selectedUsers.remove(usuarioCelda)
                 }
             }
         }
 
         return convertView
+    }
+
+    // Method to get the list of selected users
+    fun getSelectedUsers(): List<ListUser> {
+        return selectedUsers.toList()
     }
 }

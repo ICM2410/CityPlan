@@ -50,7 +50,8 @@ class AgregarContactosActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAgregarContactosBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        idGrupo=intent.getStringExtra("idGrupo").toString()
+        idGrupo = intent.getStringExtra("idGrupo").toString()
+
 
         //permissionRequest()
         inicializarBotones()
@@ -61,6 +62,29 @@ class AgregarContactosActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         llenarLista()
+
+        binding.agregarGrupo.setOnClickListener() {
+            // Retrieve the list of selected users from the adapter
+            val selectedUsers = (binding.listaContactos.adapter as? UserAdapter)?.getSelectedUsers()
+
+            // Check if the selectedUsers list is not null
+            selectedUsers?.let { users ->
+                // Extract the uids from the list of selected users
+                val selectedUserIds = users.map { it.uid }
+
+                // Create an intent to navigate to CrearGrupoActivity
+                val intent = Intent(this, CrearGrupoActivity::class.java)
+
+                // Put the list of selected user ids as an extra in the intent
+                intent.putStringArrayListExtra("selectedUserIds", ArrayList(selectedUserIds))
+
+                // Start the CrearGrupoActivity with the intent
+                startActivity(intent)
+
+                // Optionally, show a message to indicate success
+                Toast.makeText(this, "Selected users added to group", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun inicializarBotones() {

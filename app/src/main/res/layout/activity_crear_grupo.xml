@@ -112,15 +112,7 @@
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
-                android:id="@+id/buttonAgregarMiembros"
-                android:layout_width="299dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:padding="10dp"
-                android:text="@string/AgregarMiembrosalGrupo"
-                android:textSize="18sp"
-                android:backgroundTint="@color/moradoClaro"/>
+
 
             <Button
                 android:id="@+id/buttonGuardar"

@@ -56,7 +56,7 @@ class VerGruposActivity : AppCompatActivity() {
 
     }
 
-    private fun crearInfoSophie() {
+    /*private fun crearInfoSophie() {
         //obtener todos los usuarios
         val userRef = database.getReference("users")
         val listaUsuarios: MutableMap<String, Usuario> = mutableMapOf()
@@ -107,7 +107,7 @@ class VerGruposActivity : AppCompatActivity() {
         })
 
 
-    }
+    }*/
 
     private fun inicializarBotones(usuario: UsuarioAmigo?) {
 
@@ -164,7 +164,7 @@ class VerGruposActivity : AppCompatActivity() {
         }
 
         binding.botonAgregarGrupo.setOnClickListener {
-            startActivity(Intent(baseContext, CrearGrupoActivity::class.java))
+            startActivity(Intent(baseContext, AgregarContactosActivity::class.java))
         }
 
     }
