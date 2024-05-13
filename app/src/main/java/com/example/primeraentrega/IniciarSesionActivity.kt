@@ -8,10 +8,13 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityIniciarSesionBinding
+import com.google.firebase.Firebase
 
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.messaging.messaging
 
 import java.security.MessageDigest
 
@@ -66,10 +69,7 @@ class IniciarSesionActivity : AppCompatActivity() {
                     // Inicio de sesión exitoso
                     val userId = authResult.user?.uid
                     val user=authResult.user
-                    var intent= Intent(baseContext, VerGruposActivity::class.java)
-                    intent.putExtra("user", user)
-
-                    startActivity(intent)
+                    actualizarMiToken(user)
                     // Aquí puedes agregar lógica adicional después del inicio de sesión exitoso
                 }
                 .addOnFailureListener { e ->
@@ -84,6 +84,33 @@ class IniciarSesionActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, RegistrarUsuarioActivity::class.java))
         }
 
+    }
+
+    private fun actualizarMiToken(user: FirebaseUser?) {
+        //aqui se debe subscribir a todos los chats a los que pertenece
+        Firebase.messaging.token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+
+                // Aquí puedes hacer lo que necesites con el token, como asignarlo al usuario
+                println("Token guardado correctamente: $token")
+                val myRef = database.getReference("Usuario")
+                // Guardar el usuario en Firebase Realtime Database con el UID como clave
+                auth.currentUser?.uid?.let {
+                    myRef.child(it).child("token").setValue(token)
+                        .addOnSuccessListener {
+                            // Registro exitoso en Firebase Realtime Database
+                            var intent= Intent(baseContext, VerGruposActivity::class.java)
+                            intent.putExtra("user", user)
+
+                            startActivity(intent)
+                        }
+                }
+
+            } else {
+                println("Error al obtener el token: ${task.exception?.message}")
+            }
+        }
     }
 
     private fun solicitarHuella(usuario: UsuarioAmigo?) {

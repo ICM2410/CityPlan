@@ -39,11 +39,18 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.lifecycle.ViewModel
 import com.example.primeraentrega.Alarms.AlarmItem
 import com.example.primeraentrega.Alarms.AndroidAlarmScheduler
 import com.example.primeraentrega.Clases.PlanJson
 import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.Clases.UsuarioAmigo
+import com.example.primeraentrega.Notifications.FcmApi
+import com.example.primeraentrega.Notifications.NotificationBody
+import com.example.primeraentrega.Notifications.PlanState
+import com.example.primeraentrega.Notifications.PlanViewModel
+import com.example.primeraentrega.Notifications.SendMessageDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -52,9 +59,16 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import retrofit2.HttpException
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.create
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
@@ -90,6 +104,7 @@ class CrearPlanActivity : AppCompatActivity() {
 
     private lateinit var scheduler: AndroidAlarmScheduler
     var alarmItem:AlarmItem?=null
+    private lateinit var auth:FirebaseAuth
     
     val getContentGallery = registerForActivityResult(
         ActivityResultContracts.GetContent(),
@@ -104,7 +119,7 @@ class CrearPlanActivity : AppCompatActivity() {
         binding= ActivityCrearPlanBinding.inflate(layoutInflater)
         setContentView(binding.root)
         geocoder = Geocoder(baseContext)
-
+        auth=FirebaseAuth.getInstance()
         val pantalla = intent.getStringExtra("pantalla")
         idGrupo=intent.getStringExtra("idGrupo").toString()
         Log.i("idGrupo","revisar Crear $idGrupo")
@@ -282,11 +297,9 @@ class CrearPlanActivity : AppCompatActivity() {
             {
                 //editar la informacion
                 guardarInformacionFirebase { documentId ->
-                    ponerAlarma(documentId)
-                    val intent = Intent(baseContext, PlanesActivity::class.java)
-                    intent.putExtra("idPlan", documentId)
-                    intent.putExtra("idGrupo", idGrupo)
-                    startActivity(intent)
+                    //alarmId=generateUniqueCode(documentId)
+                    ponerAlarma(documentId,alarmId)
+                    enviarNotificaciones(documentId,alarmId)
                 }
             }
         }
@@ -358,13 +371,110 @@ class CrearPlanActivity : AppCompatActivity() {
 
         fabClicks()
     }
+    private var alarmId=0
+    private val api: FcmApi = Retrofit.Builder()
+        .baseUrl("http://10.0.2.2:8080/")
+        .addConverterFactory(MoshiConverterFactory.create())
+        .build()
+        .create()
+    private fun enviarNotificaciones(documentId: String, alarmId:Int) {
+        val isBroadcast=true
+        var state = PlanState(true,
+            "",
+            "El plan ${binding.nombrePlan.text.toString()} se ha creado y es agendado para " +
+                    "${LocalDateTime.now().plusSeconds(10).month}" +
+                    "/${LocalDateTime.now().plusSeconds(10).dayOfYear}" +
+                    "/${LocalDateTime.now().plusSeconds(10).year}",
+            documentId,
+            LocalDateTime.now().plusSeconds(10),
+            alarmId,
+            idGrupo)
+        val message= SendMessageDTO(
+            to=if(isBroadcast) "1" else state.remoteToken,
+            notification = NotificationBody(
+                title = "Nuevo plan!",
+                body = state.messageText,
+                id = state.idPlan,
+                alarmId = state.idAlarm,
+                idGrupo = state.idGrupo
+            )
+        )
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                if (isBroadcast){
+                    api.broadcast(message)
+                } else {
+                    api.sendMessage(message)
+                }
+            } catch (e: HttpException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
 
-    private fun ponerAlarma(documentId: String) {
+        val intent = Intent(baseContext, PlanesActivity::class.java)
+        intent.putExtra("idPlan", documentId)
+        intent.putExtra("idGrupo", idGrupo)
+        startActivity(intent)
+        /*
+        //val planId = grupoRef.child("planes").push().key
+        userRef.child(idGrupo).child("integrantes").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val userId = userSnapshot.key // El ID del usuario
+                    val userData = userSnapshot.getValue().toString() // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $userId")
+                    println("Datos de usuario: $userData")
+                    //obtener datos del usuario
+                    userId?.let {
+                        val userRefID = database.getReference("Usuario").child(it)
+                        userRefID.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+
+                                val usuario=dataSnapshot.getValue(UsuarioAmigo::class.java)
+
+                                userData?.let {
+                                    usuario?.let {
+                                        if(usuario.uid!= auth.currentUser?.uid){
+                                            //se pone el token del usuario
+                                            viewModel.onSubmitNewToken()
+                                            viewModel.onRemoteTokenChange(usuario.token)
+                                            viewModel.onMessageChange("El plan ${binding.nombrePlan.text.toString()} se ha creado")
+                                            viewModel.onIdPlanChange(documentId)
+                                            viewModel.onIdAlarmPlanChange(alarmId)
+                                            viewModel.onIdGrupoPlanChange(idGrupo)
+                                            viewModel.onTimePlanChange(LocalDateTime.now().plusSeconds(10))
+                                            viewModel.sendMessage(isBroadcast = false)
+                                        }
+                                    }
+                                }
+                            }
+                            override fun onCancelled(databaseError: DatabaseError) {
+                                // Maneja el error en caso de que ocurra
+                                println("Error al obtener los datos del usuario: ${databaseError.message}")
+                            }
+                        })
+                    }
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos del usuario: ${databaseError.message}")
+            }
+        })*/
+    }
+
+    private fun ponerAlarma(documentId: String, alarmId: Int) {
         alarmItem=AlarmItem(
-            textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
+            LocalDateTime.now().plusSeconds(10),
+            //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
             "El plan ${binding.nombrePlan.text.toString()} ha iniciado",
             binding.nombrePlan.text.toString(),
-           123, //generateUniqueCode(documentId),
+            1234,
             documentId,
             idGrupo
         )
@@ -397,33 +507,8 @@ class CrearPlanActivity : AppCompatActivity() {
     }
 
     fun generateUniqueCode(text: String): Int {
-        // Create a MessageDigest instance for SHA-256
-        val digest = MessageDigest.getInstance("SHA-256")
-
-        // Compute the hash value of the text
-        val hashBytes = digest.digest(text.toByteArray())
-
-        // Convert the hash bytes to a hexadecimal string
-        val hexString = StringBuilder()
-        for (byte in hashBytes) {
-            // Convert each byte to a hexadecimal string representation
-            val hex = Integer.toHexString(0xff and byte.toInt())
-            if (hex.length == 1) {
-                hexString.append('0')
-            }
-            hexString.append(hex)
-        }
-
-        // Take the first 10 characters as the unique code
-        val first10Digits = hexString.substring(0, 10)
-
-        // Convert the hexadecimal string to an integer
-        val bigInt = Integer.parseInt(first10Digits, 16)
-
-        // Ensure the integer is positive and has 10 digits
-        return abs(bigInt) % 1000000000
+        return 1
     }
-
 
     private fun concordanciaFechas(fechaTexto1: View, horaTexto1: View, fechaTexto2: View, horaTexto2: View): Boolean {
 

@@ -17,6 +17,7 @@ class AndroidAlarmScheduler(
     private val alarmManager=context.getSystemService(AlarmManager::class.java)
     @RequiresApi(Build.VERSION_CODES.O)
     override fun schedule(item: AlarmItem) {
+
         val intent= Intent(context,AlarmReceiver::class.java).apply {
             putExtra("message",item.message)
             putExtra("idPlan", item.idPlan.toString())
@@ -27,13 +28,14 @@ class AndroidAlarmScheduler(
 
 
         try {
+            Log.i("scheduler","se puso la alarma")
             // Tu código para programar la alarma exacta
             alarmManager.setExact(
                 AlarmManager.RTC_WAKEUP,
-                item.time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                item.time.atZone(ZoneId.systemDefault()).toEpochSecond()*1000,
                 PendingIntent.getBroadcast(
                     context,
-                    item.hashCode(),
+                    item.idPlan,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )

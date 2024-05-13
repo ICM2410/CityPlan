@@ -40,12 +40,14 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.messaging
 
 
 class VerGruposActivity : AppCompatActivity() {
@@ -66,29 +68,21 @@ class VerGruposActivity : AppCompatActivity() {
 
         database = FirebaseDatabase.getInstance()
         databaseReference= FirebaseDatabase.getInstance().getReference("Grupos")
-        val usuario = intent.getSerializableExtra("user") as? UsuarioAmigo
+        //val usuario = intent.getSerializableExtra("user") as? UsuarioAmigo
         auth=FirebaseAuth.getInstance()
 
-        inicializarBotones(usuario)
+        inicializarBotones()
 
         childId="-Nxds2b-dh--IP1NUNhP"
         //crearInfoSophie()
         gestionarPermiso()
+        gestionarAlarma()
         configurarLocalizacion()
+        actualizarMiToken()
 
     }
 
-    override fun onRestart() {
-        super.onRestart()
-        gestionarPermiso()
-    }
-
-    private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
-    private val notificationpermissionName=android.Manifest.permission.POST_NOTIFICATIONS
-    private val ALARMpermissionName=android.Manifest.permission.SCHEDULE_EXACT_ALARM
-    private val multiplepPermissionNameList= arrayOf(localPermissionName,notificationpermissionName)
-
-    fun gestionarPermiso() {
+    private fun gestionarAlarma() {
         val alarmManager: AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         when {
             alarmManager.canScheduleExactAlarms() -> {
@@ -103,7 +97,28 @@ class VerGruposActivity : AppCompatActivity() {
                 }
             }
         }
+    }
 
+    private fun actualizarMiToken() {
+        //aqui se debe subscribir a todos los chats a los que pertenece
+        Firebase.messaging.subscribeToTopic(childId!!).addOnSuccessListener {
+            Log.i("subscripcion", "Existosa")
+        }.addOnFailureListener{
+            Log.e("subscripcion", "ERROR")
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        gestionarPermiso()
+    }
+
+    private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
+    private val notificationpermissionName=android.Manifest.permission.POST_NOTIFICATIONS
+    private val ALARMpermissionName=android.Manifest.permission.SCHEDULE_EXACT_ALARM
+    private val multiplepPermissionNameList= arrayOf(localPermissionName,notificationpermissionName)
+
+    fun gestionarPermiso() {
 
         if (ContextCompat.checkSelfPermission(this, notificationpermissionName) == PackageManager.PERMISSION_DENIED
             || ContextCompat.checkSelfPermission(this, localPermissionName) == PackageManager.PERMISSION_DENIED
@@ -366,8 +381,8 @@ class VerGruposActivity : AppCompatActivity() {
         return request
     }
 
-    private fun inicializarBotones(usuario: UsuarioAmigo?) {
-
+    private fun inicializarBotones() {
+        val usuario=UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {

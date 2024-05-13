@@ -21,6 +21,7 @@
 
     <application
         android:name=".RunningApp.RunningApp"
+        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -69,9 +70,6 @@
             android:name=".PerfilConfActivity"
             android:exported="false" />
         <activity
-            android:name=".ConfiguracionActivity"
-            android:exported="false" />
-        <activity
             android:name=".RegistrarUsuarioActivity"
             android:exported="false" />
         <activity
@@ -82,9 +80,6 @@
             android:exported="false" />
         <activity
             android:name=".ElegirUbicacionActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ConfigurarHuellaActivity"
             android:exported="false" />
         <activity
             android:name=".VerGruposActivity"
@@ -123,6 +118,12 @@
             </intent-filter>
         </activity>
         <receiver android:name=".Alarms.AlarmReceiver"/>
+        <service android:name=".Services.PushNotificationService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

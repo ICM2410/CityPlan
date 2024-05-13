@@ -7,13 +7,16 @@ import android.os.Bundle
 import android.widget.Toast
 import com.example.primeraentrega.databinding.ActivityRegistrarUsuarioBinding
 import com.example.primeraentrega.Clases.UsuarioAmigo
+import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.messaging
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.tasks.await
 
 class RegistrarUsuarioActivity : AppCompatActivity() {
 
@@ -37,7 +40,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
             val telefono = binding.telefono.text.toString().toInt()
             val correo = binding.correo.text.toString()
 
-            val usuario = UsuarioAmigo(user, correo, telefono, 0.0, 0.0, "", false, 0, "", "")
+            val usuario = UsuarioAmigo(user, correo, telefono, 0.0, 0.0, "", false, 0, "", "","")
 
             // Crea el usuario en la base de datos de Firebase
             guardarUsuarioEnFirebase(usuario, password)
@@ -121,22 +124,34 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
                 // Inicializa la referencia a la base de datos
                 val myRef = database.getReference("Usuario")
 
-                // Guardar el usuario en Firebase Realtime Database con el UID como clave
-                uid?.let {
-                    myRef.child(it).setValue(usuario)
-                        .addOnSuccessListener {
-                            // Registro exitoso en Firebase Realtime Database
-                            Toast.makeText(baseContext, "Usuario registrado con éxito", Toast.LENGTH_LONG).show()
-                            startActivity(Intent(baseContext, IniciarSesionActivity::class.java))
+                Firebase.messaging.token.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val token = task.result
+                        // Aquí puedes hacer lo que necesites con el token, como asignarlo al usuario
+                        usuario.token = token
+                        println("Token guardado correctamente: $token")
+                        // Guardar el usuario en Firebase Realtime Database con el UID como clave
+                        uid?.let {
+                            myRef.child(it).setValue(usuario)
+                                .addOnSuccessListener {
+                                    // Registro exitoso en Firebase Realtime Database
+                                    Toast.makeText(baseContext, "Usuario registrado con éxito", Toast.LENGTH_LONG).show()
+                                    startActivity(Intent(baseContext, IniciarSesionActivity::class.java))
+                                }
+                                .addOnFailureListener { e ->
+                                    // Error al registrar en Firebase Realtime Database
+                                    Toast.makeText(baseContext, "Error al registrar en Firebase Realtime Database", Toast.LENGTH_SHORT).show()
+                                }
+                        } ?: run {
+                            // Si no se proporciona el UID del usuario
+                            Toast.makeText(baseContext, "UID del usuario no válido", Toast.LENGTH_SHORT).show()
                         }
-                        .addOnFailureListener { e ->
-                            // Error al registrar en Firebase Realtime Database
-                            Toast.makeText(baseContext, "Error al registrar en Firebase Realtime Database", Toast.LENGTH_SHORT).show()
-                        }
-                } ?: run {
-                    // Si no se proporciona el UID del usuario
-                    Toast.makeText(baseContext, "UID del usuario no válido", Toast.LENGTH_SHORT).show()
+
+                    } else {
+                        println("Error al obtener el token: ${task.exception?.message}")
+                    }
                 }
+
             }.addOnFailureListener { exception ->
                 // Manejar errores al obtener el URI de la imagen
             }

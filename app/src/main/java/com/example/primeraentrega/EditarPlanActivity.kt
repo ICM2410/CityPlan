@@ -347,6 +347,13 @@ class EditarPlanActivity : AppCompatActivity() {
             else
             {
                 guardarInformacionFirebase { documentId ->
+                    //REAGENDAR LA ALARMA
+
+                    //ENVIAR NOTIFICACION DE QUE SE ACTUALIZO
+
+                    //DESPUES DE ESO SE VA A PLAN ACTIVITY
+
+
                     val intent = Intent(baseContext, PlanActivity::class.java)
                     Log.e(ContentValues.TAG, "HOLA - $idPlan")
                     intent.putExtra("idPlan", idPlan)
