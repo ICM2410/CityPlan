@@ -7,7 +7,6 @@ class PlanState(
     var remoteToken:String="",
     var messageText:String="",
     var idPlan:String="",
-    var time: LocalDateTime= LocalDateTime.now(),
     var idAlarm: Int=0,
     var idGrupo:String="",
 ) {

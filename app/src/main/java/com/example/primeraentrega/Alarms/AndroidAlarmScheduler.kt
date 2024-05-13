@@ -20,7 +20,7 @@ class AndroidAlarmScheduler(
 
         val intent= Intent(context,AlarmReceiver::class.java).apply {
             putExtra("message",item.message)
-            putExtra("idPlan", item.idPlan.toString())
+            putExtra("idPlan", item.idAlarma.toString())
             putExtra("nombre",item.nombreplan)
             putExtra("idGrupo",item.idGrupo)
             putExtra("idPlanReal",item.idPlanReal)
@@ -35,14 +35,14 @@ class AndroidAlarmScheduler(
                 item.time.atZone(ZoneId.systemDefault()).toEpochSecond()*1000,
                 PendingIntent.getBroadcast(
                     context,
-                    item.idPlan,
+                    item.idAlarma,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             )
         } catch (e: SecurityException) {
             // Manejar la excepción y tomar acciones alternativas
-            Log.i("terrible","f")
+            Log.i("alarma","no hay permiso de alarma")
         }
 
     }

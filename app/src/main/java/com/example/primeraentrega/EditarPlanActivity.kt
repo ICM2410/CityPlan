@@ -835,6 +835,7 @@ class EditarPlanActivity : AppCompatActivity() {
                 documentId
             )
 
+
             databaseReference.child(idPlan).setValue(myPlan).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.i("databaseReference", "Plan actualizado correctamente.")

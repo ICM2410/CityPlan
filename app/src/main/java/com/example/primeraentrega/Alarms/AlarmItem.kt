@@ -6,7 +6,7 @@ class AlarmItem (
     val time:  LocalDateTime,
     val message: String,
     val nombreplan: String,
-    var idPlan: Int,
+    var idAlarma: Int,
     val idPlanReal: String,
     val idGrupo: String
 )

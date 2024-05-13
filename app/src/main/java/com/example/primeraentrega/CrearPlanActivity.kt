@@ -18,7 +18,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import android.net.Uri
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -39,8 +38,6 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.lifecycle.ViewModel
 import com.example.primeraentrega.Alarms.AlarmItem
 import com.example.primeraentrega.Alarms.AndroidAlarmScheduler
 import com.example.primeraentrega.Clases.PlanJson
@@ -49,7 +46,6 @@ import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.Notifications.FcmApi
 import com.example.primeraentrega.Notifications.NotificationBody
 import com.example.primeraentrega.Notifications.PlanState
-import com.example.primeraentrega.Notifications.PlanViewModel
 import com.example.primeraentrega.Notifications.SendMessageDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -73,16 +69,12 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.math.BigInteger
-import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
-import kotlin.math.abs
 
 class CrearPlanActivity : AppCompatActivity() {
 
@@ -102,6 +94,7 @@ class CrearPlanActivity : AppCompatActivity() {
 
     var imagenPin:Bitmap?=null
     private var idPlan : String=""
+    private var idAlarma=0
 
     private lateinit var scheduler: AndroidAlarmScheduler
     var alarmItem:AlarmItem?=null
@@ -382,9 +375,8 @@ class CrearPlanActivity : AppCompatActivity() {
         val isBroadcast=true
         var state = PlanState(true,
             "",
-            "El plan ${binding.nombrePlan.text.toString()} se ha creado y es agendado para iniciar a las ${binding.fechaInicio} ${binding.horaInicio}",
+            "El plan ${binding.nombrePlan.text.toString()} se ha creado y es agendado para iniciar a las ${binding.fechaInicio.text.toString()} ${binding.horaInicio.text.toString()}",
             documentId,
-            LocalDateTime.now().plusSeconds(10),
             0,
             idGrupo)
         val message= SendMessageDTO(
@@ -415,70 +407,21 @@ class CrearPlanActivity : AppCompatActivity() {
         intent.putExtra("idPlan", documentId)
         intent.putExtra("idGrupo", idGrupo)
         startActivity(intent)
-        /*
-        //val planId = grupoRef.child("planes").push().key
-        userRef.child(idGrupo).child("integrantes").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                for (userSnapshot in dataSnapshot.children) {
-                    // Obtiene los datos de cada usuario
-                    val userId = userSnapshot.key // El ID del usuario
-                    val userData = userSnapshot.getValue().toString() // Los datos del usuario convertidos a objeto Usuario
-
-                    // Aquí puedes realizar cualquier operación con los datos del usuario
-                    println("ID de usuario: $userId")
-                    println("Datos de usuario: $userData")
-                    //obtener datos del usuario
-                    userId?.let {
-                        val userRefID = database.getReference("Usuario").child(it)
-                        userRefID.addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(dataSnapshot: DataSnapshot) {
-
-                                val usuario=dataSnapshot.getValue(UsuarioAmigo::class.java)
-
-                                userData?.let {
-                                    usuario?.let {
-                                        if(usuario.uid!= auth.currentUser?.uid){
-                                            //se pone el token del usuario
-                                            viewModel.onSubmitNewToken()
-                                            viewModel.onRemoteTokenChange(usuario.token)
-                                            viewModel.onMessageChange("El plan ${binding.nombrePlan.text.toString()} se ha creado")
-                                            viewModel.onIdPlanChange(documentId)
-                                            viewModel.onIdAlarmPlanChange(alarmId)
-                                            viewModel.onIdGrupoPlanChange(idGrupo)
-                                            viewModel.onTimePlanChange(LocalDateTime.now().plusSeconds(10))
-                                            viewModel.sendMessage(isBroadcast = false)
-                                        }
-                                    }
-                                }
-                            }
-                            override fun onCancelled(databaseError: DatabaseError) {
-                                // Maneja el error en caso de que ocurra
-                                println("Error al obtener los datos del usuario: ${databaseError.message}")
-                            }
-                        })
-                    }
-                }
-            }
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Maneja el error en caso de que ocurra
-                println("Error al obtener los datos del usuario: ${databaseError.message}")
-            }
-        })*/
-    }
+     }
 
     private fun ponerAlarma(documentId: String) {
 
-        alarmItem=AlarmItem(
+        /*alarmItem=AlarmItem(
             textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
             //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
             "El plan ${binding.nombrePlan.text.toString()} ha iniciado",
             binding.nombrePlan.text.toString(),
-            1234,
+            idAlarma,
             documentId,
             idGrupo
         )
-        alarmItem!!.idPlan=alarmItem.hashCode()
-        alarmItem?.let (scheduler::schedule)
+
+        alarmItem?.let (scheduler::schedule)*/
     }
 
     fun textoAFechaAlarma(fechaTexto: Button, horaTexto: Button): LocalDateTime {
@@ -869,6 +812,9 @@ class CrearPlanActivity : AppCompatActivity() {
                                         integrantesMap,
                                         childId
                                     )
+
+                                    idAlarma=myPlan.hashCode()
+                                    myPlan.idAlarma=idAlarma
                                     Log.i("childId crear","$childId")
                                     if (childId != null) {
                                         databaseReference.child(childId).setValue(myPlan).addOnCompleteListener { task ->

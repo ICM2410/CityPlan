@@ -26,6 +26,7 @@ import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.databinding.ActivityVerGruposBinding
 import com.example.primeraentrega.Clases.UsuarioAmigo
+import com.example.primeraentrega.Services.NewPlanService
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -77,9 +78,18 @@ class VerGruposActivity : AppCompatActivity() {
         //crearInfoSophie()
         gestionarPermiso()
         gestionarAlarma()
+        iniciarServicio()
         configurarLocalizacion()
         actualizarMiToken()
 
+    }
+
+    private fun iniciarServicio() {
+        Intent (applicationContext, NewPlanService::class.java). apply {
+            action = NewPlanService.ACTION_START
+            putExtra("uid", auth.currentUser?.uid)
+            startService(this) // Aquí inicia el servicio
+        }
     }
 
     private fun gestionarAlarma() {
