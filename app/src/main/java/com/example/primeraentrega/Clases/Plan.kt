@@ -14,7 +14,8 @@ class Plan (
     var fotopin: String = "",
     var estado:Boolean = false,
     var integrantes: Map<String, PosAmigo> = emptyMap(),
-    var id: String=""
+    var id: String="",
+    var idAlarma:Int=0
 ) {
-    constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "", false, emptyMap())
+    constructor() : this(Date(), Date(), 0.0, 0.0, false, "", "", "", false, emptyMap(), "",0)
 }

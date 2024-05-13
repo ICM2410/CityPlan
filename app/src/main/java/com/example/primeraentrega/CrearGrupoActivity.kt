@@ -15,8 +15,9 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import com.example.primeraentrega.Clases.Grupo
+import com.bumptech.glide.Glide
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityCrearGrupoBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -103,7 +104,8 @@ class CrearGrupoActivity : AppCompatActivity() {
             createGroup()
         }
 
-        val usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
+
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {

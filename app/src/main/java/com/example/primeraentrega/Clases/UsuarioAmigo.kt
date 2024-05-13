@@ -13,11 +13,12 @@ class UsuarioAmigo : Serializable{
     var cantPasos: Int=0
     var huella: String = ""
     var imagen: String = ""
+    var token: String=""
 
     constructor()
 
     constructor(username:String, email:String, telefono:Int, latitud:Double, longitud:Double, uid:String,
-        activo:Boolean, cantPasos:Int, huella:String, imagen:String){
+        activo:Boolean, cantPasos:Int, huella:String, imagen:String,token: String){
 
         this.username=username
         this.email=email
@@ -29,5 +30,6 @@ class UsuarioAmigo : Serializable{
         this.cantPasos=cantPasos
         this.huella=huella
         this.imagen=imagen
+        this.token=token
     }
 }

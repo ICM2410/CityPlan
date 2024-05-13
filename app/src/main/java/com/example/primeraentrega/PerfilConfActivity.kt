@@ -5,8 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityPerfilConfBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import java.security.MessageDigest
@@ -37,7 +37,7 @@ class PerfilConfActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, VerGruposActivity::class.java))
         }
 
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -64,7 +64,7 @@ class PerfilConfActivity : AppCompatActivity() {
         }
     }
 
-    private fun solicitarHuella(usuario: Usuario?) {
+    private fun solicitarHuella(usuario: UsuarioAmigo?) {
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
             object : BiometricPrompt.AuthenticationCallback() {
@@ -75,7 +75,7 @@ class PerfilConfActivity : AppCompatActivity() {
                     val biometricId = generateBiometricId(biometricData)
 
                     // Asignar el ID de la huella dactilar al usuario
-                    usuario?.fingerprintId = biometricId
+                    usuario?.huella = biometricId
 
 
                     // Guardar el usuario actualizado en Firebase
@@ -111,7 +111,7 @@ class PerfilConfActivity : AppCompatActivity() {
         return hexString.toString()
     }
 
-    private fun guardarUsuarioEnFirebase(usuario: Usuario?) {
+    private fun guardarUsuarioEnFirebase(usuario: UsuarioAmigo?) {
 
     }
 }

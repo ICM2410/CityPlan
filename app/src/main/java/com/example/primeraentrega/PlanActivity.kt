@@ -45,8 +45,6 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
@@ -54,7 +52,7 @@ import org.osmdroid.util.GeoPoint
 import kotlin.math.min
 import android.hardware.SensorEventListener
 import com.example.primeraentrega.Clases.PosAmigo
-import com.example.primeraentrega.Clases.Usuario
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -70,8 +68,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
-import com.google.firebase.storage.StorageReference
 import java.io.File
 
 class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallback {
@@ -85,6 +81,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private var MarkerActual: com.google.android.gms.maps.model.Marker? = null
     private var  planLocationMarker: com.google.android.gms.maps.model.Marker? = null
     private val mapaDeParticipantes: MutableMap<String?, com.google.android.gms.maps.model.Marker?> = mutableMapOf()
+    private val mapaDeFotoParticipantes: MutableMap<String?, Bitmap> = mutableMapOf()
     private var latEncuentro:Double= -122.0
     private var longEncuentro:Double= 37.0
     private var pasosAvtivado=true
@@ -101,7 +98,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private lateinit var idGrupo : String
 
     private lateinit var auth:FirebaseAuth
-    private lateinit var databaseReference: DatabaseReference
+    private lateinit var databaseReferencePlanes: DatabaseReference
+    private lateinit var databaseReferenceGrupos: DatabaseReference
+    private lateinit var databaseReferenceUsers: DatabaseReference
     private lateinit var database : FirebaseDatabase
 
     //MAPA
@@ -227,7 +226,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                             .title("YO"))
 
                         auth.currentUser?.uid?.let { userId ->
-                            databaseReference.child(userId).apply {
+                            databaseReferenceUsers.child(userId).apply {
                                 child("latitud").setValue(latActual)
                                 child("longitud").setValue(longActual)
                             }
@@ -237,14 +236,13 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                             latActual,
                             longActual,
                             auth.currentUser?.uid,
-                            "usuarios/${auth.currentUser?.uid}.png",
+                            "usuarios/${auth.currentUser?.uid}.jpg",
                             nombreUsuario
                         )
 
                         //aqui actualizo mi posicion en el plan
-                        databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
                         auth.currentUser?.let {
-                            databaseReference.child(idPlan).child("integrantes").child(
+                            databaseReferencePlanes.child(idPlan).child("integrantes").child(
                                 it.uid).setValue(myPos).addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     Log.i("mi pos","posicion actualizada $latActual,$longActual")
@@ -267,7 +265,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
         return locationCallback
     }
-
 
     private fun zoom() {
         var pos=LatLng(latActual,longActual)
@@ -316,7 +313,9 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         Log.e("idGrupo", "revisar $idGrupo")
 
         auth=FirebaseAuth.getInstance()
-        databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
+        databaseReferencePlanes= FirebaseDatabase.getInstance().getReference("Planes")
+        databaseReferenceGrupos= FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReferenceUsers= FirebaseDatabase.getInstance().getReference("Usuario")
         database = FirebaseDatabase.getInstance()
         mifoto= BitmapFactory.decodeResource(resources, miImagenResource)
         fotoPlan= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, miImagenResource), 160, 160, true)
@@ -338,6 +337,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     override fun onRestart() {
         super.onRestart()
         configurarConFireBaseFotos()
+        configurarLocalizacion()
         startLocationUpdates()
     }
     override fun onResume() {
@@ -377,149 +377,152 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         location.removeLocationUpdates(locationCallBack)
     }
     private fun configurarConFireBase() {
-        anadirPinUsuario()
-        val planRef = database.getReference("Planes").child(idPlan)
+        anadirPinUsuario {listo->
+            val planRef = database.getReference("Planes").child(idPlan)
 
-        planRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // Aquí puedes obtener los datos del usuario desde dataSnapshot
-                val plan = dataSnapshot.getValue(Plan::class.java)
-                if (plan != null) {
-                    // Haz lo que necesites con los datos del usuario
-                    binding.tituloPlan.setText(plan?.titulo)
-                    //UBICACION DEL PLAN
-
-                    //SI TIENE LO DE NUMERO DE PASOS
+            planRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    // Aquí puedes obtener los datos del usuario desde dataSnapshot
+                    val plan = dataSnapshot.getValue(Plan::class.java)
                     if (plan != null) {
-                        pasosAvtivado=plan.AmigoMasActivo
-                        if(!pasosAvtivado){
+                        // Haz lo que necesites con los datos del usuario
+                        binding.tituloPlan.setText(plan?.titulo)
+                        //UBICACION DEL PLAN
 
+                        //SI TIENE LO DE NUMERO DE PASOS
+                        if (plan != null) {
+                            pasosAvtivado=plan.AmigoMasActivo
+                            if(!pasosAvtivado){
+
+                                // Hacer invisible el elemento binding.pasoscantText
+                                binding.pasoscantText.visibility = View.INVISIBLE
+                            }
+                        }
+
+                        val localfile = File. createTempFile( "tempImage", "jpg")
+
+                        val storageRef = FirebaseStorage.getInstance().reference.child(plan.fotopin)
+
+
+                        storageRef.getFile(localfile).addOnSuccessListener {
+                            Log.i("fotoPin","ruta ${plan.fotopin}")
+                            var src = BitmapFactory.decodeFile(localfile.absolutePath)
+                            src=createCircledImage(src)
+                            fotoPlan = Bitmap.createScaledBitmap(src, 160, 160, true)
+                            if (plan != null) {
+                                Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                                latEncuentro=plan.latitude
+                                longEncuentro=plan.longitude
+                                ponerUbicacionPlan()
+                            }
+                            //clickLista()
+                        }.addOnFailureListener{
+                            Log.i("revisar", "no se pudo poner la foto del pin")
+                            if (plan != null) {
+                                Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                                latEncuentro=plan.latitude
+                                longEncuentro=plan.longitude
+                                ponerUbicacionPlan()
+                            }
+                        }
+
+                        //ESTO ES DEL USUARIO
+                        if(EstoyEnElPlan)
+                        {
+                            binding.switchPasos.isChecked=true
+                            binding.aunsiguesText.setText("Aun sigues en el plan")
+                        }
+                        else
+                        {
+                            binding.aunsiguesText.setText("Estas fuera del plan")
+                            binding.switchPasos.isChecked=false
+                            // Hacer invisible el elemento binding.hazDado
                             // Hacer invisible el elemento binding.pasoscantText
                             binding.pasoscantText.visibility = View.INVISIBLE
+
+                            binding.mostrarRutabutton.isVisible= false
+                            binding.milocalizacion.isVisible=false
+                            stopLocationUpdates()
                         }
-                    }
 
-                    val localfile = File. createTempFile( "tempImage", "jpg")
-
-                    val storageRef = FirebaseStorage.getInstance().reference.child(plan.fotopin)
-
-
-                    storageRef.getFile(localfile).addOnSuccessListener {
-                        Log.i("fotoPin","ruta $plan.fotopin")
-                        var src = BitmapFactory.decodeFile(localfile.absolutePath)
-                        src=createCircledImage(src)
-                        fotoPlan = Bitmap.createScaledBitmap(src, 160, 160, true)
                         if (plan != null) {
-                            Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                            latEncuentro=plan.latitude
-                            longEncuentro=plan.longitude
-                            ponerUbicacionPlan()
+                            configurarmarkers(plan.integrantes)
                         }
-                        //clickLista()
-                    }.addOnFailureListener{
-                        Log.i("revisar", "no se pudo poner la foto del pin")
-                        if (plan != null) {
-                            Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                            latEncuentro=plan.latitude
-                            longEncuentro=plan.longitude
-                            ponerUbicacionPlan()
-                        }
-                    }
 
-                    //ESTO ES DEL USUARIO
-                    if(EstoyEnElPlan)
-                    {
-                        binding.switchPasos.isChecked=true
-                        binding.aunsiguesText.setText("Aun sigues en el plan")
+                    } else {
+                        println("No se encontraron datos para el plan con UID: $idPlan")
                     }
-                    else
-                    {
-                        binding.aunsiguesText.setText("Estas fuera del plan")
-                        binding.switchPasos.isChecked=false
-                        // Hacer invisible el elemento binding.hazDado
-                        // Hacer invisible el elemento binding.pasoscantText
-                        binding.pasoscantText.visibility = View.INVISIBLE
-
-                        binding.mostrarRutabutton.isVisible= false
-                        binding.milocalizacion.isVisible=false
-                        stopLocationUpdates()
-                    }
-
-                    if (plan != null) {
-                        configurarmarkers(plan.integrantes)
-                    }
-
-                } else {
-                    println("No se encontraron datos para el plan con UID: $idPlan")
                 }
-            }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Maneja el error en caso de que ocurra
-                println("Error al obtener los datos del usuario: ${databaseError.message}")
-            }
-        })
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Maneja el error en caso de que ocurra
+                    println("Error al obtener los datos del usuario: ${databaseError.message}")
+                }
+            })
+        }
+
     }
 
     private fun configurarConFireBaseFotos() {
-        anadirPinUsuario()
-        val planRef = database.getReference("Planes").child(idPlan)
 
-        planRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // Aquí puedes obtener los datos del usuario desde dataSnapshot
-                val plan = dataSnapshot.getValue(Plan::class.java)
-                if (plan != null) {
-                    // Haz lo que necesites con los datos del usuario
-                    binding.tituloPlan.setText(plan?.titulo)
-                    //UBICACION DEL PLAN
-
-                    //SI TIENE LO DE NUMERO DE PASOS
+        anadirPinUsuario { listo->
+            val planRef = database.getReference("Planes").child(idPlan)
+            planRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    // Aquí puedes obtener los datos del usuario desde dataSnapshot
+                    val plan = dataSnapshot.getValue(Plan::class.java)
                     if (plan != null) {
-                        pasosAvtivado=plan.AmigoMasActivo
-                        if(!pasosAvtivado){
+                        // Haz lo que necesites con los datos del usuario
+                        binding.tituloPlan.setText(plan?.titulo)
+                        //UBICACION DEL PLAN
 
-                            // Hacer invisible el elemento binding.pasoscantText
-                            binding.pasoscantText.visibility = View.INVISIBLE
-                        }
-                    }
-
-                    val localfile = File. createTempFile( "tempImage", "jpg")
-
-                    val storageRef = FirebaseStorage.getInstance().reference.child(plan.fotopin)
-
-
-                    storageRef.getFile(localfile).addOnSuccessListener {
-                        Log.i("fotoPin","ruta $plan.fotopin")
-                        var src = BitmapFactory.decodeFile(localfile.absolutePath)
-                        src=createCircledImage(src)
-                        fotoPlan = Bitmap.createScaledBitmap(src, 160, 160, true)
+                        //SI TIENE LO DE NUMERO DE PASOS
                         if (plan != null) {
-                            Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                            latEncuentro=plan.latitude
-                            longEncuentro=plan.longitude
-                            ponerUbicacionPlan()
+                            pasosAvtivado=plan.AmigoMasActivo
+                            if(!pasosAvtivado){
+
+                                // Hacer invisible el elemento binding.pasoscantText
+                                binding.pasoscantText.visibility = View.INVISIBLE
+                            }
                         }
-                        //clickLista()
-                    }.addOnFailureListener{
-                        Log.i("revisar", "no se pudo poner la foto del pin")
-                        if (plan != null) {
-                            Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                            latEncuentro=plan.latitude
-                            longEncuentro=plan.longitude
-                            ponerUbicacionPlan()
+
+                        val localfile = File. createTempFile( "tempImage", "jpg")
+
+                        val storageRef = FirebaseStorage.getInstance().reference.child(plan.fotopin)
+
+                        storageRef.getFile(localfile).addOnSuccessListener {
+                            Log.i("fotoPin","ruta ${plan.fotopin}")
+                            var src = BitmapFactory.decodeFile(localfile.absolutePath)
+                            src=createCircledImage(src)
+                            fotoPlan = Bitmap.createScaledBitmap(src, 160, 160, true)
+                            if (plan != null) {
+                                Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                                latEncuentro=plan.latitude
+                                longEncuentro=plan.longitude
+                                ponerUbicacionPlan()
+                            }
+                            //clickLista()
+                        }.addOnFailureListener{
+                            Log.i("revisar", "no se pudo poner la foto del pin")
+                            if (plan != null) {
+                                Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
+                                latEncuentro=plan.latitude
+                                longEncuentro=plan.longitude
+                                ponerUbicacionPlan()
+                            }
                         }
+                    } else {
+                        println("No se encontraron datos para el plan con UID: $idPlan")
                     }
-                } else {
-                    println("No se encontraron datos para el plan con UID: $idPlan")
                 }
-            }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Maneja el error en caso de que ocurra
-                println("Error al obtener los datos del usuario: ${databaseError.message}")
-            }
-        })
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Maneja el error en caso de que ocurra
+                    println("Error al obtener los datos del usuario: ${databaseError.message}")
+                }
+            })
+        }
+
     }
 
     private fun createCircledImage(srcBitmap: Bitmap?): Bitmap {
@@ -553,9 +556,43 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         return srcBitmap;
     }
 
-    private fun anadirPinUsuario() {
+    private fun anadirPinUsuario(callback: (String) -> Unit) {
         //consultar bien del usuario
+        auth.currentUser?.let { database.getReference("Usuario").child(it.uid) }
+            ?.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    // Crea un objeto PosAmigo con la información del usuario
+                    val usuario = dataSnapshot.getValue(UsuarioAmigo::class.java)
 
+                    if (usuario != null) {
+                        nombreUsuario = usuario.username
+
+                        //anadir la foto del usuario
+                        val localfile = File.createTempFile("tempImage", "jpg")
+
+                        val storageRef =
+                            FirebaseStorage.getInstance().reference.child("usuarios/${usuario.uid}.jpg")
+
+                        storageRef.getFile(localfile).addOnSuccessListener {
+                            Log.i("fotoPin", "ruta ${usuario.uid}.fotopin")
+                            var src = BitmapFactory.decodeFile(localfile.absolutePath)
+                            src = createCircledImage(src)
+                            mifoto = Bitmap.createScaledBitmap(src, 160, 160, true)
+                            callback("listo")
+                        }.addOnFailureListener {
+                            Log.i("revisar", "no se pudo poner la foto del pin")
+                            callback("listo")
+                        }
+                    }
+
+
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Maneja el error en caso de que ocurra
+                    println("Error al obtener los datos del usuario: ${databaseError.message}")
+                }
+            })
     }
 
     private fun configurarmarkers(integrantes: Map<String,PosAmigo>) {
@@ -684,7 +721,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             startActivity(intent)
         }
 
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -760,9 +797,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+
         }
     }
     private fun initShowout (v: View){
@@ -946,9 +981,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private fun salirDelPlan() {
         //aqui me quito de la lista de integrantes del plan
         //me quito del plan como tal
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes")
         auth.currentUser?.let {
-            val usuarioRef = databaseReference.child(idPlan).child("integrantes").child(it.uid)
+            val usuarioRef = databaseReferencePlanes.child(idPlan).child("integrantes").child(it.uid)
             usuarioRef.removeValue()
                 .addOnSuccessListener {
                     // El usuario fue eliminado exitosamente
@@ -960,7 +994,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 }
         }
         //me quito del plan del grupo
-        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+        val grupoRef = databaseReferenceGrupos.child(idGrupo)
         val planesRef = grupoRef.child("planes")
         val query = planesRef.orderByChild("id").equalTo(idPlan)
 
@@ -968,17 +1002,21 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // Iterar sobre los resultados de la consulta
                 for (planSnapshot in dataSnapshot.children) {
+
+                    Log.i("plan sanpshot","$planSnapshot")
                     // Eliminar el plan encontrado utilizando removeValue()
-                    auth.currentUser?.uid?.let {
-                        planSnapshot.ref.child("integrantes").child(it).removeValue()
-                            .addOnSuccessListener {
-                                // El plan fue eliminado exitosamente
-                                Log.d(TAG, "Integrante eliminado correctamente del plan del grupo")
-                            }
-                            .addOnFailureListener { e ->
-                                // Ocurrió un error al intentar eliminar el plan
-                                Log.e(TAG, "Error al eliminar integrante del plan del grupo: ${e.message}", e)
-                            }
+                    auth.currentUser?.uid?.let {uid ->
+                        planSnapshot.key?.let { idPlan ->
+                            planesRef.child(idPlan).child("integrantes").child(uid).removeValue()
+                                .addOnSuccessListener {
+                                    // El plan fue eliminado exitosamente
+                                    Log.d(TAG, "Integrante eliminado correctamente del plan del grupo")
+                                }
+                                .addOnFailureListener { e ->
+                                    // Ocurrió un error al intentar eliminar el plan
+                                    Log.e(TAG, "Error al eliminar integrante del plan del grupo: ${e.message}", e)
+                                }
+                        }
                     }
                 }
             }
@@ -995,13 +1033,12 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             latActual,
             longActual,
             auth.currentUser?.uid,
-            "usuarios/${auth.currentUser?.uid}.png",
+            "usuarios/${auth.currentUser?.uid}.jpg",
             nombreUsuario
         )
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes")
         auth.currentUser?.let {
-            databaseReference.child(idPlan).child("integrantes").child(it.uid).setValue(myPos)
+            databaseReferencePlanes.child(idPlan).child("integrantes").child(it.uid).setValue(myPos)
                 .addOnSuccessListener {
                     // El usuario fue eliminado exitosamente
                     Log.d(TAG, "Usuario anadido correctamnte en 'integrantes'")
@@ -1064,9 +1101,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         configurarConFireBase()
-        obtenerDatosInicialesAmigos()
+        obtenerDatosInicialesAmigos {
+            subscribirseACambiosDeAmigos()
+        }
         subscribirseACambiosDePlan()
-        subscribirseACambiosDeAmigos()
         configurarLocalizacion()
         var pos=LatLng(latActual,longActual)
         val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
@@ -1075,65 +1113,65 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
 
     private fun subscribirseACambiosDeAmigos() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes").child(idPlan).child("integrantes")
-
+        val databaseReference = databaseReferencePlanes.child(idPlan).child("integrantes")
+        mapaDeParticipantes.forEach { (key, value) ->
+            Log.i("Mapa de participantes gggg44", "Clave: $key, Valor: $value")
+        }
         //se va a escuchar el plan y se vera que se cambia
         //se evalua si se cambia algo de info del plan o tambien info de un usuario
         databaseReference.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-                Log.i("snapshot"," pos added: $dataSnapshot")
                 if(dataSnapshot.key!= auth.currentUser?.uid)
                 {
-                    val posAmigoActualizado = dataSnapshot.getValue(PosAmigo::class.java)
-
-                    if(posAmigoActualizado!=null)
+                    if(dataSnapshot.key=="integrantes")
                     {
-                        //actualizar pin del usuario en especifico
-                        val markerOptions = MarkerOptions()
-                            .position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.latitud)) // Establecer la posición del marcador
-                            .title(posAmigoActualizado.nombre)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-
-                        val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
-
-                        mapaDeParticipantes[dataSnapshot.key]=marker
+                        for (childSnapshot in dataSnapshot.children) {
+                            val posAmigoActualizado = childSnapshot.getValue(PosAmigo::class.java)
+                            if (posAmigoActualizado != null && posAmigoActualizado.uid != auth.currentUser?.uid) {
+                                // Procesar solo si el UID no es igual a "t6rbpb1u2CS2rCJShRF2LJ4PO0l1"
+                                // Aquí añades tu lógica para añadir un nuevo marcador al mapa
+                                anadirAmigo(childSnapshot)
+                            }
+                        }
+                    }
+                    else if(dataSnapshot.key!= auth.currentUser?.uid)
+                    {
+                        anadirAmigo(dataSnapshot)
                     }
                 }
             }
             override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-
-                Log.i("snapshot"," pos changed: $dataSnapshot")
-                if(dataSnapshot.key!= auth.currentUser?.uid)
+                if(dataSnapshot.key=="integrantes")
                 {
-                    val posAmigoActualizado = dataSnapshot.getValue(PosAmigo::class.java)
-
-                    if(posAmigoActualizado!=null)
-                    {
-                        //actualizar pin del usuario en especifico
-                        val markerOptions = MarkerOptions()
-                            .position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.latitud)) // Establecer la posición del marcador
-                            .title(posAmigoActualizado.nombre)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-                        // Agregar el marcador al mapa de participantes
-                        mapaDeParticipantes[dataSnapshot.key]?.remove()
-
-                        val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
-
-                        mapaDeParticipantes[dataSnapshot.key]=marker
+                    for (childSnapshot in dataSnapshot.children) {
+                        val posAmigoActualizado = childSnapshot.getValue(PosAmigo::class.java)
+                        if (posAmigoActualizado != null && posAmigoActualizado.uid != auth.currentUser?.uid) {
+                            // Procesar solo si el UID no es igual a "t6rbpb1u2CS2rCJShRF2LJ4PO0l1"
+                            // Aquí añades tu lógica para añadir un nuevo marcador al mapa
+                            actualizarAmigo(childSnapshot)
+                        }
                     }
+                }
+                else if(dataSnapshot.key!= auth.currentUser?.uid)
+                {
+                    actualizarAmigo(dataSnapshot)
                 }
             }
             override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-                Log.i("snapshot"," pos removed: $dataSnapshot")
-                if(dataSnapshot.key!= auth.currentUser?.uid)
+                if(dataSnapshot.key=="integrantes")
                 {
-                    val posAmigoActualizado = dataSnapshot.getValue(PosAmigo::class.java)
-
-                    if(posAmigoActualizado!=null)
-                    {
-                        //actualizar pin del usuario en especifico
-                        mapaDeParticipantes[dataSnapshot.key]?.remove()
+                    for (childSnapshot in dataSnapshot.children) {
+                        val posAmigoActualizado = childSnapshot.getValue(PosAmigo::class.java)
+                        if (posAmigoActualizado != null && posAmigoActualizado.uid != auth.currentUser?.uid) {
+                            // Procesar solo si el UID no es igual a "t6rbpb1u2CS2rCJShRF2LJ4PO0l1"
+                            // Aquí añades tu lógica para añadir un nuevo marcador al mapa
+                            eliminarAmigo(childSnapshot)
+                        }
                     }
+                }
+                else if(dataSnapshot.key!= auth.currentUser?.uid)
+                {
+                    eliminarAmigo(dataSnapshot)
                 }
             }
             override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
@@ -1143,8 +1181,100 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         })
     }
 
+    private fun eliminarAmigo(dataSnapshot: DataSnapshot?) {
+        val posAmigoActualizado = dataSnapshot?.getValue(PosAmigo::class.java)
+
+        if(posAmigoActualizado!=null)
+        {
+            Log.i("posAmigoActualizado REMOVED"," posAmigoActualizado added: ${posAmigoActualizado.latitud}, ${posAmigoActualizado.longitud}")
+            //actualizar pin del usuario en especifico
+            if (dataSnapshot != null) {
+                mapaDeParticipantes[dataSnapshot.key]?.remove()
+            }
+        }
+    }
+
+    private fun anadirAmigo(dataSnapshot: DataSnapshot?) {
+        val posAmigoActualizado = dataSnapshot?.getValue(PosAmigo::class.java)
+
+        if(posAmigoActualizado!=null)
+        {
+            Log.i("posAmigoActualizado ADDED"," posAmigoActualizado added: ${posAmigoActualizado.latitud}, ${posAmigoActualizado.longitud}")
+
+            val localfile = File. createTempFile( "tempImage", "jpg")
+            val storageRef = FirebaseStorage.getInstance().reference.child("usuarios/${posAmigoActualizado.uid}.jpg")
+
+            val markerOptions=MarkerOptions()
+            storageRef.getFile(localfile).addOnSuccessListener {
+                Log.i("fotoPin","ruta ${posAmigoActualizado.uid}.fotopin")
+                var src = BitmapFactory.decodeFile(localfile.absolutePath)
+                src=createCircledImage(src)
+                val fotoAmigo = Bitmap.createScaledBitmap(src, 160, 160, true)
+                //obtener foto de amigo y guardarlo en el mapa
+                mapaDeFotoParticipantes[posAmigoActualizado.uid] = fotoAmigo
+                markerOptions.position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.longitud)) // Establecer la posición del marcador
+                    .title(posAmigoActualizado.nombre)
+                    .icon(BitmapDescriptorFactory.fromBitmap(fotoAmigo))
+                mapaDeParticipantes[posAmigoActualizado.uid]?.remove()
+                val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
+
+                // Agregar el marcador al mapa de participantes
+                mapaDeParticipantes[posAmigoActualizado.uid] = marker
+            }.addOnFailureListener{
+                Log.i("revisar anadir", "no se pudo poner la foto del pin")
+                markerOptions.position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.longitud)) // Establecer la posición del marcador
+                    .title(posAmigoActualizado.nombre)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+
+                mapaDeParticipantes[posAmigoActualizado.uid]?.remove()
+                val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
+
+                // Agregar el marcador al mapa de participantes
+                mapaDeParticipantes[posAmigoActualizado.uid] = marker
+            }
+        }
+    }
+    private fun actualizarAmigo(dataSnapshot: DataSnapshot) {
+        Log.i("amigo actualizado CHANGED","$dataSnapshot")
+        val posAmigoActualizado = dataSnapshot.getValue(PosAmigo::class.java)
+        if(posAmigoActualizado!=null)
+        {
+            Log.i("posAmigoActualizado CHANGED"," posAmigoActualizado: ${posAmigoActualizado.latitud}, ${posAmigoActualizado.longitud}")
+            //actualizar pin del usuario en especifico
+            val markerOptions = MarkerOptions()
+
+            if(mapaDeFotoParticipantes[dataSnapshot.key]==null)
+            {
+                Log.e("ERROR CHANGED"," posAmigoActualizado: ${dataSnapshot.key}")
+
+                markerOptions.position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.longitud)) // Establecer la posición del marcador
+                    .title(posAmigoActualizado.nombre)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+            }
+            else
+            {
+                Log.i("CHANGED"," posAmigoActualizado: ${posAmigoActualizado.uid}")
+
+                markerOptions.position(LatLng(posAmigoActualizado.latitud, posAmigoActualizado.longitud)) // Establecer la posición del marcador
+                    .title(posAmigoActualizado.nombre)
+                    .icon(mapaDeFotoParticipantes[dataSnapshot.key]?.let {
+                        BitmapDescriptorFactory.fromBitmap(
+                            it
+                        )
+                    })
+            }
+
+            // Agregar el marcador al mapa de participantes
+            mapaDeParticipantes[posAmigoActualizado.uid]?.remove()
+
+            val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
+
+            mapaDeParticipantes[posAmigoActualizado.uid]=marker
+        }
+    }
+
     private fun subscribirseACambiosDePlan() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes").child(idPlan)
+        val databaseReference = databaseReferencePlanes.child(idPlan)
 
         //se va a escuchar el plan y se vera que se cambia
         //se evalua si se cambia algo de info del plan o tambien info de un usuario
@@ -1154,21 +1284,20 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 }
                 override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                    Log.i("snapshot"," pos: $dataSnapshot")
-                    if(dataSnapshot.key=="latitude")
-                    {
-                        //latActualOtro= dataSnapshot.value as Double;
-                        //obtenerOtrosDatosUsuario()
-                    }
-                    else if (dataSnapshot.key=="longitde")
-                    {
-                        //longActualOtro= dataSnapshot.value as Double;
-                        //obtenerOtrosDatosUsuario2()
-                    }
-                    else if(dataSnapshot.key=="titulo")
+                    Log.i("snapshot PLAN"," pos: $dataSnapshot")
+                    if(dataSnapshot.key=="titulo")
                     {
                         binding.tituloPlan.text= dataSnapshot.getValue().toString()
                     }
+                    else if(dataSnapshot.key=="latitude")
+                    {
+                        obtenerInfoCompletaPlan()
+                    }
+                    else if(dataSnapshot.key=="longitude")
+                    {
+                        obtenerInfoCompletaPlan()
+                    }
+                    //revisar cambio de posicion del plan
 
                 }
                 override fun onChildRemoved(dataSnapshot: DataSnapshot) {
@@ -1181,31 +1310,90 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             })
     }
 
-    private fun obtenerDatosInicialesAmigos() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Planes")
+    private fun obtenerInfoCompletaPlan() {
+        // Realiza la consulta para obtener otros datos del usuario usando su UID
+        // Por ejemplo, podrías usar una referencia a la base de datos para buscar los datos
+        val planRef = database.getReference("Planes").child(idPlan)
+
+        planRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Aquí puedes obtener los datos del usuario desde dataSnapshot
+                val Plan = dataSnapshot.getValue(Plan::class.java)
+                if (Plan != null) {
+                    // Haz lo que necesites con los datos del usuario
+
+                    longEncuentro=Plan.longitude
+                    latEncuentro=Plan.latitude
+                    ponerUbicacionPlan()
+
+                } else {
+                    println("No se encontraron datos para el usuario con UID: $idPlan")
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos del usuario: ${databaseError.message}")
+            }
+        })
+    }
+
+    private fun obtenerDatosInicialesAmigos(callback: (String) -> Unit) {
+
+        var contador=0
         auth.currentUser?.let {
-            databaseReference.child(idPlan).child("integrantes")
+            databaseReferencePlanes.child(idPlan).child("integrantes")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
+
                         for (userSnapshot in dataSnapshot.children) {
-                            // Obtiene los datos de cada usuario
-                            val posId = userSnapshot.key // El ID del usuario
+                            val posId = userSnapshot.key
                             val posData = userSnapshot.getValue(PosAmigo::class.java)
-                            // Los datos del usuario convertidos a objeto Usuario
-                            if (posData != null && posId!= auth.currentUser!!.uid) {
-                                // Crear un marcador en el mapa
-                                Log.i("localizacion Amigos"," pos ${posData.latitud},${posData.longitud}")
-                                val markerOptions = MarkerOptions()
-                                    .position(LatLng(posData.latitud, posData.longitud)) // Establecer la posición del marcador
-                                    .title(posData.nombre)
-                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-
-                                val marker =mMap.addMarker(markerOptions) // Agregar el marcador al mapa
-
-                                // Agregar el marcador al mapa de participantes
-                                mapaDeParticipantes[posData.uid] = marker
+                            if (posData != null && posId == auth.currentUser!!.uid) {
+                                contador++
                             }
+                            if (posData != null && posId != auth.currentUser!!.uid) {
+                                val localfile = File.createTempFile("tempImage", "jpg")
+                                val storageRef = FirebaseStorage.getInstance().reference.child("usuarios/${posData.uid}.jpg")
 
+                                storageRef.getFile(localfile)
+                                    .addOnSuccessListener { taskSnapshot ->
+                                        Log.i("fotoPin inicial", "ruta ${posData.uid}.fotopin")
+                                        var src = BitmapFactory.decodeFile(localfile.absolutePath)
+                                        src = createCircledImage(src)
+                                        val fotoAmigo = Bitmap.createScaledBitmap(src, 160, 160, true)
+
+                                        val markerOptions = MarkerOptions()
+                                            .position(LatLng(posData.latitud, posData.longitud))
+                                            .title(posData.nombre)
+                                            .icon(BitmapDescriptorFactory.fromBitmap(fotoAmigo))
+
+                                        //val marker = mMap.addMarker(markerOptions)
+                                        mapaDeParticipantes[posData.uid] = mMap.addMarker(markerOptions)
+                                        contador++
+                                        if(contador==dataSnapshot.childrenCount.toInt())
+                                        {
+                                            callback("listo")
+                                        }
+
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.e("Error de descarga", "Error al descargar la imagen para ${posData.nombre}: ${exception.message}")
+                                        val markerOptions = MarkerOptions()
+                                            .position(LatLng(posData.latitud, posData.longitud))
+                                            .title(posData.nombre)
+                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+
+                                        val marker = mMap.addMarker(markerOptions)
+                                        mapaDeParticipantes[posData.uid] = marker
+                                        contador++
+
+                                        if(contador==dataSnapshot.childrenCount.toInt())
+                                        {
+                                            callback("listo")
+                                        }
+                                    }
+                            }
                         }
                     }
 

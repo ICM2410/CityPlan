@@ -1,7 +1,5 @@
 package com.example.primeraentrega.Clases
 
-import java.util.Date
-
 class Grupo(
     var descripcion: String = "",
     var titulo: String = "",
