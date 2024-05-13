@@ -70,7 +70,7 @@ class IniciarSesionActivity : AppCompatActivity() {
                     val userId = authResult.user?.uid
                     val user=authResult.user
                     actualizarMiToken(user)
-                    // Aquí puedes agregar lógica adicional después del inicio de sesión exitoso
+
                 }
                 .addOnFailureListener { e ->
                     // Error en el inicio de sesión

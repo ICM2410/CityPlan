@@ -11,17 +11,51 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="-11dp"
+        tools:layout_editor_absoluteY="64dp"/>
+
+    <LinearLayout
+        android:id="@+id/tituloGrupos"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/rosado"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/CrearGrupo"
+            android:layout_width="322dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:text="@string/integrantes"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_marginTop="60dp"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="20dp">
 
         <Button
-            android:id="@+id/añadirGrupo"
+            android:id="@+id/agregarGrupo"
             android:layout_width="118dp"
             android:layout_height="39dp"
             android:layout_gravity="right"
+            android:backgroundTint="@color/rosado"
             android:text="Listo!"
-            android:textSize="15dp"
-            android:backgroundTint="@color/rosado"/>
+            android:textSize="15dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/user2"
@@ -47,10 +81,10 @@
             android:id="@+id/toogleButton"
             android:layout_width="212dp"
             android:layout_height="43dp"
+            app:checkedButton="@id/contactos"
             app:singleSelection="true"
             tools:layout_editor_absoluteX="48dp"
-            tools:layout_editor_absoluteY="159dp"
-            app:checkedButton="@id/contactos">
+            tools:layout_editor_absoluteY="159dp">
 
             <Button
                 android:id="@+id/contactos"

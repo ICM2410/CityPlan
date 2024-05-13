@@ -8,7 +8,7 @@
     <string name="textMensaje">Hola! Acabo de crear el grupo</string>
     <string name="hora">8:15 pm</string>
     <string name="hint">Escribe el mensaje aqui</string>
-
+    <string name="integrantes">Ingresar Integrantes</string>
     <string name="crearPlanTitle">Crear plan</string>
     <string name="fechaInicioTitle">Fecha inicio</string>
     <string name="fechaFinTitle">Fecha fin</string>

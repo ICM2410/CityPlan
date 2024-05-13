@@ -39,14 +39,38 @@
 
             </LinearLayout>
 
-            <ImageButton
-                android:id="@+id/ButtonSeleccionarFoto"
+            <ImageView
+                android:id="@+id/fotoSeleccionada"
                 android:layout_width="200dp"
                 android:layout_height="200dp"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/circulo_gris"
-                android:contentDescription="SeleccionarFoto"
+                android:scaleType="centerInside"
                 app:srcCompat="@drawable/camara" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/botonGaleria"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:text="Subir Imagen"
+                    android:textSize="16sp"
+                    android:backgroundTint="@color/moradoClaro" />
+
+                <Button
+                    android:id="@+id/botonCamara"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:text="Abrir Camara"
+                    android:textSize="16sp"
+                    android:backgroundTint="@color/moradoClaro"/>
+            </LinearLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/user2"
@@ -88,15 +112,7 @@
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
-                android:id="@+id/buttonAgregarMiembros"
-                android:layout_width="299dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:padding="10dp"
-                android:text="@string/AgregarMiembrosalGrupo"
-                android:textSize="18sp"
-                android:backgroundTint="@color/moradoClaro"/>
+
 
             <Button
                 android:id="@+id/buttonGuardar"

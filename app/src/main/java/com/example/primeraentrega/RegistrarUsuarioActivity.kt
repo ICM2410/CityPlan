@@ -14,6 +14,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
+import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.messaging.messaging
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
@@ -39,7 +41,6 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
             val password = binding.password.text.toString()
             val telefono = binding.telefono.text.toString().toInt()
             val correo = binding.correo.text.toString()
-
             val usuario = UsuarioAmigo(user, correo, telefono, 0.0, 0.0, "", false, 0, "", "","")
 
             // Crea el usuario en la base de datos de Firebase
@@ -113,6 +114,7 @@ class RegistrarUsuarioActivity : AppCompatActivity() {
         // Subir la imagen a Firebase Storage
         val storageReference = FirebaseStorage.getInstance().reference
         val imageRef = storageReference.child("usuarios/$uid.jpg") // Nombre de la imagen en Firebase Storage
+
         val uploadTask = imageRef.putFile(uri)
 
         uploadTask.addOnSuccessListener { taskSnapshot ->

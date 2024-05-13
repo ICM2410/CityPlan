@@ -4,44 +4,89 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.provider.ContactsContract
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Adapters.ContactsAdapter
+import com.example.primeraentrega.Adapters.UserAdapter
+import com.example.primeraentrega.Clases.ListUser
+import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
+import com.example.primeraentrega.Clases.Usuario
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
+import java.io.File
 
 class AgregarContactosActivity : AppCompatActivity() {
 
     //Permission val
-    val getContactsPermission = registerForActivityResult(
+   /* val getContactsPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
         ActivityResultCallback {
             updateUI(it)
-        })
+        })*/
 
     private lateinit var binding: ActivityAgregarContactosBinding
-    private lateinit var adapter : ContactsAdapter
     val projection = arrayOf(ContactsContract.Profile._ID, ContactsContract.Profile.DISPLAY_NAME_PRIMARY)
     private var isFabOpen=false
     private var rotation=false
     private lateinit var idGrupo : String
+    private lateinit var auth: FirebaseAuth
+    private lateinit var databaseReference: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAgregarContactosBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = ContactsAdapter(this, null, 0)
-        idGrupo=intent.getStringExtra("idGrupo").toString()
-        binding.listaContactos.adapter=adapter
-        permissionRequest()
+        idGrupo = intent.getStringExtra("idGrupo").toString()
+
+
+        //permissionRequest()
         inicializarBotones()
+
+        // Define and initialize the onUserSelectedListener
+        val onUserSelectedListener = this
+
+        auth = FirebaseAuth.getInstance()
+
+        llenarLista()
+
+        binding.agregarGrupo.setOnClickListener() {
+            // Retrieve the list of selected users from the adapter
+            val selectedUsers = (binding.listaContactos.adapter as? UserAdapter)?.getSelectedUsers()
+
+            // Check if the selectedUsers list is not null
+            selectedUsers?.let { users ->
+                // Extract the uids from the list of selected users
+                val selectedUserIds = users.map { it.uid }
+
+                // Create an intent to navigate to CrearGrupoActivity
+                val intent = Intent(this, CrearGrupoActivity::class.java)
+
+                // Put the list of selected user ids as an extra in the intent
+                intent.putStringArrayListExtra("selectedUserIds", ArrayList(selectedUserIds))
+
+                // Start the CrearGrupoActivity with the intent
+                startActivity(intent)
+
+                // Optionally, show a message to indicate success
+                Toast.makeText(this, "Selected users added to group", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun inicializarBotones() {
@@ -186,7 +231,7 @@ class AgregarContactosActivity : AppCompatActivity() {
         return isFabOpen
     }
 
-    fun permissionRequest(){
+    /*fun permissionRequest(){
         if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED){
             if(shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS)){
                 Toast.makeText(this, "The app requires access to the contacts", Toast.LENGTH_LONG).show()
@@ -195,9 +240,9 @@ class AgregarContactosActivity : AppCompatActivity() {
         }else{
             updateUI(true)
         }
-    }
+    }*/
 
-    fun updateUI(contacts : Boolean){
+    /*fun updateUI(contacts : Boolean){
         if(contacts){
             //Permission Granted
             var cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, projection, null, null, null)
@@ -207,5 +252,60 @@ class AgregarContactosActivity : AppCompatActivity() {
             //Permission Denied
 
         }
+    }*/
+
+    val contactList: MutableList<ListUser> = mutableListOf()
+    private fun llenarLista() {
+
+        databaseReference = FirebaseDatabase.getInstance().getReference("Usuario")
+
+        auth.currentUser?.uid?.let { currentUserUid ->
+            databaseReference.addChildEventListener(object : ChildEventListener {
+                    override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+
+                        // Obtener el usuario de dataSnapshot
+                        val usuario = dataSnapshot.getValue(UsuarioAmigo::class.java)
+                        Log.e("Referencia", "Aqui llegue a usuario")
+                        Log.e("UsuarioImagen", "Imagen: ${usuario?.imagen}")
+                        // Verificar si el usuario no es el usuario actual antes de agregarlo a la lista
+                        if (usuario != null && dataSnapshot.key != currentUserUid) {
+
+                            Log.e("Referencia", "Apunto de pedir storageRef")
+                            val storageRef = FirebaseStorage.getInstance().reference.child("${usuario.imagen}.jpg")
+                            Log.e("Referencia", "Ya pedi")
+                            val localfile = File. createTempFile( "tempImage", "jpg")
+
+                            Log.e("GetFile", "Pedire local file")
+                            storageRef.getFile(localfile).addOnSuccessListener {
+                                Log.e("Entre", "ENTRE")
+                                Log.e("REFERENCIA", storageRef.toString())
+                                val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
+                                var usuarioADD= ListUser(usuario.username, usuario.uid, bitmap)
+                                contactList.add(usuarioADD)
+
+                                //Lista
+                                val adapter = UserAdapter(applicationContext,contactList);
+                                binding.listaContactos.adapter = adapter
+
+                            }.addOnFailureListener{
+                                Log.e("Error", "User could not be found")
+                            }
+
+                        }
+                    }
+                    override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+
+                    }
+                    override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+
+                    }
+                    override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+                    }
+                    override fun onCancelled(databaseError: DatabaseError) {
+                    }
+                })
+        }
+
     }
+
 }

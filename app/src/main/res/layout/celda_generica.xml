@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/grisClaro"
+    android:background="@drawable/degradado_grupos"
     android:padding="15dp"
     android:gravity="center">
 
@@ -21,6 +21,7 @@
             android:id="@+id/imagePerfiles"
             android:layout_width="65dp"
             android:layout_height="65dp"
+            android:scaleType="centerInside"
             android:background="@drawable/circulo_gris"
             android:layout_gravity="center_vertical"/>
 
