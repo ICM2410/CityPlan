@@ -26,6 +26,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -68,6 +69,19 @@ class VerGruposActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.e("PAUSA", "PAUSO ESTO")
+        stopLlenarLista()
+    }
+
+
+
+    private fun stopLlenarLista() {
+        // Remove the listener to stop receiving updates from Firebase
+        databaseReference.removeEventListener(childEventListener!!)
     }
 
     /*private fun crearInfoSophie() {
@@ -184,12 +198,13 @@ class VerGruposActivity : AppCompatActivity() {
     }
 
     val groupList: MutableList<ListGroup> = mutableListOf()
+    private var childEventListener: ChildEventListener? = null
     private fun llenarLista() {
 
         databaseReference = FirebaseDatabase.getInstance().getReference("Groups")
 
         auth.currentUser?.uid?.let { currentUserUid ->
-            databaseReference.addChildEventListener(object : ChildEventListener {
+            childEventListener = databaseReference.addChildEventListener(object : ChildEventListener {
                 override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
                     // Obtener el usuario de dataSnapshot

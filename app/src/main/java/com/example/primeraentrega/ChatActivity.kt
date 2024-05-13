@@ -4,17 +4,25 @@ package com.example.primeraentrega
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.example.primeraentrega.Adapters.ChatAdapter
 import com.example.primeraentrega.Adapters.GroupAdapter
+import com.example.primeraentrega.Adapters.UserAdapter
 import com.example.primeraentrega.Clases.Grupo
 import com.example.primeraentrega.Clases.ListGroup
+import com.example.primeraentrega.Clases.ListMessage
+import com.example.primeraentrega.Clases.ListUser
+import com.example.primeraentrega.Clases.Mensaje
 import com.example.primeraentrega.databinding.ActivityChatBinding
 import com.example.primeraentrega.Clases.Usuario
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -43,6 +51,10 @@ class ChatActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance()
 
         initializeGroup(groupID)
+        binding.botonEnviar.setOnClickListener{
+            sendMessage()
+            Log.e("ENVIADO", "El mensaje fue enviado")
+        }
     }
 
     private fun inicializarBotones() {
@@ -52,6 +64,7 @@ class ChatActivity : AppCompatActivity() {
             intent.putExtra("idGrupo", groupID)
             startActivity(intent)
         }
+
 
         val usuario: Usuario = Usuario()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
@@ -195,6 +208,29 @@ class ChatActivity : AppCompatActivity() {
 
         return isFabOpen
     }
+    private fun sendMessage() {
+        var mensajeTexto = binding.espacioDeTexto.text.toString()
+        if (mensajeTexto.isNotEmpty()) {
+            // Get the UID of the current user
+            val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid
+            if (currentUserUid != null) {
+                val mensaje = Mensaje(mensajeTexto, currentUserUid)
+                // Get a reference to the "Messages" node under the group's node
+                val groupMessagesRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupID).child("mensajes")
+                // Push the new message to the "Messages" node
+                groupMessagesRef.push().setValue(mensaje)
+                    .addOnSuccessListener {
+                        // Message sent successfully
+                        // Optionally, clear the message input field or show a success message
+                        binding.espacioDeTexto.text.clear()
+                    }
+                    .addOnFailureListener { exception ->
+                        // Handle any errors while sending the message
+                        Log.e("ChatActivity", "Error sending message: ${exception.message}")
+                    }
+            }
+        }
+    }
 
     private fun initializeGroup(groupId: String) {
         val groupReference = FirebaseDatabase.getInstance().getReference("Groups").child(groupId)
@@ -202,6 +238,7 @@ class ChatActivity : AppCompatActivity() {
         groupReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if (dataSnapshot.exists()) {
+                    Log.e("DATASNAPSHOT", "Revisare lo que hay en la base de datos")
                     val grupo = dataSnapshot.getValue(Grupo::class.java)
                     if (grupo != null) {
                         // Update UI with the new data
@@ -218,6 +255,9 @@ class ChatActivity : AppCompatActivity() {
                             // Handle any errors while downloading the image
                             Log.e("ChatActivity", "Error downloading group image: ${exception.message}")
                         }
+                        // Listen for new messages
+                        initializeMessageListener(groupId)
+
                     }
                 }
             }
@@ -228,5 +268,90 @@ class ChatActivity : AppCompatActivity() {
             }
         })
     }
+
+    private lateinit var mensajesGrupo: MutableList<ListMessage> // Updated to hold ListMessage objects
+
+    private fun initializeMessageListener(groupId: String) {
+        mensajesGrupo = mutableListOf()
+
+        val groupMessagesRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupId).child("mensajes")
+
+        groupMessagesRef.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val mensaje = snapshot.getValue(Mensaje::class.java)
+                if (mensaje != null) {
+                    val emisorUid = mensaje.emisor
+                    var nombreEmisor =""
+                    var bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)
+                    getUser(emisorUid) { usuario ->
+                        if (usuario != null) {
+                            nombreEmisor = usuario.username
+                            Log.e("EMISOR", "Nombre emisor $nombreEmisor")
+                            val storageRef = FirebaseStorage.getInstance().reference.child("${usuario.imagen}.jpg")
+                            val localfile = File. createTempFile( "tempImage", "jpg")
+                            storageRef.getFile(localfile).addOnSuccessListener {
+                                bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
+                                val listMessage = ListMessage(
+                                    snapshot.key,
+                                    bitmap,
+                                    mensaje.mensaje,
+                                    emisorUid,
+                                    nombreEmisor,
+                                    mensaje.createdAt
+                                )
+
+                                // Add the ListMessage object to the list
+                                mensajesGrupo.add(listMessage)
+                                // Update the adapter
+                                val adapter = ChatAdapter(applicationContext, mensajesGrupo, FirebaseAuth.getInstance().currentUser!!.uid)
+                                binding.chat.adapter = adapter
+
+                            }.addOnFailureListener{
+                                Log.e("Error", "User could not be found")
+                            }
+                        } else {
+                            // Handle the case where the user object could not be retrieved
+                            println("Failed to retrieve user")
+                        }
+                    }
+                }
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                // Handle the case where a message is changed (if needed)
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                // Handle the case where a message is removed (if needed)
+            }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                // Handle the case where a message is moved (if needed)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle any errors
+                Log.e("ChatActivity", "Error retrieving group messages: ${error.message}")
+            }
+        })
+    }
+
+    fun getUser(uid: String, callback: (UsuarioAmigo?) -> Unit) {
+        val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().getReference("Usuario").child(uid)
+
+        databaseReference.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val dataSnapshot: DataSnapshot? = task.result
+                val usuario: UsuarioAmigo? = dataSnapshot?.getValue(UsuarioAmigo::class.java)
+                callback(usuario)
+            } else {
+                // Handle errors
+                callback(null)
+            }
+        }
+    }
+
+
+
 
 }

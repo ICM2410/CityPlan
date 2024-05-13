@@ -276,6 +276,7 @@ class AgregarContactosActivity : AppCompatActivity() {
                             Log.e("GetFile", "Pedire local file")
                             storageRef.getFile(localfile).addOnSuccessListener {
                                 Log.e("Entre", "ENTRE")
+                                Log.e("REFERENCIA", storageRef.toString())
                                 val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
                                 var usuarioADD= ListUser(usuario.username, usuario.uid, bitmap)
                                 contactList.add(usuarioADD)

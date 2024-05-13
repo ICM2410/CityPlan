@@ -1,6 +1,5 @@
 package com.example.primeraentrega
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -15,24 +14,20 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.Grupo
 import com.example.primeraentrega.databinding.ActivityCrearGrupoBinding
 import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+
 import com.google.firebase.storage.StorageReference
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.util.UUID
-import kotlin.math.log
 
 class CrearGrupoActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCrearGrupoBinding
-    private lateinit var myRef: DatabaseReference
     private lateinit var storageReference: StorageReference
     private lateinit var auth: FirebaseAuth
     private lateinit var selectedUserIds: MutableMap<String?, String?>
@@ -55,10 +50,10 @@ class CrearGrupoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCrearGrupoBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        inicializarBotones()
+
 
         auth = FirebaseAuth.getInstance()
-        myRef = FirebaseDatabase.getInstance().getReference("Groups")
+
 
         // Initialize selectedUserIds with an empty mutable map
         selectedUserIds = mutableMapOf()
@@ -81,6 +76,8 @@ class CrearGrupoActivity : AppCompatActivity() {
                 Log.e("CrearGrupoActivity", "No selected user ids found")
             }
         }
+
+        inicializarBotones()
 
 
 
@@ -106,7 +103,7 @@ class CrearGrupoActivity : AppCompatActivity() {
             createGroup()
         }
 
-        val usuario: Usuario = Usuario()
+        val usuario = Usuario()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -153,7 +150,7 @@ class CrearGrupoActivity : AppCompatActivity() {
 
         val drawableFoto = binding.fotoSeleccionada.drawable
         //var imgUrlplan: String? =null
-
+        Log.e("GROUPID",groupId)
         storageReference = FirebaseStorage.getInstance().getReference("Groups/$groupId")
 
         if (drawableFoto != null) {
@@ -165,7 +162,7 @@ class CrearGrupoActivity : AppCompatActivity() {
                     FirebaseDatabase.getInstance().getReference("Groups").child(groupId)
                         .child("fotoGrupo").setValue("Groups/$groupId")
                         .addOnSuccessListener {
-                            Toast.makeText(this, "Group photo uploaded successfully", Toast.LENGTH_LONG).show()
+                            Log.e("FOTO", "Foto uploaded correctly")
                             // Start the VerGruposActivity
                             startActivity(Intent(this, VerGruposActivity::class.java))
                         }
@@ -199,28 +196,29 @@ class CrearGrupoActivity : AppCompatActivity() {
         var groupDescription = binding.editTextDescGrupo.text.toString()
 
         if(validateForm(groupName,groupDescription)) {
-            //Create a Grupo object with the provided name, description, and an empty list of messages
+            //Create a NuevoGrupo object
             val group = Grupo(
                 descripcion = groupDescription,
                 titulo = groupName,
                 fotoGrupo = "",
                 integrantes = selectedUserIds,
                 planes = emptyMap(),
-                mensajes = emptyList()
+                mensajes = emptyMap()
             )
-
-            // Get a reference to the "Groups" node in the Firebase Realtime Database
             val groupsRef = FirebaseDatabase.getInstance().getReference("Groups")
+
 
             // Push the new group object to the "Groups" node
             val newGroupRef = groupsRef.push()
-            newGroupRef.setValue(group)
-                .addOnSuccessListener {
+            Log.e("GROUP REFERENCE", groupsRef.toString())
+
+            newGroupRef.setValue(group).addOnSuccessListener {
                     // Group creation successful
-                    Toast.makeText(this, "Group created successfully", Toast.LENGTH_SHORT).show()
+                    Log.d("setValue", "Data written successfully")
 
                     // Retrieve the ID assigned by Firebase
                     val groupId = newGroupRef.key
+                    Log.e("ID", "GroupID - $groupId")
                     if (groupId != null) {
                         // Upload the group image with the retrieved group ID
                         uploadGroupImage(groupId)
@@ -228,15 +226,14 @@ class CrearGrupoActivity : AppCompatActivity() {
                     } else {
                         Log.e("NO ID", "Group ID is null")
                     }
-                }
-                .addOnFailureListener { exception ->
-                    // Group creation failed
-                    Log.e("NO GROUP", "Error creating group", exception)
-                    Toast.makeText(this, "Failed to create group", Toast.LENGTH_SHORT).show()
-                }
+            }.addOnFailureListener { exception ->
+                // Group creation failed
+                Log.e("NO GROUP", "Error creating group", exception)
+            }
 
         }
     }
+
 
     private fun validateForm(groupName: String, groupDescription: String): Boolean {
         var valid = false
