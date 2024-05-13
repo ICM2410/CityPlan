@@ -78,6 +78,7 @@ import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
@@ -298,8 +299,8 @@ class CrearPlanActivity : AppCompatActivity() {
                 //editar la informacion
                 guardarInformacionFirebase { documentId ->
                     //alarmId=generateUniqueCode(documentId)
-                    ponerAlarma(documentId,alarmId)
-                    enviarNotificaciones(documentId,alarmId)
+                    ponerAlarma(documentId)
+                    enviarNotificaciones(documentId)
                 }
             }
         }
@@ -371,23 +372,20 @@ class CrearPlanActivity : AppCompatActivity() {
 
         fabClicks()
     }
-    private var alarmId=0
+
     private val api: FcmApi = Retrofit.Builder()
         .baseUrl("http://10.0.2.2:8080/")
         .addConverterFactory(MoshiConverterFactory.create())
         .build()
         .create()
-    private fun enviarNotificaciones(documentId: String, alarmId:Int) {
+    private fun enviarNotificaciones(documentId: String) {
         val isBroadcast=true
         var state = PlanState(true,
             "",
-            "El plan ${binding.nombrePlan.text.toString()} se ha creado y es agendado para " +
-                    "${LocalDateTime.now().plusSeconds(10).month}" +
-                    "/${LocalDateTime.now().plusSeconds(10).dayOfYear}" +
-                    "/${LocalDateTime.now().plusSeconds(10).year}",
+            "El plan ${binding.nombrePlan.text.toString()} se ha creado y es agendado para iniciar a las ${binding.fechaInicio} ${binding.horaInicio}",
             documentId,
             LocalDateTime.now().plusSeconds(10),
-            alarmId,
+            0,
             idGrupo)
         val message= SendMessageDTO(
             to=if(isBroadcast) "1" else state.remoteToken,
@@ -468,9 +466,10 @@ class CrearPlanActivity : AppCompatActivity() {
         })*/
     }
 
-    private fun ponerAlarma(documentId: String, alarmId: Int) {
+    private fun ponerAlarma(documentId: String) {
+
         alarmItem=AlarmItem(
-            LocalDateTime.now().plusSeconds(10),
+            textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
             //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
             "El plan ${binding.nombrePlan.text.toString()} ha iniciado",
             binding.nombrePlan.text.toString(),
@@ -478,32 +477,22 @@ class CrearPlanActivity : AppCompatActivity() {
             documentId,
             idGrupo
         )
-
+        alarmItem!!.idPlan=alarmItem.hashCode()
         alarmItem?.let (scheduler::schedule)
     }
 
-    fun textoAFechaAlarma(fechaTexto: View, horaTexto: View): LocalDateTime {
-        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+    fun textoAFechaAlarma(fechaTexto: Button, horaTexto: Button): LocalDateTime {
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val formatter = DateTimeFormatter.ofPattern("M/d/yyyy HH:mm")
 
-        val fecha = formatoFecha.parse((fechaTexto as Button).text.toString())
-
-        // Especificar la zona horaria como UTC para la hora
-        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
-        val hora = formatoHora.parse((horaTexto as Button).text.toString())
-
-        val calendario = Calendar.getInstance()
-        fecha?.let { calendario.time = it }
-        hora?.let {
-            val horaCalendario = Calendar.getInstance().apply { time = it }
-            calendario.set(Calendar.HOUR_OF_DAY, horaCalendario.get(Calendar.HOUR_OF_DAY))
-            calendario.set(Calendar.MINUTE, horaCalendario.get(Calendar.MINUTE))
-        }
-
-        // Convertir de Date a LocalDateTime
-        val zonaHorariaLocal = ZoneId.systemDefault()
-        val instante = calendario.time.toInstant()
-        return LocalDateTime.ofInstant(instante, zonaHorariaLocal)
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val fechaHora = LocalDateTime.parse("${fechaTexto.text.toString()} ${horaTexto.text.toString()}", formatter)
+        Log.i("tiempo","es: $fechaHora")
+        // Calcular la diferencia en segundos entre la hora actual y la fechaHora propuesta
+        val diferenciaSegundos = LocalDateTime.now().until(fechaHora, java.time.temporal.ChronoUnit.SECONDS)
+        Log.i("tiempo","es: diferencias local ${LocalDateTime.now()} con  inicio $diferenciaSegundos")
+        // Ajustar la hora actual sumando la diferencia en segundos
+        return LocalDateTime.now().plusSeconds(diferenciaSegundos)
     }
 
     fun generateUniqueCode(text: String): Int {
