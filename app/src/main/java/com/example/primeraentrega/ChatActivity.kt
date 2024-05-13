@@ -12,15 +12,10 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.primeraentrega.Adapters.ChatAdapter
-import com.example.primeraentrega.Adapters.GroupAdapter
-import com.example.primeraentrega.Adapters.UserAdapter
 import com.example.primeraentrega.Clases.Grupo
-import com.example.primeraentrega.Clases.ListGroup
 import com.example.primeraentrega.Clases.ListMessage
-import com.example.primeraentrega.Clases.ListUser
 import com.example.primeraentrega.Clases.Mensaje
 import com.example.primeraentrega.databinding.ActivityChatBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
@@ -32,13 +27,20 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
 import com.example.primeraentrega.Clases.Plan
-import com.example.primeraentrega.Clases.UsuarioAmigo
-import com.example.primeraentrega.databinding.ActivityChatBinding
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.example.primeraentrega.Notifications.ChatState
+import com.example.primeraentrega.Notifications.FcmApi
+import com.example.primeraentrega.Notifications.GroupState
+import com.example.primeraentrega.Notifications.NotificationBody
+import com.example.primeraentrega.Notifications.SendMessageDTO
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.create
+import java.io.IOException
+
 import java.util.Date
 
 
@@ -51,7 +53,6 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var databaseReference: DatabaseReference
     private lateinit var database: FirebaseDatabase
     private lateinit var auth: FirebaseAuth
-    private lateinit var idGrupo : String
     private var idPlan : String=""
   
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -153,7 +154,7 @@ class ChatActivity : AppCompatActivity() {
     private fun revisarActivo() {
         var existe=false
         val ref = FirebaseDatabase.getInstance().getReference("Grupos")
-        ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
+        ref.child(groupID).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 for (userSnapshot in dataSnapshot.children) {
@@ -181,7 +182,7 @@ class ChatActivity : AppCompatActivity() {
                 if(existe)
                 {
                     var intent = Intent(baseContext, PlanActivity::class.java)
-                    intent.putExtra("idGrupo", idGrupo)
+                    intent.putExtra("idGrupo", groupID)
                     intent.putExtra("idPlan", idPlan)
                     startActivity(intent)
                 }
@@ -292,6 +293,9 @@ class ChatActivity : AppCompatActivity() {
                         // Message sent successfully
                         // Optionally, clear the message input field or show a success message
                         binding.espacioDeTexto.text.clear()
+
+                        //se envia notificacion del mensaje a todos los del grupo
+                        enviarNotificacion(groupID,mensajeTexto)
                     }
                     .addOnFailureListener { exception ->
                         // Handle any errors while sending the message
@@ -301,6 +305,58 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
+    private val api: FcmApi = Retrofit.Builder()
+        .baseUrl("http://10.0.2.2:8080/")
+        .addConverterFactory(MoshiConverterFactory.create())
+        .build()
+        .create()
+    private fun enviarNotificacion(groupID: String, mensajeTexto: String) {
+        auth.currentUser?.let {
+            val currentUser = FirebaseDatabase.getInstance().getReference("Usuario").child(it.uid)
+
+            currentUser.addListenerForSingleValueEvent(object :
+                ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val userData = snapshot.getValue(UsuarioAmigo::class.java)
+                    //se envia la notificacion
+                    val isBroadcast=true
+                    var state = ChatState(
+                        true,
+                        "",
+                        " ${userData?.username}:  $mensajeTexto",
+                        groupID)
+                    val message= SendMessageDTO(
+                        to=if(isBroadcast) "1" else state.remoteToken,
+                        notification = NotificationBody(
+                            title = "${binding.nombreGrupoChat.text} Nuevo Mensaje!",
+                            body = state.messageText,
+                            id = "0",
+                            alarmId = 0,
+                            idGrupo = state.idChat
+                        )
+                    )
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            if (isBroadcast){
+                                api.broadcast(message)
+                            } else {
+                                api.sendMessage(message)
+                            }
+                        } catch (e: HttpException) {
+                            e.printStackTrace()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+
+            })
+        }
+    }
     private fun initializeGroup(groupId: String) {
         val groupReference = FirebaseDatabase.getInstance().getReference("Groups").child(groupId)
 

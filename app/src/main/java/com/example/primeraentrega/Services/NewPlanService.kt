@@ -17,12 +17,14 @@ import com.example.primeraentrega.Alarms.AlarmItem
 import com.example.primeraentrega.Alarms.AndroidAlarmScheduler
 import com.example.primeraentrega.Clases.Grupo
 import com.example.primeraentrega.Clases.UsuarioAmigo
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.messaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -69,6 +71,11 @@ class NewPlanService: Service() {
                         if(grupoData.integrantes.containsKey(uid)) {
                             //recorrer los planes
                             Log.i("service mis grupos","me anadieron a un nuevo grupo")
+
+                            //subscribirme a su canal de notificaciones
+                            if (groupId != null) {
+                                subscribirACanal(groupId)
+                            }
                             for(plan in grupoData.planes)
                             {
                                 if(!gruposAnadidos.contains(plan.value.idAlarma))
@@ -161,28 +168,27 @@ class NewPlanService: Service() {
                                             formatoFecha.format(dateInicio).toString(),
                                             formatoHora.format(dateInicio).toString()
                                         )
-                                       // if(fechaHoraAlarma.isAfter(horaActual))
-                                       // {
-                                            Log.i("alarma","asignaron una nueva alarma")
-                                            //agendar la alarma
-                                            alarmItem= groupId?.let {
-                                                AlarmItem(
-                                                    textoAFechaAlarma(
-                                                        formatoFecha.format(dateInicio).toString(),
-                                                        formatoHora.format(dateInicio).toString()
-                                                    ),
-                                                    //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
-                                                    "El plan ${plan.value.titulo} ha iniciado",
-                                                    plan.value.titulo,
-                                                    plan.value.idAlarma,
-                                                    plan.value.id,
-                                                    it
-                                                )
-                                            }
 
-                                            alarmItem?.let (scheduler::schedule)
-                                            gruposAnadidos.add(plan.value.idAlarma)
-                                      //  }
+                                        Log.i("alarma","asignaron una nueva alarma")
+                                        //agendar la alarma
+                                        alarmItem= groupId?.let {
+                                            AlarmItem(
+                                                textoAFechaAlarma(
+                                                    formatoFecha.format(dateInicio).toString(),
+                                                    formatoHora.format(dateInicio).toString()
+                                                ),
+                                                //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
+                                                "El plan ${plan.value.titulo} ha iniciado",
+                                                plan.value.titulo,
+                                                plan.value.idAlarma,
+                                                plan.value.id,
+                                                it
+                                            )
+                                        }
+
+                                        alarmItem?.let (scheduler::schedule)
+                                        gruposAnadidos.add(plan.value.idAlarma)
+
                                     }
                                 }
                             }
@@ -199,6 +205,15 @@ class NewPlanService: Service() {
             override fun onCancelled(databaseError: DatabaseError) {
             }
         })
+    }
+
+    private fun subscribirACanal(canal:String) {
+        //aqui se debe subscribir a todos los chats a los que pertenece
+        Firebase.messaging.subscribeToTopic(canal).addOnSuccessListener {
+            Log.i("subscripcion", "Existosa")
+        }.addOnFailureListener{
+            Log.e("subscripcion", "ERROR")
+        }
     }
 
     fun textoAFechaAlarma(fechaTexto: String, horaTexto: String): LocalDateTime {

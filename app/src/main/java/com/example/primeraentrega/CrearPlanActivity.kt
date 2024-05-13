@@ -322,7 +322,7 @@ class CrearPlanActivity : AppCompatActivity() {
 
         inicializarPickers()
 
-        val usuario: UsuarioAmigo = UsuarioAmigo()
+        val usuario = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {

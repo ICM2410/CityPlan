@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.media.audiofx.BassBoost
 import android.net.Uri
 import android.os.Build
@@ -20,13 +21,9 @@ import com.example.primeraentrega.Adapters.GroupAdapter
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Clases.Grupo
 import com.example.primeraentrega.Clases.ListGroup
-import com.example.primeraentrega.Clases.Plan
-import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.databinding.ActivityVerGruposBinding
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.Services.NewPlanService
@@ -66,13 +63,8 @@ class VerGruposActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityVerGruposBinding
     private lateinit var database : FirebaseDatabase
-
-    private var isFabOpen=false
-    private var rotation=false
     private lateinit var databaseReference: DatabaseReference
     private lateinit var auth: FirebaseAuth
-    private var childId:String?=null
-    private lateinit var auth:FirebaseAuth
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,7 +93,6 @@ class VerGruposActivity : AppCompatActivity() {
         gestionarAlarma()
         iniciarServicio()
         configurarLocalizacion()
-        actualizarMiToken()
 
     }
 
@@ -143,9 +134,9 @@ class VerGruposActivity : AppCompatActivity() {
         }
     }
 
-    private fun actualizarMiToken() {
+    private fun subscribirACanal(canal:String) {
         //aqui se debe subscribir a todos los chats a los que pertenece
-        Firebase.messaging.subscribeToTopic(childId!!).addOnSuccessListener {
+        Firebase.messaging.subscribeToTopic(canal).addOnSuccessListener {
             Log.i("subscripcion", "Existosa")
         }.addOnFailureListener{
             Log.e("subscripcion", "ERROR")
@@ -463,6 +454,8 @@ class VerGruposActivity : AppCompatActivity() {
                             var groupADD= ListGroup(grupo.titulo, dataSnapshot.key, bitmap)
                             groupList.add(groupADD)
 
+                            //se subscribe al canal de notificaciones del grupo
+                            dataSnapshot.key?.let { it1 -> subscribirACanal(it1) }
                             //Lista
                             val adapter = GroupAdapter(applicationContext,groupList);
                             binding.gruposList.adapter = adapter
