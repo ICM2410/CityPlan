@@ -289,11 +289,16 @@ class CrearPlanActivity : AppCompatActivity() {
             }
             else
             {
+                var flag=0
                 //editar la informacion
                 guardarInformacionFirebase { documentId ->
                     //alarmId=generateUniqueCode(documentId)
                     ponerAlarma(documentId)
-                    enviarNotificaciones(documentId)
+                    if(flag==0)
+                    {
+                        enviarNotificaciones(documentId)
+                        flag++
+                    }
                 }
             }
         }
