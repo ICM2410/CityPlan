@@ -2,24 +2,18 @@ package com.example.primeraentrega
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
 import android.hardware.Sensor
-import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Geocoder
@@ -36,8 +30,8 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.example.primeraentrega.Clases.Plan
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityElegirUbicacionBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -58,19 +52,15 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
 import org.json.JSONArray
 import org.json.JSONException
-import org.osmdroid.config.Configuration
-import org.osmdroid.events.MapEventsReceiver
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.MapEventsOverlay
-import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.TilesOverlay
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
@@ -447,7 +437,7 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivity(intent)
 
         }
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -511,11 +501,67 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+            revisarActivo()
         }
     }
+
+    private fun revisarActivo() {
+        var existe=false
+        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val planId = userSnapshot.key // El ID del usuario
+                    val planData = userSnapshot.getValue(Plan::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $planId")
+                    println("Datos de usuario: $planData")
+
+                    // Crea un objeto PosAmigo con la información del usuario
+                    var status=""
+                    val plan = planData?.let {
+                        status=planAcrivo(planData.dateInicio,planData.dateFinal)
+                    }
+
+                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                    if (planId != null &&  plan != null && status!="Activo") {
+                        existe=true
+                        idPlan=planId
+                    }
+                }
+
+                if(existe)
+                {
+                    var intent = Intent(baseContext, PlanActivity::class.java)
+                    intent.putExtra("idGrupo", idGrupo)
+                    intent.putExtra("idPlan", idPlan)
+                    startActivity(intent)
+                }
+                else
+                {
+                    Toast.makeText(applicationContext, "No hay planes activos", Toast.LENGTH_LONG).show()
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
+    }
+
+    private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
+        val fechaActual = Date()
+
+        return when {
+            fechaActual.before(dateInicio) -> "Activo"
+            fechaActual.after(dateFinal) -> "Cerrado"
+            else -> "Abierto"
+        }
+    }
+
 
     private fun initShowout (v: View){
         v.apply {

@@ -35,8 +35,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.PlanJson
 import com.example.primeraentrega.Clases.PosAmigo
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityEditarPlanBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -102,6 +102,10 @@ class EditarPlanActivity : AppCompatActivity() {
         idPlan= intent.getStringExtra("idPlan").toString()
         idGrupo=intent.getStringExtra("idGrupo").toString()
         Log.d(ContentValues.TAG, "ID RECIBIDO $idPlan")
+
+        binding.horaInicio.isEnabled=false
+        binding.fechaInicio.isEnabled=false
+        binding.switchPasos.isEnabled=false
 
         databaseReference= FirebaseDatabase.getInstance().getReference("Planes")
         database = FirebaseDatabase.getInstance()
@@ -343,6 +347,13 @@ class EditarPlanActivity : AppCompatActivity() {
             else
             {
                 guardarInformacionFirebase { documentId ->
+                    //REAGENDAR LA ALARMA
+
+                    //ENVIAR NOTIFICACION DE QUE SE ACTUALIZO
+
+                    //DESPUES DE ESO SE VA A PLAN ACTIVITY
+
+
                     val intent = Intent(baseContext, PlanActivity::class.java)
                     Log.e(ContentValues.TAG, "HOLA - $idPlan")
                     intent.putExtra("idPlan", idPlan)
@@ -372,7 +383,7 @@ class EditarPlanActivity : AppCompatActivity() {
         }
 
         inicializarPickers()
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -437,11 +448,67 @@ class EditarPlanActivity : AppCompatActivity() {
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+            revisarActivo()
         }
     }
+
+    private fun revisarActivo() {
+        var existe=false
+        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val planId = userSnapshot.key // El ID del usuario
+                    val planData = userSnapshot.getValue(Plan::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $planId")
+                    println("Datos de usuario: $planData")
+
+                    // Crea un objeto PosAmigo con la información del usuario
+                    var status=""
+                    val plan = planData?.let {
+                        status=planAcrivo(planData.dateInicio,planData.dateFinal)
+                    }
+
+                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                    if (planId != null &&  plan != null && status!="Activo") {
+                        existe=true
+                        idPlan=planId
+                    }
+                }
+
+                if(existe)
+                {
+                    var intent = Intent(baseContext, PlanActivity::class.java)
+                    intent.putExtra("idGrupo", idGrupo)
+                    intent.putExtra("idPlan", idPlan)
+                    startActivity(intent)
+                }
+                else
+                {
+                    Toast.makeText(applicationContext, "No hay planes activos", Toast.LENGTH_LONG).show()
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
+    }
+
+    private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
+        val fechaActual = Date()
+
+        return when {
+            fechaActual.before(dateInicio) -> "Activo"
+            fechaActual.after(dateFinal) -> "Cerrado"
+            else -> "Abierto"
+        }
+    }
+
 
     private fun initShowout (v: View){
         v.apply {
@@ -592,7 +659,7 @@ class EditarPlanActivity : AppCompatActivity() {
         val fechaActual = Date()
 
         // Validar si la fecha y hora ingresadas son posteriores a la fecha y hora actual
-        return calendar.time.after(fechaActual) && segundaEsMayorQuePrimera(fechaTexto1, horaTexto1, fechaTexto2, horaTexto2)
+        return segundaEsMayorQuePrimera(fechaTexto1, horaTexto1, fechaTexto2, horaTexto2)
     }
 
     fun segundaEsMayorQuePrimera(fechaTexto1: View, horaTexto1: View, fechaTexto2: View, horaTexto2: View): Boolean {
@@ -751,8 +818,10 @@ class EditarPlanActivity : AppCompatActivity() {
         var direccionpin = "pines/$idPlan-pin.png"
         var direccionplan = "planes/$idPlan-plan.png"
         val pinImagesRef = storageRef.child(direccionpin)
-
+        Log.i("guardarInformacionFirebase", "Plan actualizado correctamente.")
         obtenerParticipantes { documentId ->
+
+            Log.i("obtenerParticipantes", "Plan actualizado correctamente.")
             val myPlan = Plan(
                 textoAFecha(binding.fechaInicio, binding.horaInicio),
                 textoAFecha(binding.editTextText66, binding.horaFin),
@@ -766,8 +835,10 @@ class EditarPlanActivity : AppCompatActivity() {
                 documentId
             )
 
+
             databaseReference.child(idPlan).setValue(myPlan).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    Log.i("databaseReference", "Plan actualizado correctamente.")
                     val drawableplan = binding.imagenPlan.drawable
                     uploadFoto(drawableplan, direccionplan)
 
@@ -778,45 +849,21 @@ class EditarPlanActivity : AppCompatActivity() {
                     //anadir todos los integrantes del grupo al plan
                     //guardarPlanAlGrupo(myPlan)
                     val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
-                    val planesRef = grupoRef.child("planes")
+                    val planesRef = grupoRef.child("planes").child(idPlan)
 
-// Realizar una consulta para encontrar el plan con el atributo "id" igual a "idPlan"
-                    val query = planesRef.orderByChild("id").equalTo(idPlan)
-
-                    Log.i("idplan","$idPlan")
-
-                    query.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                // La consulta encontró al menos un resultado
-                                for (planSnapshot in dataSnapshot.children) {
-                                    // Obtener la referencia al plan que coincide con el "id" especificado
-                                    val planRef = planesRef.child(planSnapshot.key!!)
-
-                                    // Actualizar el plan en la base de datos
-                                    planRef.setValue(myPlan)
-                                        .addOnSuccessListener {
-                                            // La actualización fue exitosa
-                                            Log.d(TAG, "Plan actualizado correctamente.")
-                                            // Llamar al callback con el documentId
-                                            callback(idPlan)
-                                        }
-                                        .addOnFailureListener { e ->
-                                            // Ocurrió un error al actualizar el plan
-                                            Log.e(TAG, "Error al actualizar el plan: ${e.message}", e)
-                                        }
-                                }
-                            } else {
-                                // No se encontraron resultados para la consulta
-                                Log.d(TAG, "No se encontraron resultados para la consulta.")
-                            }
+                    planesRef.setValue(myPlan)
+                        .addOnSuccessListener {
+                            // La actualización fue exitosa
+                            Log.d(TAG, "Plan actualizado correctamente.")
+                            // Llamar al callback con el documentId
+                            callback(idPlan)
+                        }
+                        .addOnFailureListener { e ->
+                            // Ocurrió un error al actualizar el plan
+                            Log.e(TAG, "Error al actualizar el plan: ${e.message}", e)
                         }
 
-                        override fun onCancelled(databaseError: DatabaseError) {
-                            // Manejar el error en caso de que la consulta sea cancelada
-                            Log.e(TAG, "Error al realizar la consulta: ${databaseError.message}")
-                        }
-                    })
+
 
                 } else {
                     Toast.makeText(this, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()

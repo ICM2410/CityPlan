@@ -6,8 +6,8 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.bumptech.glide.Glide
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityCrearGrupoBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 
 class CrearGrupoActivity : AppCompatActivity() {
@@ -41,7 +41,7 @@ class CrearGrupoActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, ChatActivity::class.java))
         }
 
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
