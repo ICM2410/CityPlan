@@ -9,10 +9,20 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission." />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARMM " />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM " />
+    <uses-permission android:name="android.permission.ACTION_REQUEST_SCHEDULE_EXACT_ALARM " />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
+        android:name=".RunningApp.RunningApp"
+        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -22,6 +32,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PrimeraEntrega"
         tools:targetApi="31">
+      
         <activity
             android:name=".ImageDetailActivity"
             android:exported="false" />
@@ -39,11 +50,6 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCPGRoYs7J-yTAzy4LqlZCwGznon192FBo" />
-
-        <activity
-            android:name=".MapsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_maps" />
         <activity
             android:name=".PlanesPasadosActivity"
             android:exported="false" />
@@ -68,16 +74,10 @@
             android:name=".PerfilConfActivity"
             android:exported="false" />
         <activity
-            android:name=".ConfiguracionActivity"
-            android:exported="false" />
-        <activity
             android:name=".RegistrarUsuarioActivity"
             android:exported="false" />
         <activity
             android:name=".PlanFinalizadoActivity"
-            android:exported="false" />
-        <activity
-            android:name=".FijarPuntoMapaActivity"
             android:exported="false" />
         <activity
             android:name=".AgregarContactosActivity"
@@ -86,16 +86,10 @@
             android:name=".ElegirUbicacionActivity"
             android:exported="false" />
         <activity
-            android:name=".ConfigurarHuellaActivity"
-            android:exported="false" />
-        <activity
             android:name=".VerGruposActivity"
             android:exported="false" />
         <activity
             android:name=".EditarGrupoActivity"
-            android:exported="false" />
-        <activity
-            android:name=".IniciarSesionHuellaActivity"
             android:exported="false" />
         <activity
             android:name=".GaleriaActivity"
@@ -126,7 +120,27 @@
             android:exported="false" />
         <activity
             android:name=".IniciarSesionActivity"
+
             android:exported="false"></activity>
+
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <receiver android:name=".Alarms.AlarmReceiver"/>
+        <service android:name=".Services.PushNotificationService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+        <service android:name=".Services.NewPlanService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false"/>
+
     </application>
 
 </manifest>

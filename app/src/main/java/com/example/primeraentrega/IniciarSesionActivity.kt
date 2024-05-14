@@ -6,12 +6,15 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityIniciarSesionBinding
+import com.google.firebase.Firebase
 
-import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.messaging.messaging
 
 import java.security.MessageDigest
 
@@ -38,7 +41,7 @@ class IniciarSesionActivity : AppCompatActivity() {
     private fun inicializarBotones() {
 
         binding.huella.setOnClickListener{
-            val usuario= Usuario()
+            val usuario= UsuarioAmigo()
             solicitarHuella(usuario)
         }
         binding.buttonIniciarSesion.setOnClickListener {
@@ -66,11 +69,8 @@ class IniciarSesionActivity : AppCompatActivity() {
                     // Inicio de sesión exitoso
                     val userId = authResult.user?.uid
                     val user=authResult.user
-                    var intent= Intent(baseContext, VerGruposActivity::class.java)
-                    intent.putExtra("user", user)
+                    actualizarMiToken(user)
 
-                    startActivity(intent)
-                    // Aquí puedes agregar lógica adicional después del inicio de sesión exitoso
                 }
                 .addOnFailureListener { e ->
                     // Error en el inicio de sesión
@@ -86,7 +86,34 @@ class IniciarSesionActivity : AppCompatActivity() {
 
     }
 
-    private fun solicitarHuella(usuario: Usuario?) {
+    private fun actualizarMiToken(user: FirebaseUser?) {
+        //aqui se debe subscribir a todos los chats a los que pertenece
+        Firebase.messaging.token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+
+                // Aquí puedes hacer lo que necesites con el token, como asignarlo al usuario
+                println("Token guardado correctamente: $token")
+                val myRef = database.getReference("Usuario")
+                // Guardar el usuario en Firebase Realtime Database con el UID como clave
+                auth.currentUser?.uid?.let {
+                    myRef.child(it).child("token").setValue(token)
+                        .addOnSuccessListener {
+                            // Registro exitoso en Firebase Realtime Database
+                            var intent= Intent(baseContext, VerGruposActivity::class.java)
+                            intent.putExtra("user", user)
+
+                            startActivity(intent)
+                        }
+                }
+
+            } else {
+                println("Error al obtener el token: ${task.exception?.message}")
+            }
+        }
+    }
+
+    private fun solicitarHuella(usuario: UsuarioAmigo?) {
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
             object : BiometricPrompt.AuthenticationCallback() {
@@ -97,11 +124,7 @@ class IniciarSesionActivity : AppCompatActivity() {
                     val biometricId = generateBiometricId(biometricData)
 
                     // Asignar el ID de la huella dactilar al usuario
-                    usuario?.fingerprintId = biometricId
-
-
-                    // Guardar el usuario actualizado en Firebase
-                    guardarUsuarioEnFirebase(usuario)
+                    usuario?.huella = biometricId
                 }
             })
 
@@ -134,9 +157,6 @@ class IniciarSesionActivity : AppCompatActivity() {
         return hexString.toString()
     }
 
-    private fun guardarUsuarioEnFirebase(usuario: Usuario?) {
-
-    }
     private fun validarCorreo(correo: String): Boolean {
         val regexCorreo = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
         return regexCorreo.matches(correo)

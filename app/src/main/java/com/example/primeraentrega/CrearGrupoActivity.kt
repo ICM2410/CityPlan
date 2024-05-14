@@ -1,6 +1,5 @@
 package com.example.primeraentrega
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -15,24 +14,40 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.Grupo
+import com.bumptech.glide.Glide
+import com.example.primeraentrega.Clases.Plan
+import com.example.primeraentrega.Clases.UsuarioAmigo
+import com.example.primeraentrega.Notifications.FcmApi
+import com.example.primeraentrega.Notifications.GroupState
+import com.example.primeraentrega.Notifications.NotificationBody
+import com.example.primeraentrega.Notifications.PlanState
+import com.example.primeraentrega.Notifications.SendMessageDTO
 import com.example.primeraentrega.databinding.ActivityCrearGrupoBinding
-import com.example.primeraentrega.Clases.Usuario
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.messaging
 import com.google.firebase.storage.FirebaseStorage
+
 import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.create
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.util.UUID
-import kotlin.math.log
+import java.io.IOException
 
 class CrearGrupoActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCrearGrupoBinding
-    private lateinit var myRef: DatabaseReference
     private lateinit var storageReference: StorageReference
     private lateinit var auth: FirebaseAuth
     private lateinit var selectedUserIds: MutableMap<String?, String?>
@@ -55,10 +70,10 @@ class CrearGrupoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCrearGrupoBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        inicializarBotones()
+
 
         auth = FirebaseAuth.getInstance()
-        myRef = FirebaseDatabase.getInstance().getReference("Groups")
+
 
         // Initialize selectedUserIds with an empty mutable map
         selectedUserIds = mutableMapOf()
@@ -82,7 +97,7 @@ class CrearGrupoActivity : AppCompatActivity() {
             }
         }
 
-
+        inicializarBotones()
 
     }
 
@@ -106,7 +121,8 @@ class CrearGrupoActivity : AppCompatActivity() {
             createGroup()
         }
 
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
+
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -153,7 +169,7 @@ class CrearGrupoActivity : AppCompatActivity() {
 
         val drawableFoto = binding.fotoSeleccionada.drawable
         //var imgUrlplan: String? =null
-
+        Log.e("GROUPID",groupId)
         storageReference = FirebaseStorage.getInstance().getReference("Groups/$groupId")
 
         if (drawableFoto != null) {
@@ -165,7 +181,7 @@ class CrearGrupoActivity : AppCompatActivity() {
                     FirebaseDatabase.getInstance().getReference("Groups").child(groupId)
                         .child("fotoGrupo").setValue("Groups/$groupId")
                         .addOnSuccessListener {
-                            Toast.makeText(this, "Group photo uploaded successfully", Toast.LENGTH_LONG).show()
+                            Log.e("FOTO", "Foto uploaded correctly")
                             // Start the VerGruposActivity
                             startActivity(Intent(this, VerGruposActivity::class.java))
                         }
@@ -199,42 +215,110 @@ class CrearGrupoActivity : AppCompatActivity() {
         var groupDescription = binding.editTextDescGrupo.text.toString()
 
         if(validateForm(groupName,groupDescription)) {
-            //Create a Grupo object with the provided name, description, and an empty list of messages
+            //Create a NuevoGrupo object
             val group = Grupo(
                 descripcion = groupDescription,
                 titulo = groupName,
                 fotoGrupo = "",
                 integrantes = selectedUserIds,
                 planes = emptyMap(),
-                mensajes = emptyList()
+                mensajes = emptyMap()
             )
-
-            // Get a reference to the "Groups" node in the Firebase Realtime Database
             val groupsRef = FirebaseDatabase.getInstance().getReference("Groups")
+
 
             // Push the new group object to the "Groups" node
             val newGroupRef = groupsRef.push()
-            newGroupRef.setValue(group)
-                .addOnSuccessListener {
+            Log.e("GROUP REFERENCE", groupsRef.toString())
+
+            newGroupRef.setValue(group).addOnSuccessListener {
                     // Group creation successful
-                    Toast.makeText(this, "Group created successfully", Toast.LENGTH_SHORT).show()
+                    Log.d("setValue", "Data written successfully")
 
                     // Retrieve the ID assigned by Firebase
                     val groupId = newGroupRef.key
+                    Log.e("ID", "GroupID - $groupId")
                     if (groupId != null) {
                         // Upload the group image with the retrieved group ID
                         uploadGroupImage(groupId)
+                        //enviar notificacion de grupo creado
 
+                        notificacionGrupoCreado(groupId)
                     } else {
                         Log.e("NO ID", "Group ID is null")
                     }
-                }
-                .addOnFailureListener { exception ->
-                    // Group creation failed
-                    Log.e("NO GROUP", "Error creating group", exception)
-                    Toast.makeText(this, "Failed to create group", Toast.LENGTH_SHORT).show()
-                }
+            }.addOnFailureListener { exception ->
+                // Group creation failed
+                Log.e("NO GROUP", "Error creating group", exception)
+            }
 
+        }
+    }
+
+    private val api: FcmApi = Retrofit.Builder()
+        .baseUrl("http://10.0.2.2:8080/")
+        .addConverterFactory(MoshiConverterFactory.create())
+        .build()
+        .create()
+    private fun notificacionGrupoCreado(groupId: String) {
+        //subscribirme a notificaciones del nuevo grupo
+        subscribirACanal(groupId)
+        //enviar notificaciones a todos sus nuevos miembros
+        val userRef=FirebaseDatabase.getInstance().getReference("Usuario")
+        for ((key, _) in selectedUserIds) {
+
+            if (key != null) {
+                userRef.child(key).addListenerForSingleValueEvent(object :
+                    ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val userData = snapshot.getValue(UsuarioAmigo::class.java)
+                        //enviar notificacion
+                        val isBroadcast=false
+                        var state = GroupState(
+                            true,
+                            key,
+                            "El grupo ${binding.editTextNombreGrupo.text.toString()} se ha creado",
+                            groupId)
+                        val message= SendMessageDTO(
+                            to=if(isBroadcast) "1" else state.remoteToken,
+                            notification = NotificationBody(
+                                title = "Nuevo Grupo!",
+                                body = state.messageText,
+                                id = "0",
+                                alarmId = 0,
+                                idGrupo = state.idGrupo
+                            )
+                        )
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                if (isBroadcast){
+                                    api.broadcast(message)
+                                } else {
+                                    api.sendMessage(message)
+                                }
+                            } catch (e: HttpException) {
+                                e.printStackTrace()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+
+                    }
+
+                })
+            }
+        }
+    }
+
+    private fun subscribirACanal(canal:String) {
+        //aqui se debe subscribir a todos los chats a los que pertenece
+        Firebase.messaging.subscribeToTopic(canal).addOnSuccessListener {
+            Log.i("subscripcion", "Existosa")
+        }.addOnFailureListener{
+            Log.e("subscripcion", "ERROR")
         }
     }
 

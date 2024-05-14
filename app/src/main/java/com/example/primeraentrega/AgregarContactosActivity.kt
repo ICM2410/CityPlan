@@ -20,6 +20,8 @@ import com.example.primeraentrega.Clases.ListUser
 import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
 import com.example.primeraentrega.Clases.Usuario
 import com.example.primeraentrega.Clases.UsuarioAmigo
+import com.example.primeraentrega.Clases.UsuarioAmigo
+import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
@@ -88,7 +90,7 @@ class AgregarContactosActivity : AppCompatActivity() {
     }
 
     private fun inicializarBotones() {
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -276,6 +278,7 @@ class AgregarContactosActivity : AppCompatActivity() {
                             Log.e("GetFile", "Pedire local file")
                             storageRef.getFile(localfile).addOnSuccessListener {
                                 Log.e("Entre", "ENTRE")
+                                Log.e("REFERENCIA", storageRef.toString())
                                 val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
                                 var usuarioADD= ListUser(usuario.username, usuario.uid, bitmap)
                                 contactList.add(usuarioADD)

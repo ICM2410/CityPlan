@@ -11,8 +11,8 @@ import android.widget.Toast
 import com.example.primeraentrega.Adapters.Adapterplan
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.PlanLista
+import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityPlanesPasadosBinding
-import com.example.primeraentrega.Clases.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -115,7 +115,7 @@ class PlanesPasadosActivity : AppCompatActivity() {
     }
     private fun inicializarBotones() {
 
-        val usuario: Usuario = Usuario()
+        val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -179,10 +179,55 @@ class PlanesPasadosActivity : AppCompatActivity() {
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+            revisarActivo()
         }
+    }
+
+    private fun revisarActivo() {
+        var existe=false
+        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val planId = userSnapshot.key // El ID del usuario
+                    val planData = userSnapshot.getValue(Plan::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $planId")
+                    println("Datos de usuario: $planData")
+
+                    // Crea un objeto PosAmigo con la información del usuario
+                    var status=""
+                    val plan = planData?.let {
+                        status=planAcrivo(planData.dateInicio,planData.dateFinal)
+                    }
+
+                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                    if (planId != null &&  plan != null && status!="Activo") {
+                        existe=true
+                        idPlan=planId
+                    }
+                }
+
+                if(existe)
+                {
+                    var intent = Intent(baseContext, PlanActivity::class.java)
+                    intent.putExtra("idGrupo", idGrupo)
+                    intent.putExtra("idPlan", idPlan)
+                    startActivity(intent)
+                }
+                else
+                {
+                    Toast.makeText(applicationContext, "No hay planes activos", Toast.LENGTH_LONG).show()
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
     }
 
     private fun initShowout (v: View){

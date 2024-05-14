@@ -4,23 +4,18 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.ContentValues
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.VectorDrawable
 import android.location.Geocoder
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -43,31 +38,40 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import android.widget.Toast
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import com.example.primeraentrega.Clases.Grupo
+import com.example.primeraentrega.Alarms.AlarmItem
+import com.example.primeraentrega.Alarms.AndroidAlarmScheduler
 import com.example.primeraentrega.Clases.PlanJson
 import com.example.primeraentrega.Clases.PosAmigo
-import com.example.primeraentrega.Clases.Usuario
-import com.google.firebase.Firebase
+import com.example.primeraentrega.Clases.UsuarioAmigo
+import com.example.primeraentrega.Notifications.FcmApi
+import com.example.primeraentrega.Notifications.NotificationBody
+import com.example.primeraentrega.Notifications.PlanState
+import com.example.primeraentrega.Notifications.SendMessageDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import retrofit2.HttpException
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.create
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
@@ -89,7 +93,13 @@ class CrearPlanActivity : AppCompatActivity() {
     private lateinit var database : FirebaseDatabase
 
     var imagenPin:Bitmap?=null
+    private var idPlan : String=""
+    private var idAlarma=0
 
+    private lateinit var scheduler: AndroidAlarmScheduler
+    var alarmItem:AlarmItem?=null
+    private lateinit var auth:FirebaseAuth
+    
     val getContentGallery = registerForActivityResult(
         ActivityResultContracts.GetContent(),
         ActivityResultCallback {
@@ -103,11 +113,13 @@ class CrearPlanActivity : AppCompatActivity() {
         binding= ActivityCrearPlanBinding.inflate(layoutInflater)
         setContentView(binding.root)
         geocoder = Geocoder(baseContext)
-
+        auth=FirebaseAuth.getInstance()
         val pantalla = intent.getStringExtra("pantalla")
         idGrupo=intent.getStringExtra("idGrupo").toString()
         Log.i("idGrupo","revisar Crear $idGrupo")
         database = FirebaseDatabase.getInstance()
+
+        scheduler=AndroidAlarmScheduler(this)
 
         inicializarBotones()
 
@@ -277,12 +289,16 @@ class CrearPlanActivity : AppCompatActivity() {
             }
             else
             {
+                var flag=0
                 //editar la informacion
                 guardarInformacionFirebase { documentId ->
-                    val intent = Intent(baseContext, PlanesActivity::class.java)
-                    intent.putExtra("idPlan", documentId)
-                    intent.putExtra("idGrupo", idGrupo)
-                    startActivity(intent)
+                    //alarmId=generateUniqueCode(documentId)
+                    ponerAlarma(documentId)
+                    if(flag==0)
+                    {
+                        enviarNotificaciones(documentId)
+                        flag++
+                    }
                 }
             }
         }
@@ -311,7 +327,7 @@ class CrearPlanActivity : AppCompatActivity() {
 
         inicializarPickers()
 
-        val usuario: Usuario = Usuario()
+        val usuario = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.Grupos_bar -> {
@@ -353,6 +369,82 @@ class CrearPlanActivity : AppCompatActivity() {
         }
 
         fabClicks()
+    }
+
+    private val api: FcmApi = Retrofit.Builder()
+        .baseUrl("http://10.0.2.2:8080/")
+        .addConverterFactory(MoshiConverterFactory.create())
+        .build()
+        .create()
+    private fun enviarNotificaciones(documentId: String) {
+        val isBroadcast=true
+        var state = PlanState(true,
+            "",
+            "El plan ${binding.nombrePlan.text.toString()} se ha creado y es agendado para iniciar a las ${binding.fechaInicio.text.toString()} ${binding.horaInicio.text.toString()}",
+            documentId,
+            0,
+            idGrupo)
+        val message= SendMessageDTO(
+            to=if(isBroadcast) "1" else state.remoteToken,
+            notification = NotificationBody(
+                title = "Nuevo plan!",
+                body = state.messageText,
+                id = state.idPlan,
+                alarmId = state.idAlarm,
+                idGrupo = state.idGrupo
+            )
+        )
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                if (isBroadcast){
+                    api.broadcast(message)
+                } else {
+                    api.sendMessage(message)
+                }
+            } catch (e: HttpException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+
+        val intent = Intent(baseContext, PlanesActivity::class.java)
+        intent.putExtra("idPlan", documentId)
+        intent.putExtra("idGrupo", idGrupo)
+        startActivity(intent)
+     }
+
+    private fun ponerAlarma(documentId: String) {
+
+        /*alarmItem=AlarmItem(
+            textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
+            //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
+            "El plan ${binding.nombrePlan.text.toString()} ha iniciado",
+            binding.nombrePlan.text.toString(),
+            idAlarma,
+            documentId,
+            idGrupo
+        )
+
+        alarmItem?.let (scheduler::schedule)*/
+    }
+
+    fun textoAFechaAlarma(fechaTexto: Button, horaTexto: Button): LocalDateTime {
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val formatter = DateTimeFormatter.ofPattern("M/d/yyyy HH:mm")
+
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val fechaHora = LocalDateTime.parse("${fechaTexto.text.toString()} ${horaTexto.text.toString()}", formatter)
+        Log.i("tiempo","es: $fechaHora")
+        // Calcular la diferencia en segundos entre la hora actual y la fechaHora propuesta
+        val diferenciaSegundos = LocalDateTime.now().until(fechaHora, java.time.temporal.ChronoUnit.SECONDS)
+        Log.i("tiempo","es: diferencias local ${LocalDateTime.now()} con  inicio $diferenciaSegundos")
+        // Ajustar la hora actual sumando la diferencia en segundos
+        return LocalDateTime.now().plusSeconds(diferenciaSegundos)
+    }
+
+    fun generateUniqueCode(text: String): Int {
+        return 1
     }
 
     private fun concordanciaFechas(fechaTexto1: View, horaTexto1: View, fechaTexto2: View, horaTexto2: View): Boolean {
@@ -425,9 +517,64 @@ class CrearPlanActivity : AppCompatActivity() {
         }
 
         binding.fabPlanActivo.setOnClickListener {
-            var intent = Intent(baseContext, PlanActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+            revisarActivo()
+        }
+    }
+
+    private fun revisarActivo() {
+        var existe=false
+        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val planId = userSnapshot.key // El ID del usuario
+                    val planData = userSnapshot.getValue(Plan::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de usuario: $planId")
+                    println("Datos de usuario: $planData")
+
+                    // Crea un objeto PosAmigo con la información del usuario
+                    var status=""
+                    val plan = planData?.let {
+                        status=planAcrivo(planData.dateInicio,planData.dateFinal)
+                    }
+
+                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                    if (planId != null &&  plan != null && status!="Activo") {
+                        existe=true
+                        idPlan=planId
+                    }
+                }
+
+                if(existe)
+                {
+                    var intent = Intent(baseContext, PlanActivity::class.java)
+                    intent.putExtra("idGrupo", idGrupo)
+                    intent.putExtra("idPlan", idPlan)
+                    startActivity(intent)
+                }
+                else
+                {
+                    Toast.makeText(applicationContext, "No hay planes activos", Toast.LENGTH_LONG).show()
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
+    }
+
+    private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
+        val fechaActual = Date()
+
+        return when {
+            fechaActual.before(dateInicio) -> "Activo"
+            fechaActual.after(dateFinal) -> "Cerrado"
+            else -> "Abierto"
         }
     }
     private fun initShowout (v: View){
@@ -502,10 +649,10 @@ class CrearPlanActivity : AppCompatActivity() {
         val month = calendar.get(Calendar.MONTH)
         val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
 
-        binding.fechaInicio.setText("$dayOfMonth/$month/$year")
-        binding.editTextText66.setText("$dayOfMonth/$month/$year")
-        binding.horaInicio.setText("0:00")
-        binding.horaFin.setText("0:00")
+        binding.fechaInicio.setText("$month/$dayOfMonth/$year")
+        binding.editTextText66.setText("$month/$dayOfMonth/$year")
+        binding.horaInicio.setText("1:00")
+        binding.horaFin.setText("1:00")
 
         binding.fechaInicio.setOnClickListener {
             openDateDialogue(binding.fechaInicio.context, binding.fechaInicio)
@@ -623,84 +770,93 @@ class CrearPlanActivity : AppCompatActivity() {
 
         val userRef = database.getReference("Grupos")
         val integrantesMap = mutableMapOf<String,PosAmigo>()
-
+        val childId = databaseReference.child("Planes").push().key.toString()
+        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo!!)
+        //val planId = grupoRef.child("planes").push().key
         userRef.child(idGrupo).child("integrantes").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 for (userSnapshot in dataSnapshot.children) {
                     // Obtiene los datos de cada usuario
                     val userId = userSnapshot.key // El ID del usuario
-                    val userData = userSnapshot.getValue(Usuario::class.java) // Los datos del usuario convertidos a objeto Usuario
+                    val userData = userSnapshot.getValue().toString() // Los datos del usuario convertidos a objeto Usuario
 
                     // Aquí puedes realizar cualquier operación con los datos del usuario
                     println("ID de usuario: $userId")
                     println("Datos de usuario: $userData")
 
-                    // Crea un objeto PosAmigo con la información del usuario
-                    val posUsuario = userData?.let {
-                        PosAmigo(0.0, 0.0, it.userid, "", it.user)
-                    }
+                    //obtener datos del usuario
+                    userId?.let {
+                        val userRefID = database.getReference("Usuario").child(it)
+                        userRefID.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                // Crea un objeto PosAmigo con la información del usuario
+                                val usuario=dataSnapshot.getValue(UsuarioAmigo::class.java)
 
-                    // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
-                    if (userId != null && posUsuario != null) {
-                        integrantesMap[userId] = posUsuario
-                    }
-                }
+                                val posUsuario = userData?.let {
+                                    usuario?.let { it1 -> PosAmigo(it1.latitud, usuario.longitud, usuario.uid, usuario.imagen, usuario.username) }
+                                }
 
-                val childId = databaseReference.child("Planes").push().key.toString()
-                //de ahi se crea un grupo y se guardan ahi todos los usuarios
-                var direccionpin = "pines/$childId-pin.png"
-                var direccionplan = "planes/$childId-plan.png"
-                val pinImagesRef = storageRef.child(direccionpin)
+                                // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
+                                if (userId != null && posUsuario != null) {
+                                    integrantesMap[userId] = posUsuario
+                                    //de ahi se crea un grupo y se guardan ahi todos los usuarios
+                                    var direccionpin = "pines/$childId-pin.png"
+                                    var direccionplan = "planes/$childId-plan.png"
+                                    //val pinImagesRef = storageRef.child(direccionpin)
 
-                val myPlan = Plan(
-                    textoAFecha(binding.fechaInicio, binding.horaInicio),
-                    textoAFecha(binding.editTextText66, binding.horaFin),
-                    latitud,
-                    longitud,
-                    binding.switchPasos.isChecked,
-                    binding.nombrePlan.text.toString(),
-                    direccionplan,
-                    direccionpin,
-                    true,
-                    integrantesMap,
-                    childId
-                )
+                                    val myPlan = Plan(
+                                        textoAFecha(binding.fechaInicio, binding.horaInicio),
+                                        textoAFecha(binding.editTextText66, binding.horaFin),
+                                        latitud,
+                                        longitud,
+                                        binding.switchPasos.isChecked,
+                                        binding.nombrePlan.text.toString(),
+                                        direccionplan,
+                                        direccionpin,
+                                        true,
+                                        integrantesMap,
+                                        childId
+                                    )
 
-                if (childId != null) {
-                    databaseReference.child(childId).setValue(myPlan).addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val drawableplan = binding.imagenPlan.drawable
-                            uploadFoto(drawableplan, direccionplan)
+                                    idAlarma=myPlan.hashCode()
+                                    myPlan.idAlarma=idAlarma
+                                    Log.i("childId crear","$childId")
+                                    if (childId != null) {
+                                        databaseReference.child(childId).setValue(myPlan).addOnCompleteListener { task ->
+                                            if (task.isSuccessful) {
+                                                val drawableplan = binding.imagenPlan.drawable
+                                                uploadFoto(drawableplan, direccionplan)
 
-                            val drawablepin = binding.pinPlanImg.drawable
-                            uploadFoto(drawablepin, direccionpin)
-                            val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo!!)
-                            val planId = grupoRef.child("planes").push().key
+                                                val drawablepin = binding.pinPlanImg.drawable
+                                                uploadFoto(drawablepin, direccionpin)
 
-                            if (planId != null) {
-                                // Guardar el nuevo plan en el mapa de planes
-                                grupoRef.child("planes").child(planId).setValue(myPlan)
-                                    .addOnCompleteListener { task ->
-                                        if (task.isSuccessful) {
-                                            // El plan se guardó correctamente
-                                            callback(childId)
-                                        } else {
-                                            // Hubo un error al guardar el plan
-                                            Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                                                // Guardar el nuevo plan en el mapa de planes
+                                                grupoRef.child("planes").child(childId).setValue(myPlan)
+                                                    .addOnCompleteListener { task ->
+                                                        if (task.isSuccessful) {
+                                                            // El plan se guardó correctamente
+                                                            callback(childId)
+                                                        } else {
+                                                            // Hubo un error al guardar el plan
+                                                            Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                                                        }
+                                                    }
+
+
+                                            } else {
+                                                Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                                            }
                                         }
                                     }
-                            } else {
-                                // No se pudo generar un ID para el plan
-                                Toast.makeText(applicationContext, "Fallo en generar ID para el plan", Toast.LENGTH_LONG).show()
+                                }
                             }
-
-
-                        } else {
-                            Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
-                        }
+                            override fun onCancelled(databaseError: DatabaseError) {
+                                // Maneja el error en caso de que ocurra
+                                println("Error al obtener los datos del usuario: ${databaseError.message}")
+                            }
+                        })
                     }
                 }
-
             }
             override fun onCancelled(databaseError: DatabaseError) {
                 // Maneja el error en caso de que ocurra

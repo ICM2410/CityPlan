@@ -67,7 +67,8 @@
                 <ListView
                     android:id="@+id/chat"
                     android:layout_width="match_parent"
-                    android:layout_height="298dp" />
+                    android:layout_height="match_parent"
+                    android:divider="@null"/>
 
             </LinearLayout>
 
@@ -97,8 +98,7 @@
         <LinearLayout
             android:id="@+id/escribirMensaje"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:background="@color/grisMedio"
             android:gravity="center"
             android:orientation="horizontal"
@@ -120,17 +120,30 @@
             <EditText
                 android:id="@+id/espacioDeTexto"
                 android:layout_width="match_parent"
-                android:layout_height="63dp"
+                android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
                 android:layout_weight="3"
                 android:background="@drawable/puntas_blancas"
-                android:drawableRight="@drawable/send2"
                 android:ems="10"
                 android:gravity="center_vertical"
                 android:hint="@string/hint"
-                android:inputType="text"
+                android:inputType="text|textMultiLine"
                 android:padding="15dp"
                 android:textSize="14sp" />
+
+            <ImageButton
+                android:id="@+id/botonEnviar"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center_vertical"
+
+                android:layout_weight="0"
+                android:background="@color/transparente"
+                android:padding="10dp"
+                app:srcCompat="@drawable/enviar_mensaje"
+                />
         </LinearLayout>
     </LinearLayout>
 

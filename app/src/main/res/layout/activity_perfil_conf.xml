@@ -133,23 +133,11 @@
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottom_navigation"
-                android:layout_width="324dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:backgroundTint="@color/moradoClaro"
                 app:menu="@menu/bottom_navigation_menu" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="10dp"
-                android:src="@drawable/ic_plan"
-                android:tooltipText="@string/planes"
-                android:id="@+id/fab_menu_plan"
-                android:backgroundTint="@color/grisOscuro">
-
-            </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
 
         </LinearLayout>
