@@ -6,12 +6,12 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.Plan
@@ -83,7 +83,11 @@ class EditarGrupoActivity : AppCompatActivity() {
         }
 
         binding.buttonGuardar.setOnClickListener {
-            startActivity(Intent(baseContext, ChatActivity::class.java))
+            val nombreGrupo = binding.editTextNombreGrupo.text.toString()
+            val descripcionGrupo = binding.editTextDescGrupo.text.toString()
+            if (validateForm(nombreGrupo, descripcionGrupo)) {
+                actualizarDatosGrupo(nombreGrupo, descripcionGrupo)
+            }
         }
 
         binding.fotoSeleccionada1.setOnClickListener {
@@ -134,6 +138,19 @@ class EditarGrupoActivity : AppCompatActivity() {
 
         fabClicks()
     }
+
+    private fun validateForm(nombreGrupo: String, descripcionGrupo: String): Boolean {
+        var valid = false
+        if (nombreGrupo.isEmpty()) {
+            Toast.makeText(applicationContext, "¡El nombre del grupo es obligatorio!", Toast.LENGTH_SHORT).show()
+        } else if (descripcionGrupo.isEmpty()) {
+            Toast.makeText(applicationContext, "¡La descripción del grupo es obligatoria!", Toast.LENGTH_SHORT).show()
+        } else {
+            valid = true
+        }
+        return valid
+    }
+
 
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
@@ -309,5 +326,36 @@ class EditarGrupoActivity : AppCompatActivity() {
         val bitmap = BitmapFactory.decodeStream(imageStream)
         binding.fotoSeleccionada1.setImageBitmap(bitmap)
     }
-    
+
+    private fun actualizarDatosGrupo(nombreGrupo: String, descripcionGrupo: String) {
+        val gruposRef = FirebaseDatabase.getInstance().getReference("Groups")
+
+        // Actualizar los datos del grupo en la base de datos
+        gruposRef.child(idGrupo).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Verificar si el grupo existe en la base de datos
+                if (snapshot.exists()) {
+                    // Actualizar los datos del grupo
+                    snapshot.ref.child("titulo").setValue(nombreGrupo)
+                    snapshot.ref.child("descripcion").setValue(descripcionGrupo)
+                        .addOnSuccessListener {
+                            // Los datos del grupo se actualizaron correctamente
+                            Toast.makeText(applicationContext, "Datos del grupo actualizados", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            // Error al actualizar los datos del grupo
+                            Toast.makeText(applicationContext, "Error al actualizar los datos del grupo: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    // El grupo no existe en la base de datos
+                    Toast.makeText(applicationContext, "El grupo no existe en la base de datos", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Error al acceder a los datos del grupo
+                Toast.makeText(applicationContext, "Error al acceder a los datos del grupo: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 }
