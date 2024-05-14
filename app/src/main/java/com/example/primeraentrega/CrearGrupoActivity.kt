@@ -208,6 +208,8 @@ class CrearGrupoActivity : AppCompatActivity() {
         val imageStream = getContentResolver().openInputStream(uri!!)
         val bitmap = BitmapFactory.decodeStream(imageStream)
         binding.fotoSeleccionada.setImageBitmap(bitmap)
+
+
     }
 
     private fun createGroup() {
