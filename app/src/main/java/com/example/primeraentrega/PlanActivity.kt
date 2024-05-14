@@ -78,6 +78,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private lateinit var binding : ActivityPlanBinding
 
     //PARA POSICIONES
+    private var plan: Plan? = null
+
     private lateinit var mMap: GoogleMap
     private var latActual:Double= 4.0
     private var longActual:Double= 72.0
@@ -124,7 +126,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
     //SENSOR luz
     private lateinit var lightSensor : Sensor
-   // private lateinit var lightEventListener: SensorEventListener
+    // private lateinit var lightEventListener: SensorEventListener
     //Sensor Temperatura
     private  var temperatureSensor: Sensor? = null
     private lateinit var tempEventListener: SensorEventListener
@@ -390,7 +392,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         }
 
         // Registrar el SensorEventListener para el sensor de luz
-       // sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        // sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
         //startLocationUpdates()
     }
 
@@ -450,7 +452,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             planRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     // Aquí puedes obtener los datos del usuario desde dataSnapshot
-                    val plan = dataSnapshot.getValue(Plan::class.java)
+                    plan = dataSnapshot.getValue(Plan::class.java)
                     if (plan != null) {
                         // Haz lo que necesites con los datos del usuario
                         binding.tituloPlan.setText(plan?.titulo)
@@ -458,7 +460,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
                         //SI TIENE LO DE NUMERO DE PASOS
                         if (plan != null) {
-                            pasosAvtivado=plan.AmigoMasActivo
+                            pasosAvtivado= plan!!.AmigoMasActivo
                             if(!pasosAvtivado){
 
                                 // Hacer invisible el elemento binding.pasoscantText
@@ -468,27 +470,27 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
                         val localfile = File. createTempFile( "tempImage", "jpg")
 
-                        val storageRef = FirebaseStorage.getInstance().reference.child(plan.fotopin)
+                        val storageRef = FirebaseStorage.getInstance().reference.child(plan!!.fotopin)
 
 
                         storageRef.getFile(localfile).addOnSuccessListener {
-                            Log.i("fotoPin","ruta ${plan.fotopin}")
+                            Log.i("fotoPin","ruta ${plan!!.fotopin}")
                             var src = BitmapFactory.decodeFile(localfile.absolutePath)
                             src=createCircledImage(src)
                             fotoPlan = Bitmap.createScaledBitmap(src, 160, 160, true)
                             if (plan != null) {
-                                Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                                latEncuentro=plan.latitude
-                                longEncuentro=plan.longitude
+                                Log.d(ContentValues.TAG, "${plan!!.latitude} y tambien ${plan!!.longitude} ")
+                                latEncuentro= plan!!.latitude
+                                longEncuentro= plan!!.longitude
                                 ponerUbicacionPlan()
                             }
                             //clickLista()
                         }.addOnFailureListener{
                             Log.i("revisar", "no se pudo poner la foto del pin")
                             if (plan != null) {
-                                Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                                latEncuentro=plan.latitude
-                                longEncuentro=plan.longitude
+                                Log.d(ContentValues.TAG, "${plan!!.latitude} y tambien ${plan!!.longitude} ")
+                                latEncuentro= plan!!.latitude
+                                longEncuentro= plan!!.longitude
                                 ponerUbicacionPlan()
                             }
                         }
@@ -513,7 +515,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                         }
 
                         if (plan != null) {
-                            configurarmarkers(plan.integrantes)
+                            configurarmarkers(plan!!.integrantes)
                         }
 
                     } else {
@@ -829,12 +831,14 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             startActivity(intent)
         }
 
-        binding.botonCamara.setOnClickListener{
-            val intent=Intent(baseContext,GaleriaActivity::class.java)
-            intent.putExtra("idPlan",idPlan)
+        binding.botonCamara.setOnClickListener {
+            val intent = Intent(baseContext, GaleriaActivity::class.java)
+            intent.putExtra("idPlan", idPlan)
             intent.putExtra("idGrupo", idGrupo)
+            intent.putExtra("nombrePlan", plan?.titulo) // Agregar el nombre del plan como extra
             startActivity(intent)
         }
+
 
         val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
@@ -1394,35 +1398,35 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         //se va a escuchar el plan y se vera que se cambia
         //se evalua si se cambia algo de info del plan o tambien info de un usuario
         databaseReference.addChildEventListener(object : ChildEventListener {
-                override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+            override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                }
-                override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+            }
+            override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                    Log.i("snapshot PLAN"," pos: $dataSnapshot")
-                    if(dataSnapshot.key=="titulo")
-                    {
-                        binding.tituloPlan.text= dataSnapshot.getValue().toString()
-                    }
-                    else if(dataSnapshot.key=="latitude")
-                    {
-                        obtenerInfoCompletaPlan()
-                    }
-                    else if(dataSnapshot.key=="longitude")
-                    {
-                        obtenerInfoCompletaPlan()
-                    }
-                    //revisar cambio de posicion del plan
+                Log.i("snapshot PLAN"," pos: $dataSnapshot")
+                if(dataSnapshot.key=="titulo")
+                {
+                    binding.tituloPlan.text= dataSnapshot.getValue().toString()
+                }
+                else if(dataSnapshot.key=="latitude")
+                {
+                    obtenerInfoCompletaPlan()
+                }
+                else if(dataSnapshot.key=="longitude")
+                {
+                    obtenerInfoCompletaPlan()
+                }
+                //revisar cambio de posicion del plan
 
-                }
-                override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+            }
+            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
 
-                }
-                override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-                }
-                override fun onCancelled(databaseError: DatabaseError) {
-                }
-            })
+            }
+            override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+            }
+        })
     }
 
     private fun obtenerInfoCompletaPlan() {
@@ -1550,8 +1554,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
                 polyline= mMap.addPolyline(
                     PolylineOptions()
-                    .clickable(true)
-                    .addAll(listaLatLng))
+                        .clickable(true)
+                        .addAll(listaLatLng))
                 polyline!!.setWidth(POLYLINE_STROKE_WIDTH_PX.toFloat())
                 polyline!!.setColor(COLOR_BLACK_ARGB)
                 polyline!!.setJointType(JointType.ROUND)

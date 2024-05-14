@@ -17,9 +17,6 @@ import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Adapters.ContactsAdapter
 import com.example.primeraentrega.Adapters.UserAdapter
 import com.example.primeraentrega.Clases.ListUser
-import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
-import com.example.primeraentrega.Clases.Usuario
-import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
 import com.google.firebase.auth.FirebaseAuth

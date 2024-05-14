@@ -59,6 +59,12 @@ class GaleriaActivity : AppCompatActivity() {
         binding = ActivityGaleriaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Recuperar el nombre del plan del intent
+        val nombrePlan = intent.getStringExtra("nombrePlan")
+
+        // Establecer el nombre del plan en el TextView nombrePlan
+        binding.nombrePlan.text = nombrePlan
+
         idGrupo = intent.getStringExtra("idGrupo").toString()
 
         val file = File(getFilesDir(), "picFromCamera")
@@ -84,7 +90,6 @@ class GaleriaActivity : AppCompatActivity() {
         }
 
 
-        val usuario: Usuario = Usuario()
         /*
         binding.buttonTomarFoto.setOnClickListener {
             // Permiso de cámara concedido, lanzar la actividad de la cámara
