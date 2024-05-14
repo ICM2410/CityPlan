@@ -58,6 +58,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
@@ -69,6 +70,8 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.io.File
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallback {
 
@@ -114,6 +117,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private var running = false
     private var totalSteps = 0f
     private var previousTotalSteps = 0f
+
+
+    //Giroscopio
+    private var orientationSensor: Sensor? = null
 
     //SENSOR luz
     private lateinit var lightSensor : Sensor
@@ -312,6 +319,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         Log.e(TAG, "revisar $idPlan")
         Log.e("idGrupo", "revisar $idGrupo")
 
+        stepSensorEventListener = createStepSensorEventListener()
+
         auth=FirebaseAuth.getInstance()
         databaseReferencePlanes= FirebaseDatabase.getInstance().getReference("Planes")
         databaseReferenceGrupos= FirebaseDatabase.getInstance().getReference("Grupos")
@@ -344,14 +353,30 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         super.onResume()
 
         running = true
+        sensorManager.registerListener(
+            stepSensorEventListener,
+            stepSensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
         // Registrar el SensorEventListener para el sensor de pasos
-        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        orientationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+
+        //stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         if (stepSensor == null) {
             Toast.makeText(this, "No se detectó sensor de pasos", Toast.LENGTH_SHORT).show()
         } else {
             Log.i("Sensor", "Hay podómetro para pasos")
-            stepSensorEventListener = createStepSensorListener()
+            //stepSensorEventListener = createStepSensorListener()
             sensorManager.registerListener(stepSensorEventListener, stepSensor, SensorManager.SENSOR_DELAY_UI)
+        }
+
+        if (orientationSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de orientacion", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay orientacion")
+            //stepSensorEventListener = createStepSensorListener()
+            sensorManager.registerListener(orientationEventListener, orientationSensor, SensorManager.SENSOR_DELAY_NORMAL)
         }
 
         // Sensor temperatura
@@ -368,8 +393,50 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
        // sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
         //startLocationUpdates()
     }
+
+    private val rotationMatrix = FloatArray(9)
+    private val orientationValues = FloatArray(3)
+
+    private val orientationEventListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                SensorManager.getOrientation(rotationMatrix, orientationValues)
+
+                // El ángulo de orientación se encuentra en orientationValues[0] en radianes
+                // Convierte el ángulo de radianes a grados
+                val azimuthDegrees = Math.toDegrees(orientationValues[0].toDouble()).toFloat()
+
+                // Actualizar la orientación del mapa en Google Maps con el ángulo de azimuth en grados
+                updateMapOrientation(azimuthDegrees)
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+            // No necesitas implementar esto para este ejemplo
+        }
+    }
+
+    private fun updateMapOrientation(azimuth: Float) {
+        if (::mMap.isInitialized) {
+            // Girar el mapa en Google Maps utilizando el ángulo de azimuth
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(
+                CameraPosition.builder()
+                    .target(mMap.cameraPosition.target) // Mantener el mismo centro del mapa
+                    .zoom(mMap.cameraPosition.zoom) // Mantener el mismo nivel de zoom
+                    .bearing(azimuth) // Girar el mapa según el ángulo de azimuth
+                    .tilt(0f) // Mantener el mismo ángulo de inclinación
+                    .build()
+            ))
+        }
+    }
+
+
+
     override fun onPause() {
         super.onPause()
+        running = false
+        sensorManager.unregisterListener(stepSensorEventListener)
         stopLocationUpdates()
     }
 
@@ -609,7 +676,55 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         loadData()
         resetSteps()
     }
-    fun createStepSensorListener() : SensorEventListener {
+
+    private fun createStepSensorEventListener(): SensorEventListener {
+        return object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+                    countSteps(event)
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // No necesitas implementar esto necesariamente, a menos que quieras manejar cambios en la precisión del sensor.
+            }
+        }
+    }
+
+
+    private var lastAcceleration = FloatArray(3)
+    private var accelerationThreshold = 5.5f // Umbral de aceleración mínima para considerar un paso
+    private var stepCount = 0
+
+    private fun countSteps(event: SensorEvent) {
+        val currentAcceleration = event.values.clone()
+
+        if (isStep(currentAcceleration)) {
+            stepCount++
+            updateStepCount(stepCount)
+        }
+
+        lastAcceleration = currentAcceleration.clone()
+    }
+
+    private fun isStep(currentAcceleration: FloatArray): Boolean {
+        // Calcula la diferencia entre la aceleración actual y la aceleración anterior
+        val deltaAcceleration = sqrt(
+            (currentAcceleration[0] - lastAcceleration[0]).pow(2) +
+                    (currentAcceleration[1] - lastAcceleration[1]).pow(2) +
+                    (currentAcceleration[2] - lastAcceleration[2]).pow(2)
+        )
+
+        // Devuelve true si la diferencia supera el umbral de aceleración
+        return deltaAcceleration > accelerationThreshold
+    }
+
+    private fun updateStepCount(stepCount: Int) {
+        // Actualiza la vista o realiza cualquier otra acción necesaria con el nuevo recuento de pasos
+        binding.pasoscantText.text = "$stepCount"
+    }
+
+    /*fun createStepSensorListener() : SensorEventListener {
         return object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
                 if (running && event != null && event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
@@ -622,7 +737,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 // No necesitas hacer nada aquí para este caso
             }
         }
-    }
+    }*/
     /*fun createLightSensorListener() : SensorEventListener{
         val ret : SensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
@@ -676,12 +791,12 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
     }
     override fun onSensorChanged(event: SensorEvent?) {
-        if(running){
+        /*if(running){
             totalSteps = event!!.values[0]
             val currentSteps = totalSteps.toInt() - previousTotalSteps.toInt()
             binding.pasoscantText.text = ("$currentSteps")
 
-        }
+        }*/
     }
     fun resetSteps(){
         previousTotalSteps = totalSteps
