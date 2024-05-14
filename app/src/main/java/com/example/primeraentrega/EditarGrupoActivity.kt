@@ -4,11 +4,15 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.UsuarioAmigo
@@ -18,6 +22,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.io.File
 import java.util.Date
 
 class EditarGrupoActivity : AppCompatActivity() {
@@ -25,6 +30,21 @@ class EditarGrupoActivity : AppCompatActivity() {
     private lateinit var binding : ActivityEditarGrupoBinding
     private lateinit var idGrupo : String
     private var idPlan : String=""
+    lateinit var uriCamera : Uri
+
+    val getContentGallery = registerForActivityResult(
+        ActivityResultContracts.GetContent(),
+        ActivityResultCallback {
+            loadImage(it!!)
+        })
+
+    val getContentCamera = registerForActivityResult(
+        ActivityResultContracts.TakePicture(),ActivityResultCallback {
+            if(it){
+                loadImage(uriCamera)
+            }
+        })
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityEditarGrupoBinding.inflate(layoutInflater)
@@ -38,6 +58,19 @@ class EditarGrupoActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private fun inicializarBotones() {
+
+        val file = File(getFilesDir(), "picFromCamera");
+        uriCamera =  FileProvider.getUriForFile(baseContext, baseContext.packageName + ".fileprovider", file)
+
+        binding.botonGaleria1.setOnClickListener {
+            getContentGallery.launch("image/*")
+        }
+
+        binding.botonCamara1.setOnClickListener {
+            getContentCamera.launch(uriCamera)
+        }
+
+
         binding.buttonAgregarMiembros.setOnClickListener {
             var intent = Intent(baseContext, AgregarContactosActivity::class.java)
             intent.putExtra("pantalla", "editar")
@@ -53,7 +86,7 @@ class EditarGrupoActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, ChatActivity::class.java))
         }
 
-        binding.buttonSeleccionarFoto.setOnClickListener {
+        binding.fotoSeleccionada1.setOnClickListener {
             val intent = Intent(this@EditarGrupoActivity, SeleccionarFotoActivity::class.java)
             startActivityForResult(intent, SELECCIONAR_FOTO_REQUEST_CODE)
         }
@@ -266,9 +299,15 @@ class EditarGrupoActivity : AppCompatActivity() {
                 Glide.with(this)
                     .load(Uri.parse(imageUri))
                     .circleCrop() // Aplicar círculo de recorte
-                    .into(binding.buttonSeleccionarFoto)
+                    .into(binding.fotoSeleccionada1)
             }
         }
+    }
+
+    private fun loadImage(uri : Uri?) {
+        val imageStream = getContentResolver().openInputStream(uri!!)
+        val bitmap = BitmapFactory.decodeStream(imageStream)
+        binding.fotoSeleccionada1.setImageBitmap(bitmap)
     }
     
 }
