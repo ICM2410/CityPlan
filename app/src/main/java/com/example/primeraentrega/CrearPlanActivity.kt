@@ -293,9 +293,9 @@ class CrearPlanActivity : AppCompatActivity() {
                 //editar la informacion
                 guardarInformacionFirebase { documentId ->
                     //alarmId=generateUniqueCode(documentId)
-                    ponerAlarma(documentId)
                     if(flag==0)
                     {
+                        ponerAlarma(documentId)
                         enviarNotificaciones(documentId)
                         flag++
                     }
@@ -523,7 +523,7 @@ class CrearPlanActivity : AppCompatActivity() {
 
     private fun revisarActivo() {
         var existe=false
-        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        val ref = FirebaseDatabase.getInstance().getReference("Groups")
         ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -768,10 +768,10 @@ class CrearPlanActivity : AppCompatActivity() {
 
     private fun guardarInformacionFirebase(callback: (String) -> Unit) {
 
-        val userRef = database.getReference("Grupos")
+        val userRef = database.getReference("Groups")
         val integrantesMap = mutableMapOf<String,PosAmigo>()
         val childId = databaseReference.child("Planes").push().key.toString()
-        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo!!)
+        val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo!!)
         //val planId = grupoRef.child("planes").push().key
         userRef.child(idGrupo).child("integrantes").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {

@@ -13,13 +13,8 @@ import android.view.View
 import android.widget.Toast
 import com.example.primeraentrega.Adapters.UserAdapter
 import com.example.primeraentrega.Clases.ListUser
-<<<<<<< Updated upstream
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
-=======
-import com.example.primeraentrega.databinding.ActivityAgregarContactosBinding
-import com.example.primeraentrega.Clases.UsuarioAmigo
->>>>>>> Stashed changes
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot

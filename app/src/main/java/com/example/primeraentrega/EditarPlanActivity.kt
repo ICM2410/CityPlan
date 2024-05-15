@@ -454,7 +454,7 @@ class EditarPlanActivity : AppCompatActivity() {
 
     private fun revisarActivo() {
         var existe=false
-        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        val ref = FirebaseDatabase.getInstance().getReference("Groups")
         ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -848,7 +848,7 @@ class EditarPlanActivity : AppCompatActivity() {
                     //guardar plan en el grupo
                     //anadir todos los integrantes del grupo al plan
                     //guardarPlanAlGrupo(myPlan)
-                    val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+                    val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
                     val planesRef = grupoRef.child("planes").child(idPlan)
 
                     planesRef.setValue(myPlan)
@@ -916,7 +916,7 @@ class EditarPlanActivity : AppCompatActivity() {
     }
 
     private fun guardarPlanAlGrupo(myPlan: Plan) {
-        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+        val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
 
 // Obtener la referencia al nodo "planes" dentro del grupo
         val planesRef = grupoRef.child("planes")

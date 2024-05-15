@@ -325,7 +325,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
         auth=FirebaseAuth.getInstance()
         databaseReferencePlanes= FirebaseDatabase.getInstance().getReference("Planes")
-        databaseReferenceGrupos= FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReferenceGrupos= FirebaseDatabase.getInstance().getReference("Groups")
         databaseReferenceUsers= FirebaseDatabase.getInstance().getReference("Usuario")
         database = FirebaseDatabase.getInstance()
         mifoto= BitmapFactory.decodeResource(resources, miImagenResource)
@@ -1170,7 +1170,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
         //me anado al plan del grupo
 
-        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+        val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
         val planesRef = grupoRef.child("planes")
         val query = planesRef.orderByChild("id").equalTo(idPlan)
 

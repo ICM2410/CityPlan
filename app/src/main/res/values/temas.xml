@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="ciudades">
-        <item>colombia</item>
-        <item>cartagena</item>
-        <item>medellin</item>
-        <item>eiffel tower</item>
+        <item>Comida</item>
+        <item>Centros Comerciales</item>
+        <item>Restaurantes</item>
+        <item>Libros</item>
+        <item>Entretenimientos</item>
+        <item>Pasatiempos</item>
+        <item>Ropa</item>
+        <item>Arte</item>
     </string-array>
 </resources>

@@ -76,6 +76,8 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
     private var posActualGEO = GeoPoint(4.0, 72.0)
     private var latActual:Double= 4.0
     private var longActual:Double= 72.0
+    private var latMia:Double= 4.0
+    private var longMia:Double= 72.0
     private var isFabOpen=false
     private var rotation=false
 
@@ -193,6 +195,8 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
                 val last=result.lastLocation
                 if(last!=null)
                 {
+                        latMia=last.latitude
+                        longMia=last.longitude
                         if(firstTime)
                         {
                             firstTime=false
@@ -415,6 +419,8 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
             intent.putExtra("pantalla",pantalla)
             intent.putExtra("idPlan", idPlan)
             intent.putExtra("idGrupo", idGrupo)
+            intent.putExtra("longitud", longMia)
+            intent.putExtra("latitud", latMia)
             startActivity(intent)
         }
 

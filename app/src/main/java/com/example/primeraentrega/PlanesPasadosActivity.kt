@@ -53,7 +53,7 @@ class PlanesPasadosActivity : AppCompatActivity() {
 
     val planes: MutableList<PlanLista> = mutableListOf()
     private fun obtenerPlanes() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReference = FirebaseDatabase.getInstance().getReference("Groups")
         databaseReference.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -185,7 +185,7 @@ class PlanesPasadosActivity : AppCompatActivity() {
 
     private fun revisarActivo() {
         var existe=false
-        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        val ref = FirebaseDatabase.getInstance().getReference("Groups")
         ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
