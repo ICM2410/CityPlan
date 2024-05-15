@@ -197,6 +197,26 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
                 {
                         latMia=last.latitude
                         longMia=last.longitude
+                        if("recomendacion".equals(intent.getStringExtra("recomendacion").toString()))
+                        {
+                            Log.i("entre","entre desde recomendaciones")
+                            //poner la posicion
+                            firstTime=false
+                            longActual= intent.getDoubleExtra("longitud", 0.0)
+                            latActual= intent.getDoubleExtra("latitud", 0.0)
+                            var pos=LatLng(latActual,longActual)
+                            MarkerActual?.remove()
+                            MarkerActual=mMap.addMarker(
+                                MarkerOptions()
+                                    .position(pos)
+                                    .icon(imagenPin?.let { it1 -> BitmapDescriptorFactory.fromBitmap(it1) })
+                                    .title("Pos seleccionada"))
+                            //.icon(BitmapDescriptorFactory.fromBitmap(mifoto))
+                            val zoomLevel = 15.0f // Puedes ajustar este valor según sea necesario
+                            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(pos, zoomLevel)
+                            mMap.moveCamera(cameraUpdate)
+                        }
+
                         if(firstTime)
                         {
                             firstTime=false
@@ -236,12 +256,6 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
         Log.e("idGrupo", "revisar seleccionar Ubicacion $idGrupo")
         inicializarBotones()
 
-        //Sensores
-        //sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        //Sensor Luz
-        //lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
-        //lightEventListener = createLightSensorListener()
-
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -249,9 +263,9 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
         //poner ubicacion seleccionada en recomendaciones
         inicializarImagen()
 
-
         if("recomendacion".equals(intent.getStringExtra("recomendacion").toString()))
         {
+            Log.i("entre","entre desde recomendaciones")
             //poner la posicion
             firstTime=false
             longActual= intent.getDoubleExtra("longitud", 0.0)
@@ -268,7 +282,6 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(pos, zoomLevel)
             mMap.moveCamera(cameraUpdate)
         }
-
 
         configurarLocalizacion()
 

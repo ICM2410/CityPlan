@@ -8,7 +8,7 @@
     android:gravity="center">
 
     <RelativeLayout
-        android:layout_width="380dp"
+        android:layout_width="328dp"
         android:layout_height="94dp"
         android:layout_gravity="center"
         android:background="@drawable/puntas_blancas"
@@ -19,7 +19,7 @@
             android:layout_width="101dp"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="200dp"
+            android:layout_marginEnd="185dp"
             android:gravity="center_vertical"
             android:text="NOMBRE " />
 

@@ -92,7 +92,7 @@ class RecomendacionesActivity : AppCompatActivity() {
 
             var intent: Intent
             intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
-
+            Log.i("seleccion","${selectedLugar.getLatitude()},${selectedLugar.getLongitude()}")
             intent.putExtra("pantalla",pantalla)
             intent.putExtra("longitud",selectedLugar.getLongitude())
             intent.putExtra("latitud",selectedLugar.getLatitude())
@@ -127,9 +127,8 @@ class RecomendacionesActivity : AppCompatActivity() {
     private fun crearConsulta(seleccion: String) {
         val queue: RequestQueue = Volley.newRequestQueue(this)
         val token = "f2336d652f6644439f3fe49fd7fa1251"
-        val url="https://api.geoapify.com/v2/places?categories=$seleccion&filter=circle:$longMia,$latMia,6000&bias=proximity:$longMia,$latMia&lang=en&limit=10&apiKey=$token"
+        val url="https://api.geoapify.com/v2/places?categories=$seleccion&filter=circle:$longMia,$latMia,6000&bias=proximity:$longMia,$latMia&lang=en&limit=40&apiKey=$token"
         val imagen="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNiROUXTw6BUWAP9A08C-1vcvI_YNWF4KzYtzTRAb9LQ&s"
-
         // Solicitud GET de Volley.
         val jsonObjectRequest = object : JsonObjectRequest(
             Request.Method.GET, url, null,
@@ -138,29 +137,39 @@ class RecomendacionesActivity : AppCompatActivity() {
 
                 try {
                     establecimientos.clear()
+                    Log.i("resultado", "$response")
+
                     val features = response.getJSONArray("features")
                     for (i in 0 until features.length()) {
-                        Log.e("seleccion","sevisar entro")
                         // Acceder a "names" si existe.
                         val feature = features.getJSONObject(i)
                         val properties = feature.getJSONObject("properties")
 
-                        val name = properties.getString("name")
-                        val latitude = properties.getDouble("lat")
-                        val longitude = properties.getDouble("lon")
-                        val street = properties.getString("street")
+                        if(properties.has("name")
+                            && properties.has("street")
+                            && properties.has("lat")
+                            && properties.has("lon"))
+                        {
+                            var name = properties.getString("name")
+                            var latitude = properties.getDouble("lat")
+                            var longitude = properties.getDouble("lon")
+                            var street = properties.getString("street")
 
-                        // Hacer lo que necesites con los datos obtenidos.
-                        Log.i("resultado", "$name,  $latitude, $longitude, $street")
+                            var establecimiento=Establecimiento(name, imagen, latitude, longitude, street)
+                            // Hacer lo que necesites con los datos obtenidos.
+                            Log.i("resultado", "$name,  $latitude, $longitude, $street")
 
-                        establecimientos.add (Establecimiento(name, imagen, latitude, longitude, street))
+                            establecimientos.add (establecimiento)
+                        }
+
                     }
 
-                    Log.e("establecimientos","$establecimientos")
-                    //var adapter = AdapterEstablecimiento(applicationContext, establecimientos)
+                    Log.d("crearConsulta", "Tamaño de la lista 2 de establecimientos: ${establecimientos.size}")
+
+                    var adapter = AdapterEstablecimiento(applicationContext, establecimientos)
 
                     // Asignar el adaptador al ListView
-                    //binding.listView.adapter = adapter
+                    binding.listView.adapter = adapter
                     // Procesa el JSON según tus necesidades.
                     // Aquí puedes extraer y manejar los datos como desees.
                 } catch (e: JSONException) {
@@ -169,9 +178,7 @@ class RecomendacionesActivity : AppCompatActivity() {
             },
             Response.ErrorListener { error ->
                 // Manejo de errores de la solicitud.
-
                 Log.e("Error en la solicitud", "Error en la solicitud: " + error.message)
-                Log.e("seleccion","sevisar entro")
             }) {
         }
 
@@ -251,7 +258,7 @@ class RecomendacionesActivity : AppCompatActivity() {
 
     private fun revisarActivo() {
         var existe=false
-        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        val ref = FirebaseDatabase.getInstance().getReference("Groups")
         ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
