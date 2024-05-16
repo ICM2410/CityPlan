@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricPrompt
@@ -77,8 +78,13 @@ class PerfilConfActivity : AppCompatActivity() {
         }
 
         binding.guardarperfil.setOnClickListener {
-            guardarPerfil()
-        }
+                // Obtener la nueva contraseña del campo de entrada
+                val nuevaContraseña = binding.password.text.toString()
+                cambiarContraseña(nuevaContraseña)
+                guardarPerfil()
+            }
+
+
 
         val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
@@ -240,4 +246,20 @@ class PerfilConfActivity : AppCompatActivity() {
             // Manejar el caso de que no se haya seleccionado ninguna imagen
         }
     }
+
+    private fun cambiarContraseña(nuevaContraseña: String) {
+        val user = FirebaseAuth.getInstance().currentUser
+
+        user?.updatePassword(nuevaContraseña)
+            ?.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Contraseña actualizada exitosamente
+                    Toast.makeText(this, "Contraseña actualizada exitosamente", Toast.LENGTH_SHORT).show()
+                } else {
+                    // Error al actualizar la contraseña
+                    Toast.makeText(this, "Error al actualizar la contraseña: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
 }
