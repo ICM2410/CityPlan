@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityPerfilConfBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -51,6 +52,9 @@ class PerfilConfActivity : AppCompatActivity() {
         //val usuario = intent.getSerializableExtra("user") as? Usuario
         binding.bottomNavigation.selectedItemId = R.id.cuenta_bar
 
+        // Cargar la imagen del usuario desde Firebase Storage
+        cargarImagenUsuarioDesdeFirebaseStorage()
+
         // Inicializar Firebase
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
@@ -78,12 +82,12 @@ class PerfilConfActivity : AppCompatActivity() {
         }
 
         binding.guardarperfil.setOnClickListener {
-                // Obtener la nueva contraseña del campo de entrada
-                val nuevaContraseña = binding.password.text.toString()
-                cambiarContraseña(nuevaContraseña)
-                guardarPerfil()
-            }
-
+            // Obtener la nueva contraseña del campo de entrada
+            val nuevaContraseña = binding.password.text.toString()
+            cambiarContraseña(nuevaContraseña)
+            // Guardar el perfil, incluida la imagen si se selecciona una
+            guardarPerfil()
+        }
 
 
         val usuario: UsuarioAmigo = UsuarioAmigo()
@@ -130,71 +134,58 @@ class PerfilConfActivity : AppCompatActivity() {
 
 
     private fun guardarImagenEnFirebaseStorage(uri: Uri) {
-        // Referencia al almacenamiento de Firebase
-        val storageRef = FirebaseStorage.getInstance().reference
-        val imageRef = storageRef.child("images/${userId}/profile.jpg")
+        // Obtener el UID del usuario actual
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-        // Subir la imagen al Firebase Storage
-        val uploadTask = imageRef.putFile(uri)
+        // Verificar que el UID del usuario no sea nulo
+        if (userId != null) {
+            // Referencia al almacenamiento de Firebase
+            val storageRef = FirebaseStorage.getInstance().reference
+            // Nombre de la imagen en Firebase Storage (sin la extensión)
+            val imageName = "usuarios/$userId"
 
-        // Manejar el éxito o el fracaso de la carga de la imagen
-        uploadTask.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                // La imagen se ha subido correctamente, obtener la URL de la imagen
-                imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                    // Guardar la URL de la imagen en la base de datos
-                    guardarUrlImagenEnFirebaseDatabase(downloadUri.toString())
+            // Subir la imagen al Firebase Storage
+            val uploadTask = storageRef.child(imageName).putFile(uri)
+
+            // Manejar el éxito o el fracaso de la carga de la imagen
+            uploadTask.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // La imagen se ha subido correctamente
+                    // Guardar la URL de la imagen en Firebase Realtime Database
+                    val imageUrl = imageName // La URL de la imagen es la misma que el nombre de la imagen
+                    guardarUrlImagenEnFirebaseDatabase(imageUrl)
+                } else {
+                    // La carga de la imagen falló
+                    // Manejar el error si es necesario
+                    Toast.makeText(this, "Error al cargar la imagen: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                // La carga de la imagen falló
-                // Manejar el error si es necesario
             }
+        } else {
+            // El UID del usuario es nulo
+            // Manejar el caso si el usuario no ha iniciado sesión
+            Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_SHORT).show()
         }
     }
 
+
     private fun guardarUrlImagenEnFirebaseDatabase(imageUrl: String) {
         // Referencia al nodo del usuario en la base de datos
-        val usuarioRef = database.getReference("usuarios").child(userId)
+        val usuarioRef = database.getReference("Usuario").child(userId)
 
         // Guardar la URL de la imagen en la base de datos
-        usuarioRef.child("imageUrl").setValue(imageUrl)
+        usuarioRef.child("imagen").setValue(imageUrl)
             .addOnSuccessListener {
                 // La URL de la imagen se ha guardado correctamente en la base de datos
                 // Realizar cualquier otra acción necesaria, como mostrar un mensaje de éxito
+                Toast.makeText(this, "Imagen guardada con éxito", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
                 // La URL de la imagen no se pudo guardar en la base de datos
                 // Manejar el error si es necesario
+                Toast.makeText(this, "Error al guardar la URL de la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
-    private fun solicitarHuella(usuario: UsuarioAmigo?) {
-        val executor = ContextCompat.getMainExecutor(this)
-        val biometricPrompt = BiometricPrompt(this, executor,
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    super.onAuthenticationSucceeded(result)
-                    // Aquí puedes generar un ID único basado en los datos biométricos
-                    val biometricData = result.cryptoObject?.cipher?.iv ?: ByteArray(0)
-                    val biometricId = generateBiometricId(biometricData)
-
-                    // Asignar el ID de la huella dactilar al usuario
-                    usuario?.huella = biometricId
-
-
-                    // Guardar el usuario actualizado en Firebase
-                    guardarUsuarioEnFirebase(usuario)
-                }
-            })
-
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Autenticación de huella dactilar")
-            .setSubtitle("Toque el sensor de huella dactilar")
-            .setNegativeButtonText("Cancelar")
-            .build()
-
-        biometricPrompt.authenticate(promptInfo)
-    }
 
     // Función para generar un ID único basado en los datos biométricos
     private fun generateBiometricId(biometricData: ByteArray): String {
@@ -215,21 +206,18 @@ class PerfilConfActivity : AppCompatActivity() {
         return hexString.toString()
     }
 
-    private fun guardarUsuarioEnFirebase(usuario: UsuarioAmigo?) {
-
-    }
 
     private fun loadImage(uri: Uri?) {
         val imageStream = contentResolver.openInputStream(uri!!)
         val bitmap = BitmapFactory.decodeStream(imageStream)
         binding.imageViewImagen.setImageBitmap(bitmap)
 
+        // Set the tag of the image view with the URI of the selected image
+        binding.imageViewImagen.tag = uri
     }
 
-    private fun guardarPerfil() {
-        // Obtener la URI de la imagen seleccionada
-        val uriImagen = obtenerUriImagenSeleccionada()
 
+    private fun guardarPerfil() {
         // Obtener el nuevo nombre de usuario y descripción del usuario
         val nuevoNombreUsuario = binding.user.text.toString()
         val nuevaDescripcionUsuario = binding.telephone.text.toString()
@@ -239,13 +227,18 @@ class PerfilConfActivity : AppCompatActivity() {
         usuarioRef.child("username").setValue(nuevoNombreUsuario)
         usuarioRef.child("telefono").setValue(nuevaDescripcionUsuario)
 
+        // Obtener la URI de la imagen seleccionada
+        val uriImagen = binding.imageViewImagen.tag as? Uri
+
         // Guardar la imagen en Firebase Storage y la URL en Firebase Realtime Database
         if (uriImagen != null) {
             guardarImagenEnFirebaseStorage(uriImagen)
         } else {
             // Manejar el caso de que no se haya seleccionado ninguna imagen
+            Toast.makeText(this, "Por favor, selecciona una imagen", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     private fun cambiarContraseña(nuevaContraseña: String) {
         val user = FirebaseAuth.getInstance().currentUser
@@ -261,5 +254,26 @@ class PerfilConfActivity : AppCompatActivity() {
                 }
             }
     }
+
+    private fun cargarImagenUsuarioDesdeFirebaseStorage() {
+        // Referencia al almacenamiento de Firebase
+        val storageRef = FirebaseStorage.getInstance().reference
+        val imageRef = storageRef.child("Usuario/${userId}/imagen")
+
+        // Descargar la URL de la imagen del Firebase Storage
+        imageRef.downloadUrl
+            .addOnSuccessListener { downloadUri ->
+                // Utilizar una biblioteca de carga de imágenes para cargar la imagen desde la URL
+                Glide.with(this)
+                    .load(downloadUri)
+                    .into(binding.imageViewImagen)
+            }
+            .addOnFailureListener { e ->
+                // Manejar el caso de error si no se puede obtener la URL de la imagen
+                Toast.makeText(this, "Error al cargar la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+
 
 }
