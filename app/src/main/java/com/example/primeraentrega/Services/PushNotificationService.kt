@@ -38,6 +38,6 @@ class PushNotificationService: FirebaseMessagingService() {
         super.onMessageReceived(message)
 
         //respond to received messages
-
+        Log.i("milagro", "no se que es esto ${message.notification.toString()}")
     }
 }

@@ -274,34 +274,37 @@ class CrearGrupoActivity : AppCompatActivity() {
                     ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val userData = snapshot.getValue(UsuarioAmigo::class.java)
-                        //enviar notificacion
-                        val isBroadcast=false
-                        var state = GroupState(
-                            true,
-                            key,
-                            "El grupo ${binding.editTextNombreGrupo.text.toString()} se ha creado",
-                            groupId)
-                        val message= SendMessageDTO(
-                            to=if(isBroadcast) "1" else state.remoteToken,
-                            notification = NotificationBody(
-                                title = "Nuevo Grupo!",
-                                body = state.messageText,
-                                id = "0",
-                                alarmId = 0,
-                                idGrupo = state.idGrupo
+                        if(userData!=null)
+                        {
+                            //enviar notificacion
+                            val isBroadcast=false
+                            var state = GroupState(
+                                true,
+                                userData.token,
+                                "El grupo ${binding.editTextNombreGrupo.text.toString()} se ha creado",
+                                groupId)
+                            val message= SendMessageDTO(
+                                to=if(isBroadcast) "1" else state.remoteToken,
+                                notification = NotificationBody(
+                                    title = "Nuevo Grupo!",
+                                    body = state.messageText,
+                                    id = "0",
+                                    alarmId = 0,
+                                    idGrupo = state.idGrupo
+                                )
                             )
-                        )
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                if (isBroadcast){
-                                    api.broadcast(message)
-                                } else {
-                                    api.sendMessage(message)
+                            CoroutineScope(Dispatchers.IO).launch {
+                                try {
+                                    if (isBroadcast){
+                                        api.broadcast(message)
+                                    } else {
+                                        api.sendMessage(message)
+                                    }
+                                } catch (e: HttpException) {
+                                    e.printStackTrace()
+                                } catch (e: IOException) {
+                                    e.printStackTrace()
                                 }
-                            } catch (e: HttpException) {
-                                e.printStackTrace()
-                            } catch (e: IOException) {
-                                e.printStackTrace()
                             }
                         }
                     }

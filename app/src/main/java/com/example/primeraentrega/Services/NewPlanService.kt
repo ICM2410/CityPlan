@@ -50,7 +50,7 @@ class NewPlanService: Service() {
 
     override fun onCreate() {
         super.onCreate()
-        databaseReference = FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReference = FirebaseDatabase.getInstance().getReference("Groups")
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
         scheduler=AndroidAlarmScheduler(this)
@@ -253,7 +253,7 @@ class NewPlanService: Service() {
     }
 
     private fun start() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReference = FirebaseDatabase.getInstance().getReference("Groups")
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
         subscribirseACambiosDelUsuario()

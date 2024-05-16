@@ -50,11 +50,11 @@ class ChatActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private lateinit var groupID : String
-    private lateinit var databaseReference: DatabaseReference
+    private lateinit var groupMessagesRef: DatabaseReference
     private lateinit var database: FirebaseDatabase
     private lateinit var auth: FirebaseAuth
     private var idPlan : String=""
-  
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityChatBinding.inflate(layoutInflater)
@@ -66,6 +66,7 @@ class ChatActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance()
 
         initializeGroup(groupID)
+        groupMessagesRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupID).child("mensajes")
         binding.botonEnviar.setOnClickListener{
             sendMessage()
             Log.e("ENVIADO", "El mensaje fue enviado")
@@ -399,8 +400,6 @@ class ChatActivity : AppCompatActivity() {
     private fun initializeMessageListener(groupId: String) {
         mensajesGrupo = mutableListOf()
 
-        val groupMessagesRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupId).child("mensajes")
-
         groupMessagesRef.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val mensaje = snapshot.getValue(Mensaje::class.java)
@@ -426,10 +425,17 @@ class ChatActivity : AppCompatActivity() {
                                 )
 
                                 // Add the ListMessage object to the list
-                                mensajesGrupo.add(listMessage)
+                                if(!mensajesGrupo.any { it.uid == snapshot.key }){
+                                    mensajesGrupo.add(listMessage)
+                                }
+
+                                // Sort the mensajesGrupo list based on createdAt timestamp
+                                mensajesGrupo.sortBy { it.createdAt }
+
                                 // Update the adapter
                                 val adapter = ChatAdapter(applicationContext, mensajesGrupo, FirebaseAuth.getInstance().currentUser!!.uid)
                                 binding.chat.adapter = adapter
+
 
                             }.addOnFailureListener{
                                 Log.e("Error", "User could not be found")
@@ -460,7 +466,6 @@ class ChatActivity : AppCompatActivity() {
             }
         })
     }
-
     fun getUser(uid: String, callback: (UsuarioAmigo?) -> Unit) {
         val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().getReference("Usuario").child(uid)
 
@@ -475,8 +480,5 @@ class ChatActivity : AppCompatActivity() {
             }
         }
     }
-
-
-
 
 }

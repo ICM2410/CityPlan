@@ -40,6 +40,8 @@ import android.widget.TimePicker
 import android.widget.Toast
 import com.example.primeraentrega.Alarms.AlarmItem
 import com.example.primeraentrega.Alarms.AndroidAlarmScheduler
+import com.example.primeraentrega.Clases.Estadistica
+import com.example.primeraentrega.Clases.Mensaje
 import com.example.primeraentrega.Clases.PlanJson
 import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.Clases.UsuarioAmigo
@@ -416,7 +418,7 @@ class CrearPlanActivity : AppCompatActivity() {
 
     private fun ponerAlarma(documentId: String) {
 
-        /*alarmItem=AlarmItem(
+        alarmItem=AlarmItem(
             textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
             //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
             "El plan ${binding.nombrePlan.text.toString()} ha iniciado",
@@ -426,7 +428,7 @@ class CrearPlanActivity : AppCompatActivity() {
             idGrupo
         )
 
-        alarmItem?.let (scheduler::schedule)*/
+        alarmItem?.let (scheduler::schedule)
     }
 
     fun textoAFechaAlarma(fechaTexto: Button, horaTexto: Button): LocalDateTime {
@@ -649,8 +651,8 @@ class CrearPlanActivity : AppCompatActivity() {
         val month = calendar.get(Calendar.MONTH)
         val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
 
-        binding.fechaInicio.setText("$month/$dayOfMonth/$year")
-        binding.editTextText66.setText("$month/$dayOfMonth/$year")
+        binding.fechaInicio.setText("${month+1}/$dayOfMonth/$year")
+        binding.editTextText66.setText("${month+1}/$dayOfMonth/$year")
         binding.horaInicio.setText("1:00")
         binding.horaFin.setText("1:00")
 
@@ -772,6 +774,7 @@ class CrearPlanActivity : AppCompatActivity() {
         val integrantesMap = mutableMapOf<String,PosAmigo>()
         val childId = databaseReference.child("Planes").push().key.toString()
         val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo!!)
+        var estadistica= Estadistica()
         //val planId = grupoRef.child("planes").push().key
         userRef.child(idGrupo).child("integrantes").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -779,7 +782,7 @@ class CrearPlanActivity : AppCompatActivity() {
                     // Obtiene los datos de cada usuario
                     val userId = userSnapshot.key // El ID del usuario
                     val userData = userSnapshot.getValue().toString() // Los datos del usuario convertidos a objeto Usuario
-
+                    var estadistica= Estadistica()
                     // Aquí puedes realizar cualquier operación con los datos del usuario
                     println("ID de usuario: $userId")
                     println("Datos de usuario: $userData")
@@ -793,7 +796,14 @@ class CrearPlanActivity : AppCompatActivity() {
                                 val usuario=dataSnapshot.getValue(UsuarioAmigo::class.java)
 
                                 val posUsuario = userData?.let {
-                                    usuario?.let { it1 -> PosAmigo(it1.latitud, usuario.longitud, usuario.uid, usuario.imagen, usuario.username) }
+                                    usuario?.let { it1 ->
+                                        PosAmigo(it1.latitud, usuario.longitud, usuario.uid, usuario.imagen, usuario.username)
+                                    }
+                                }
+                                userData?.let {
+                                    usuario?.let { it1 ->
+                                        estadistica= Estadistica(it,0,usuario.username)
+                                    }
                                 }
 
                                 // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
@@ -820,31 +830,45 @@ class CrearPlanActivity : AppCompatActivity() {
 
                                     idAlarma=myPlan.hashCode()
                                     myPlan.idAlarma=idAlarma
-                                    Log.i("childId crear","$childId")
+
+
                                     if (childId != null) {
-                                        databaseReference.child(childId).setValue(myPlan).addOnCompleteListener { task ->
-                                            if (task.isSuccessful) {
-                                                val drawableplan = binding.imagenPlan.drawable
-                                                uploadFoto(drawableplan, direccionplan)
+                                        val estadisticaID = database.getReference("Estadisticas").child(childId)
 
-                                                val drawablepin = binding.pinPlanImg.drawable
-                                                uploadFoto(drawablepin, direccionpin)
+                                        if (usuario != null) {
+                                            usuario.uid?.let { it1 ->
+                                                estadisticaID.child(it1).setValue(estadistica).addOnCompleteListener { task ->
+                                                    if (task.isSuccessful) {
+                                                        databaseReference.child(childId).setValue(myPlan).addOnCompleteListener { task ->
+                                                            if (task.isSuccessful) {
+                                                                val drawableplan = binding.imagenPlan.drawable
+                                                                uploadFoto(drawableplan, direccionplan)
 
-                                                // Guardar el nuevo plan en el mapa de planes
-                                                grupoRef.child("planes").child(childId).setValue(myPlan)
-                                                    .addOnCompleteListener { task ->
-                                                        if (task.isSuccessful) {
-                                                            // El plan se guardó correctamente
-                                                            callback(childId)
-                                                        } else {
-                                                            // Hubo un error al guardar el plan
-                                                            Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                                                                val drawablepin = binding.pinPlanImg.drawable
+                                                                uploadFoto(drawablepin, direccionpin)
+
+                                                                // Guardar el nuevo plan en el mapa de planes
+                                                                grupoRef.child("planes").child(childId).setValue(myPlan)
+                                                                    .addOnCompleteListener { task ->
+                                                                        if (task.isSuccessful) {
+                                                                            // El plan se guardó correctamente
+                                                                            callback(childId)
+                                                                        } else {
+                                                                            // Hubo un error al guardar el plan
+                                                                            Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                                                                        }
+                                                                    }
+
+
+                                                            } else {
+                                                                Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                                                            }
                                                         }
+
+                                                    } else {
+                                                        Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
                                                     }
-
-
-                                            } else {
-                                                Toast.makeText(applicationContext, "Fallo en guardar la información del plan", Toast.LENGTH_LONG).show()
+                                                }
                                             }
                                         }
                                     }

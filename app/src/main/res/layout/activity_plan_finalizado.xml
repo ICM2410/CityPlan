@@ -46,8 +46,9 @@
             tools:layout_editor_absoluteY="60dp" />
 
         <ListView
+            android:id="@+id/listaEst"
             android:layout_width="match_parent"
-            android:layout_height="416dp"
+            android:layout_height="494dp"
             android:layout_margin="20dp"
             tools:layout_editor_absoluteX="0dp"
             tools:layout_editor_absoluteY="111dp" />

@@ -7,7 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import com.example.primeraentrega.Adapters.AdapterEstadistica
+import com.example.primeraentrega.Adapters.Adapterplan
+import com.example.primeraentrega.Clases.Estadistica
 import com.example.primeraentrega.Clases.Plan
+import com.example.primeraentrega.Clases.PlanLista
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityPlanFinalizadoBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -30,7 +34,44 @@ class PlanFinalizadoActivity : AppCompatActivity() {
         binding = ActivityPlanFinalizadoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         idGrupo=intent.getStringExtra("idGrupo").toString()
+        idPlan=intent.getStringExtra("idPlan").toString()
         inicializarBotones()
+        obtenerEstadisticas()
+    }
+
+    val estadisticas: MutableList<Estadistica> = mutableListOf()
+    private fun obtenerEstadisticas() {
+        val estadisticaRef= FirebaseDatabase.getInstance().getReference("Estadisticas")
+            .child(idPlan)
+
+        estadisticaRef.addListenerForSingleValueEvent(object :
+                ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    for (userSnapshot in dataSnapshot.children) {
+                        // Obtiene los datos de cada usuario
+                        val estId = userSnapshot.key // El ID del usuario
+                        val estData = userSnapshot.getValue(Estadistica::class.java) // Los datos del usuario convertidos a objeto Usuario
+
+                        // Aquí puedes realizar cualquier operación con los datos del usuario
+                        println("ID de est: $estId")
+                        println("Datos de est: $estData")
+
+                        // Crea un objeto PosAmigo con la información del usuario
+
+                        if (estData != null) {
+                            estadisticas.add(estData)
+                        }
+
+                    }
+                    //poner los planes e la list view
+                    var adapter = AdapterEstadistica(applicationContext,estadisticas);
+                    binding.listaEst.adapter = adapter
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Maneja el error en caso de que ocurra
+                    println("Error al obtener los datos de planes: ${databaseError.message}")
+                }
+            })
     }
 
     private fun inicializarBotones() {
