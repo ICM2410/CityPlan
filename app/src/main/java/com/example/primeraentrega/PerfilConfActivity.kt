@@ -1,10 +1,12 @@
 package com.example.primeraentrega
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,7 +17,10 @@ import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityPerfilConfBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
 import java.security.MessageDigest
@@ -48,18 +53,39 @@ class PerfilConfActivity : AppCompatActivity() {
 
         // Obtener el userId del Intent
         userId = intent.getStringExtra("userId").toString()
-
-        //val usuario = intent.getSerializableExtra("user") as? Usuario
-        binding.bottomNavigation.selectedItemId = R.id.cuenta_bar
-
-        // Cargar la imagen del usuario desde Firebase Storage
-        cargarImagenUsuarioDesdeFirebaseStorage()
-
-        // Inicializar Firebase
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
+        //val usuario = intent.getSerializableExtra("user") as? Usuario
+        binding.bottomNavigation.selectedItemId = R.id.cuenta_bar
+        // Cargar la imagen del usuario desde Firebase Storage
+        cargarImagenUsuarioDesdeFirebaseStorage()
+        //cargarInfoUsuario()
+        // Inicializar Firebase
+
         inicializarBotones()
+    }
+
+    private fun cargarInfoUsuario() {
+        auth.currentUser?.let { database.getReference("Usuario").child(it.uid) }
+            ?.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    // Crea un objeto PosAmigo con la información del usuario
+                    val usuario = dataSnapshot.getValue(UsuarioAmigo::class.java)
+
+                    if (usuario != null) {
+                       binding.user.setText(usuario.username)
+                        binding.user.setText(usuario.telefono.toString())
+                    }
+
+
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Maneja el error en caso de que ocurra
+                    println("Error al obtener los datos del usuario: ${databaseError.message}")
+                }
+            })
     }
 
     private val SELECCIONAR_FOTO_REQUEST_CODE = 1
@@ -142,7 +168,7 @@ class PerfilConfActivity : AppCompatActivity() {
             // Referencia al almacenamiento de Firebase
             val storageRef = FirebaseStorage.getInstance().reference
             // Nombre de la imagen en Firebase Storage (sin la extensión)
-            val imageName = "usuarios/$userId"
+            val imageName = "usuarios/$userId.jpg"
 
             // Subir la imagen al Firebase Storage
             val uploadTask = storageRef.child(imageName).putFile(uri)
@@ -223,10 +249,11 @@ class PerfilConfActivity : AppCompatActivity() {
         val nuevaDescripcionUsuario = binding.telephone.text.toString()
 
         // Actualizar el nombre de usuario y la descripción del usuario en Firebase Realtime Database
-        val usuarioRef = database.getReference("Usuario").child(userId)
-        usuarioRef.child("username").setValue(nuevoNombreUsuario)
-        usuarioRef.child("telefono").setValue(nuevaDescripcionUsuario)
-
+        val usuarioRef = auth.currentUser?.uid?.let { database.getReference("Usuario").child(it) }
+        if (usuarioRef != null) {
+            usuarioRef.child("username").setValue(nuevoNombreUsuario)
+            usuarioRef.child("telefono").setValue(nuevaDescripcionUsuario)
+        }
         // Obtener la URI de la imagen seleccionada
         val uriImagen = binding.imageViewImagen.tag as? Uri
 
@@ -258,7 +285,7 @@ class PerfilConfActivity : AppCompatActivity() {
     private fun cargarImagenUsuarioDesdeFirebaseStorage() {
         // Referencia al almacenamiento de Firebase
         val storageRef = FirebaseStorage.getInstance().reference
-        val imageRef = storageRef.child("Usuario/${userId}/imagen")
+        val imageRef = storageRef.child("usuarios/${auth.currentUser?.uid}.jpg")
 
         // Descargar la URL de la imagen del Firebase Storage
         imageRef.downloadUrl
