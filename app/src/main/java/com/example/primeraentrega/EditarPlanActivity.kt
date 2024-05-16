@@ -61,6 +61,8 @@ import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -522,15 +524,46 @@ class EditarPlanActivity : AppCompatActivity() {
     }
 
     private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
-        val fechaActual = Date()
+        val fechaActual = LocalDateTime.now()
+
+        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        // Establece la zona horaria a UTC si es necesario
+        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
+        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
+
+        val fechaHoraAlarmaInicio =textoAFechaAlarma(
+            formatoFecha.format(dateInicio).toString(),
+            formatoHora.format(dateInicio).toString()
+        )
+
+        val fechaHoraAlarmaFinal =textoAFechaAlarma(
+            formatoFecha.format(dateFinal).toString(),
+            formatoHora.format(dateFinal).toString()
+        )
 
         return when {
-            fechaActual.before(dateInicio) -> "Activo"
-            fechaActual.after(dateFinal) -> "Cerrado"
-            else -> "Abierto"
+            fechaActual<fechaHoraAlarmaInicio -> "Activo"
+            fechaActual>fechaHoraAlarmaFinal -> "Cerrado"
+            fechaActual>fechaHoraAlarmaInicio && fechaActual<fechaHoraAlarmaFinal-> "Abierto"
+            else ->"Abierto"
         }
     }
 
+    fun textoAFechaAlarma(fechaTexto: String, horaTexto: String): LocalDateTime {
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")
+
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val fechaHora = LocalDateTime.parse("${fechaTexto} ${horaTexto}", formatter)
+        Log.i("tiempo","es: $fechaHora")
+        // Calcular la diferencia en segundos entre la hora actual y la fechaHora propuesta
+        val diferenciaSegundos = LocalDateTime.now().until(fechaHora, java.time.temporal.ChronoUnit.SECONDS)
+        Log.i("tiempo","es: diferencias local ${LocalDateTime.now()} con  inicio $diferenciaSegundos")
+        // Ajustar la hora actual sumando la diferencia en segundos
+        return LocalDateTime.now().plusSeconds(diferenciaSegundos)
+    }
 
     private fun initShowout (v: View){
         v.apply {

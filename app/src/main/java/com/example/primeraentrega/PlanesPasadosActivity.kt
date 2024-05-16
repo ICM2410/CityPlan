@@ -289,6 +289,7 @@ class PlanesPasadosActivity : AppCompatActivity() {
         })
     }
 
+
     private fun initShowout (v: View){
         v.apply {
             visibility = View. GONE
