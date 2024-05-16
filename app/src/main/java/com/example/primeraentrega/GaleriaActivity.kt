@@ -97,13 +97,6 @@ class GaleriaActivity : AppCompatActivity() {
             getContentGallery.launch("image/*")
         }
 
-
-        /*
-        binding.buttonTomarFoto.setOnClickListener {
-            // Permiso de cámara concedido, lanzar la actividad de la cámara
-            getContentCamera.launch(uriCamera)
-        }
-        */
         val usuario: UsuarioAmigo = UsuarioAmigo()
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
