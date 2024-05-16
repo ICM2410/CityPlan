@@ -61,9 +61,6 @@ class PerfilConfActivity : AppCompatActivity() {
 
         inicializarBotones()
     }
-
-    private val SELECCIONAR_FOTO_REQUEST_CODE = 1
-
     private fun inicializarBotones() {
 
         val file = File(getFilesDir(), "picFromCamera");
@@ -186,27 +183,6 @@ class PerfilConfActivity : AppCompatActivity() {
             }
     }
 
-
-    // Función para generar un ID único basado en los datos biométricos
-    private fun generateBiometricId(biometricData: ByteArray): String {
-        // Crear una instancia del algoritmo de hash SHA-256
-        val digest = MessageDigest.getInstance("SHA-256")
-
-        // Calcular el hash de los datos biométricos
-        val hashBytes = digest.digest(biometricData)
-
-        // Convertir el hash en una cadena hexadecimal
-        val hexString = StringBuilder()
-        for (byte in hashBytes) {
-            // Convertir cada byte a su representación hexadecimal y agregarlo a la cadena
-            hexString.append(String.format("%02x", byte))
-        }
-
-        // Devolver el ID único generado
-        return hexString.toString()
-    }
-
-
     private fun loadImage(uri: Uri?) {
         val imageStream = contentResolver.openInputStream(uri!!)
         val bitmap = BitmapFactory.decodeStream(imageStream)
@@ -226,23 +202,33 @@ class PerfilConfActivity : AppCompatActivity() {
 
         // Obtener el nuevo nombre de usuario y descripción del usuario
         val nuevoNombreUsuario = binding.user.text.toString()
-        val nuevaDescripcionUsuario = binding.telephone.text.toString().toInt()
+        val nuevaDescripcionUsuario = binding.telephone.text.toString().toIntOrNull()
 
-        // Actualizar el nombre de usuario y la descripción del usuario en Firebase Realtime Database
-        val usuarioRef = database.getReference("Usuario").child(userId)
-        usuarioRef.child("username").setValue(nuevoNombreUsuario)
-        usuarioRef.child("telefono").setValue(nuevaDescripcionUsuario)
+        if(nuevaDescripcionUsuario!=null)
+        {
+            // Actualizar el nombre de usuario y la descripción del usuario en Firebase Realtime Database
+            val usuarioRef = database.getReference("Usuario").child(userId)
+            usuarioRef.child("username").setValue(nuevoNombreUsuario)
+            usuarioRef.child("telefono").setValue(nuevaDescripcionUsuario)
 
-        // Obtener la URI de la imagen seleccionada
-        val uriImagen = binding.imageViewImagen.tag as? Uri
+            // Obtener la URI de la imagen seleccionada
+            val uriImagen = binding.imageViewImagen.tag as? Uri
 
-        // Guardar la imagen en Firebase Storage y la URL en Firebase Realtime Database
-        if (uriImagen != null) {
-            guardarImagenEnFirebaseStorage(uriImagen)
-        } else {
-            // Manejar el caso de que no se haya seleccionado ninguna imagen
-            Toast.makeText(this, "Por favor, selecciona una imagen", Toast.LENGTH_SHORT).show()
+            // Guardar la imagen en Firebase Storage y la URL en Firebase Realtime Database
+            if (uriImagen != null) {
+                guardarImagenEnFirebaseStorage(uriImagen)
+            } else {
+                // Manejar el caso de que no se haya seleccionado ninguna imagen
+                Toast.makeText(this, "Por favor, selecciona una imagen", Toast.LENGTH_SHORT).show()
+            }
         }
+        else
+        {
+            Toast.makeText(baseContext, "El telefono debe contener numeros", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
     }
 
 
