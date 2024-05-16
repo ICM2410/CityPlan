@@ -13,6 +13,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.primeraentrega.Clases.Grupo
 import com.bumptech.glide.Glide
@@ -131,11 +133,31 @@ class CrearGrupoActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
+                    val executor = ContextCompat.getMainExecutor(this)
+                    val biometricPrompt = BiometricPrompt(this, executor,
+                        object : BiometricPrompt.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                                super.onAuthenticationSucceeded(result)
+                                // Aquí puedes realizar alguna acción después de la autenticación exitosa
+                                // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
+                                var intent = Intent(baseContext, PerfilConfActivity::class.java)
+                                intent.putExtra("user", usuario)
+                                startActivity(intent)
+                                //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
+                                //startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                                true
+                            }
+                        })
+
+                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Autenticación de huella dactilar")
+                        .setSubtitle("Toque el sensor de huella dactilar")
+                        .setNegativeButtonText("Cancelar")
+                        .build()
+
+                    biometricPrompt.authenticate(promptInfo)
                     // Respond to navigation item 2 click
-                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                    intent.putExtra("user", usuario)
-                    startActivity(intent)
-                    true
+                    false
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
@@ -208,6 +230,8 @@ class CrearGrupoActivity : AppCompatActivity() {
         val imageStream = getContentResolver().openInputStream(uri!!)
         val bitmap = BitmapFactory.decodeStream(imageStream)
         binding.fotoSeleccionada.setImageBitmap(bitmap)
+
+
     }
 
     private fun createGroup() {
@@ -272,34 +296,37 @@ class CrearGrupoActivity : AppCompatActivity() {
                     ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val userData = snapshot.getValue(UsuarioAmigo::class.java)
-                        //enviar notificacion
-                        val isBroadcast=false
-                        var state = GroupState(
-                            true,
-                            key,
-                            "El grupo ${binding.editTextNombreGrupo.text.toString()} se ha creado",
-                            groupId)
-                        val message= SendMessageDTO(
-                            to=if(isBroadcast) "1" else state.remoteToken,
-                            notification = NotificationBody(
-                                title = "Nuevo Grupo!",
-                                body = state.messageText,
-                                id = "0",
-                                alarmId = 0,
-                                idGrupo = state.idGrupo
+                        if(userData!=null)
+                        {
+                            //enviar notificacion
+                            val isBroadcast=false
+                            var state = GroupState(
+                                true,
+                                userData.token,
+                                "El grupo ${binding.editTextNombreGrupo.text.toString()} se ha creado",
+                                groupId)
+                            val message= SendMessageDTO(
+                                to=if(isBroadcast) "1" else state.remoteToken,
+                                notification = NotificationBody(
+                                    title = "Nuevo Grupo!",
+                                    body = state.messageText,
+                                    id = "0",
+                                    alarmId = 0,
+                                    idGrupo = state.idGrupo
+                                )
                             )
-                        )
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                if (isBroadcast){
-                                    api.broadcast(message)
-                                } else {
-                                    api.sendMessage(message)
+                            CoroutineScope(Dispatchers.IO).launch {
+                                try {
+                                    if (isBroadcast){
+                                        api.broadcast(message)
+                                    } else {
+                                        api.sendMessage(message)
+                                    }
+                                } catch (e: HttpException) {
+                                    e.printStackTrace()
+                                } catch (e: IOException) {
+                                    e.printStackTrace()
                                 }
-                            } catch (e: HttpException) {
-                                e.printStackTrace()
-                            } catch (e: IOException) {
-                                e.printStackTrace()
                             }
                         }
                     }

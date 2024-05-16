@@ -13,6 +13,10 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.Plan
@@ -62,6 +66,17 @@ class EditarGrupoActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private fun inicializarBotones() {
+
+        val file = File(getFilesDir(), "picFromCamera");
+        uriCamera =  FileProvider.getUriForFile(baseContext, baseContext.packageName + ".fileprovider", file)
+
+        binding.botonGaleria1.setOnClickListener {
+            getContentGallery.launch("image/*")
+        }
+
+        binding.botonCamara1.setOnClickListener {
+            getContentCamera.launch(uriCamera)
+        }
 
         binding.buttonAgregarMiembros.setOnClickListener {
             val intent = Intent(this, EditarContactosGrupoActivity::class.java)
@@ -133,11 +148,31 @@ class EditarGrupoActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
+                    val executor = ContextCompat.getMainExecutor(this)
+                    val biometricPrompt = BiometricPrompt(this, executor,
+                        object : BiometricPrompt.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                                super.onAuthenticationSucceeded(result)
+                                // Aquí puedes realizar alguna acción después de la autenticación exitosa
+                                // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
+                                var intent = Intent(baseContext, PerfilConfActivity::class.java)
+                                intent.putExtra("user", usuario)
+                                startActivity(intent)
+                                //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
+                                //startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                                true
+                            }
+                        })
+
+                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Autenticación de huella dactilar")
+                        .setSubtitle("Toque el sensor de huella dactilar")
+                        .setNegativeButtonText("Cancelar")
+                        .build()
+
+                    biometricPrompt.authenticate(promptInfo)
                     // Respond to navigation item 2 click
-                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                    intent.putExtra("user", usuario)
-                    startActivity(intent)
-                    true
+                    false
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
@@ -345,6 +380,7 @@ class EditarGrupoActivity : AppCompatActivity() {
                     .load(Uri.parse(imageUri))
                     .circleCrop() // Aplicar círculo de recorte
                     .into(binding.fotoSeleccionada1)
+
             }
         }
     }
@@ -390,6 +426,44 @@ class EditarGrupoActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadImage(uri : Uri?) {
+        val imageStream = getContentResolver().openInputStream(uri!!)
+        val bitmap = BitmapFactory.decodeStream(imageStream)
+        binding.fotoSeleccionada1.setImageBitmap(bitmap)
+
+        // Después de cargar la imagen, llamar al método para actualizar la foto del grupo
+        updateGroupPhoto(uri)
+    }
+
+    private fun updateGroupPhoto(imageUri: Uri?) {
+        val drawableFoto = binding.fotoSeleccionada1.drawable
+        if (drawableFoto != null && imageUri != null) {
+            if (drawableFoto is BitmapDrawable) {
+                val bitmap = drawableFoto.bitmap
+                val storageReference = FirebaseStorage.getInstance().getReference("Groups/$idGrupo")
+
+                // Subir la imagen al almacenamiento de Firebase
+                storageReference.putFile(imageUri).addOnSuccessListener { taskSnapshot ->
+                    // Obtener la URL de la imagen subida
+                    storageReference.downloadUrl.addOnSuccessListener { uri ->
+                        // Actualizar el campo 'fotoGrupo' en la base de datos con la ruta relativa de la imagen
+                        FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
+                            .child("fotoGrupo").setValue("Groups/$idGrupo")
+                            .addOnSuccessListener {
+                                Toast.makeText(applicationContext, "Foto del grupo actualizada", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(applicationContext, "Error al actualizar la foto del grupo: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    }.addOnFailureListener { e ->
+                        Toast.makeText(applicationContext, "Error al obtener la URL de la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }.addOnFailureListener { e ->
+                    Toast.makeText(applicationContext, "Error al subir la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     private fun actualizarDatosGrupo(nombreGrupo: String, descripcionGrupo: String) {
         val gruposRef = FirebaseDatabase.getInstance().getReference("Groups")
@@ -423,3 +497,4 @@ class EditarGrupoActivity : AppCompatActivity() {
         })
     }
 }
+

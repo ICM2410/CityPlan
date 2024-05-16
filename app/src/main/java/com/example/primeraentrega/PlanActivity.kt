@@ -51,6 +51,7 @@ import org.osmdroid.bonuspack.routing.RoadManager
 import org.osmdroid.util.GeoPoint
 import kotlin.math.min
 import android.hardware.SensorEventListener
+import com.example.primeraentrega.Clases.Estadistica
 import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -69,6 +70,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
 import java.io.File
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -78,6 +80,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private lateinit var binding : ActivityPlanBinding
 
     //PARA POSICIONES
+    private var plan: Plan? = null
+
     private lateinit var mMap: GoogleMap
     private var latActual:Double= 4.0
     private var longActual:Double= 72.0
@@ -124,10 +128,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
     //SENSOR luz
     private lateinit var lightSensor : Sensor
-   // private lateinit var lightEventListener: SensorEventListener
-    //Sensor Temperatura
-    private  var temperatureSensor: Sensor? = null
-    private lateinit var tempEventListener: SensorEventListener
 
     private var nombreUsuario="NOMBRE"
 
@@ -296,17 +296,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         }
     }
 
-    fun gestionarPermisoActividad() {
-        val permissionName = android.Manifest.permission.ACTIVITY_RECOGNITION
-
-        if (ActivityCompat.checkSelfPermission(this, permissionName) == PackageManager.PERMISSION_DENIED) {
-            if (shouldShowRequestPermissionRationale(permissionName)) {
-                // Mostrar un mensaje explicativo si es necesario
-                Toast.makeText(getApplicationContext(), "La aplicación requiere permiso de reconocimiento de actividad", Toast.LENGTH_LONG).show()
-            }
-            permissionRequest.launch(permissionName)
-        }
-    }
 
     private lateinit var idPlan : String
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -319,17 +308,17 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         Log.e(TAG, "revisar $idPlan")
         Log.e("idGrupo", "revisar $idGrupo")
 
-        stepSensorEventListener = createStepSensorEventListener()
-
         auth=FirebaseAuth.getInstance()
         databaseReferencePlanes= FirebaseDatabase.getInstance().getReference("Planes")
-        databaseReferenceGrupos= FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReferenceGrupos= FirebaseDatabase.getInstance().getReference("Groups")
         databaseReferenceUsers= FirebaseDatabase.getInstance().getReference("Usuario")
         database = FirebaseDatabase.getInstance()
         mifoto= BitmapFactory.decodeResource(resources, miImagenResource)
         fotoPlan= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, miImagenResource), 160, 160, true)
 
         roadManager = OSRMRoadManager(this, "ANDROID")
+
+        stepSensorEventListener = createStepSensorEventListener()
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -378,20 +367,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             //stepSensorEventListener = createStepSensorListener()
             sensorManager.registerListener(orientationEventListener, orientationSensor, SensorManager.SENSOR_DELAY_NORMAL)
         }
-
-        // Sensor temperatura
-        temperatureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
-        if (temperatureSensor == null) {
-            Toast.makeText(this, "No se detectó sensor de temperatura", Toast.LENGTH_SHORT).show()
-        } else {
-            Log.i("Sensor", "Hay sensor de temperatura")
-            tempEventListener = createTemperatureSensorListener()
-            sensorManager.registerListener(tempEventListener, temperatureSensor, SensorManager.SENSOR_DELAY_NORMAL)
-        }
-
-        // Registrar el SensorEventListener para el sensor de luz
-       // sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
-        //startLocationUpdates()
     }
 
     private val rotationMatrix = FloatArray(9)
@@ -450,7 +425,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             planRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     // Aquí puedes obtener los datos del usuario desde dataSnapshot
-                    val plan = dataSnapshot.getValue(Plan::class.java)
+                    plan = dataSnapshot.getValue(Plan::class.java)
                     if (plan != null) {
                         // Haz lo que necesites con los datos del usuario
                         binding.tituloPlan.setText(plan?.titulo)
@@ -458,7 +433,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
                         //SI TIENE LO DE NUMERO DE PASOS
                         if (plan != null) {
-                            pasosAvtivado=plan.AmigoMasActivo
+                            pasosAvtivado= plan!!.AmigoMasActivo
                             if(!pasosAvtivado){
 
                                 // Hacer invisible el elemento binding.pasoscantText
@@ -468,27 +443,27 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
                         val localfile = File. createTempFile( "tempImage", "jpg")
 
-                        val storageRef = FirebaseStorage.getInstance().reference.child(plan.fotopin)
+                        val storageRef = FirebaseStorage.getInstance().reference.child(plan!!.fotopin)
 
 
                         storageRef.getFile(localfile).addOnSuccessListener {
-                            Log.i("fotoPin","ruta ${plan.fotopin}")
+                            Log.i("fotoPin","ruta ${plan!!.fotopin}")
                             var src = BitmapFactory.decodeFile(localfile.absolutePath)
                             src=createCircledImage(src)
                             fotoPlan = Bitmap.createScaledBitmap(src, 160, 160, true)
                             if (plan != null) {
-                                Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                                latEncuentro=plan.latitude
-                                longEncuentro=plan.longitude
+                                Log.d(ContentValues.TAG, "${plan!!.latitude} y tambien ${plan!!.longitude} ")
+                                latEncuentro= plan!!.latitude
+                                longEncuentro= plan!!.longitude
                                 ponerUbicacionPlan()
                             }
                             //clickLista()
                         }.addOnFailureListener{
                             Log.i("revisar", "no se pudo poner la foto del pin")
                             if (plan != null) {
-                                Log.d(ContentValues.TAG, "${plan.latitude} y tambien ${plan.longitude} ")
-                                latEncuentro=plan.latitude
-                                longEncuentro=plan.longitude
+                                Log.d(ContentValues.TAG, "${plan!!.latitude} y tambien ${plan!!.longitude} ")
+                                latEncuentro= plan!!.latitude
+                                longEncuentro= plan!!.longitude
                                 ponerUbicacionPlan()
                             }
                         }
@@ -513,7 +488,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                         }
 
                         if (plan != null) {
-                            configurarmarkers(plan.integrantes)
+                            configurarmarkers(plan!!.integrantes)
                         }
 
                     } else {
@@ -678,10 +653,17 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
 
     private fun createStepSensorEventListener(): SensorEventListener {
+       // var flag=0
+
         return object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
                 if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-                    countSteps(event)
+
+                        obtenerEstadisticaplan {
+                            Log.i("listo", "$it")
+                            Log.e("stepcount","revisar $stepCount")
+                            countSteps(event)
+                        }
                 }
             }
 
@@ -689,6 +671,29 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 // No necesitas implementar esto necesariamente, a menos que quieras manejar cambios en la precisión del sensor.
             }
         }
+    }
+
+    private fun obtenerEstadisticaplan(callback: (String) -> Unit) {
+        auth.currentUser?.let {
+            val estRef=FirebaseDatabase.getInstance().getReference("Estadisticas").child(idPlan).child(it.uid)
+            estRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        // Iterar sobre los resultados de la consulta
+                        Log.i("datasnapshot pasos", "$dataSnapshot")
+                        val est= dataSnapshot.getValue(Estadistica::class.java)!!
+                        stepCount=est.pasos
+                        binding.pasoscantText.text = "$stepCount"
+                        callback("listo")
+                    }
+
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        // Manejar el error en caso de que la consulta sea cancelada
+                        Log.e(TAG, "Error al realizar la consulta de estadisticas: ${databaseError.message}")
+                    }
+                })
+
+        }
+
     }
 
 
@@ -722,71 +727,16 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private fun updateStepCount(stepCount: Int) {
         // Actualiza la vista o realiza cualquier otra acción necesaria con el nuevo recuento de pasos
         binding.pasoscantText.text = "$stepCount"
+        auth.currentUser?.let {
+            val estRef=FirebaseDatabase.getInstance().getReference("Estadisticas").child(idPlan).child(it.uid).child("pasos")
+            estRef.setValue(stepCount).addOnCompleteListener {task ->
+                if (task.isSuccessful) {
+                    Log.i("pasos","guardados $stepCount")
+                }
+            }
+        }
     }
 
-    /*fun createStepSensorListener() : SensorEventListener {
-        return object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                if (running && event != null && event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
-                    // Incrementar el contador de pasos cada vez que se detecta un paso
-                    binding.pasoscantText.text = (binding.pasoscantText.text.toString().toInt() + 1).toString()
-                }
-            }
-
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // No necesitas hacer nada aquí para este caso
-            }
-        }
-    }*/
-    /*fun createLightSensorListener() : SensorEventListener{
-        val ret : SensorEventListener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                if(this@PlanActivity::map.isInitialized){
-                    if (event != null && event.sensor.type == Sensor.TYPE_LIGHT) {
-                        if(event.values[0] < 1500){
-                            // Cambiar a modo oscuro
-                            map.getOverlayManager().getTilesOverlay().setColorFilter(TilesOverlay.INVERT_COLORS);
-                        }else{
-                            // Cambiar a modo claro
-                            map.getOverlayManager().getTilesOverlay().setColorFilter(null);
-                        }
-                    }
-                }
-            }
-            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-            }
-        }
-        return ret
-    }*/
-    fun createTemperatureSensorListener() : SensorEventListener {
-        val ret : SensorEventListener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                if (event != null && event.sensor.type == Sensor.TYPE_AMBIENT_TEMPERATURE) {
-                    val temperatura = event.values[0]
-                    val resource = when {
-                        temperatura < 0 -> {
-                            R.drawable.nevando
-                        }
-                        temperatura < 15 -> {
-                            R.drawable.muynublado
-                        }
-                        temperatura < 20 -> {
-                            R.drawable.parcialmentenublado
-                        }
-                        else -> {
-                            R.drawable.soleado
-                        }
-                    }
-                    binding.imagenTemperatura.setImageResource(resource)
-                }
-            }
-
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // No necesitas hacer nada aquí para este caso
-            }
-        }
-        return ret
-    }
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
 
     }
@@ -800,7 +750,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
     fun resetSteps(){
         previousTotalSteps = totalSteps
-        binding.pasoscantText.text = 0.toString()
+        //binding.pasoscantText.text = 0.toString()
         saveData()
     }
     fun saveData(){
@@ -829,12 +779,14 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             startActivity(intent)
         }
 
-        binding.botonCamara.setOnClickListener{
-            val intent=Intent(baseContext,GaleriaActivity::class.java)
-            intent.putExtra("idPlan",idPlan)
+        binding.botonCamara.setOnClickListener {
+            val intent = Intent(baseContext, GaleriaActivity::class.java)
+            intent.putExtra("idPlan", idPlan)
             intent.putExtra("idGrupo", idGrupo)
+            intent.putExtra("nombrePlan", plan?.titulo) // Agregar el nombre del plan como extra
             startActivity(intent)
         }
+
 
         val usuario: UsuarioAmigo = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
@@ -1017,7 +969,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
         //primero gestionar los permisos
         gestionarPermiso()
-        gestionarPermisoActividad()
 
         binding.mostrarRutabutton.setOnClickListener{
             //muestra la ruta con oms bonus
@@ -1166,7 +1117,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
         //me anado al plan del grupo
 
-        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+        val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
         val planesRef = grupoRef.child("planes")
         val query = planesRef.orderByChild("id").equalTo(idPlan)
 
@@ -1394,35 +1345,35 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         //se va a escuchar el plan y se vera que se cambia
         //se evalua si se cambia algo de info del plan o tambien info de un usuario
         databaseReference.addChildEventListener(object : ChildEventListener {
-                override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+            override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                }
-                override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+            }
+            override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                    Log.i("snapshot PLAN"," pos: $dataSnapshot")
-                    if(dataSnapshot.key=="titulo")
-                    {
-                        binding.tituloPlan.text= dataSnapshot.getValue().toString()
-                    }
-                    else if(dataSnapshot.key=="latitude")
-                    {
-                        obtenerInfoCompletaPlan()
-                    }
-                    else if(dataSnapshot.key=="longitude")
-                    {
-                        obtenerInfoCompletaPlan()
-                    }
-                    //revisar cambio de posicion del plan
+                Log.i("snapshot PLAN"," pos: $dataSnapshot")
+                if(dataSnapshot.key=="titulo")
+                {
+                    binding.tituloPlan.text= dataSnapshot.getValue().toString()
+                }
+                else if(dataSnapshot.key=="latitude")
+                {
+                    obtenerInfoCompletaPlan()
+                }
+                else if(dataSnapshot.key=="longitude")
+                {
+                    obtenerInfoCompletaPlan()
+                }
+                //revisar cambio de posicion del plan
 
-                }
-                override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+            }
+            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
 
-                }
-                override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-                }
-                override fun onCancelled(databaseError: DatabaseError) {
-                }
-            })
+            }
+            override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+            }
+        })
     }
 
     private fun obtenerInfoCompletaPlan() {
@@ -1550,8 +1501,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
                 polyline= mMap.addPolyline(
                     PolylineOptions()
-                    .clickable(true)
-                    .addAll(listaLatLng))
+                        .clickable(true)
+                        .addAll(listaLatLng))
                 polyline!!.setWidth(POLYLINE_STROKE_WIDTH_PX.toFloat())
                 polyline!!.setColor(COLOR_BLACK_ARGB)
                 polyline!!.setJointType(JointType.ROUND)

@@ -32,11 +32,9 @@
         android:theme="@style/Theme.PrimeraEntrega"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-
         <activity
             android:name=".EditarContactosGrupoActivity"
             android:exported="false" />
-
         <activity
             android:name=".ImageDetailActivity"
             android:exported="false" />
@@ -98,9 +96,7 @@
             android:exported="false" />
         <activity
             android:name=".GaleriaActivity"
-
             android:exported="false"/>
-
         <activity
             android:name=".EditarPlanActivity"
             android:exported="false" />
@@ -121,7 +117,6 @@
             android:exported="false" />
         <activity
             android:name=".IniciarSesionActivity"
-
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -144,5 +139,4 @@
             android:exported="false"
             android:foregroundServiceType="specialUse" />
     </application>
-
 </manifest>

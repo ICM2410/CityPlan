@@ -23,13 +23,10 @@ class AdapterEstablecimiento (context: Context, establecimientoList: MutableList
         }
 
         val tv = convertView!!.findViewById<TextView>(R.id.nombrePais)
-        val tv2 = convertView!!.findViewById<TextView>(R.id.direccion)
-        val iv = convertView.findViewById<ImageView>(R.id.banderaPais)
 
         pais?.let {
-            tv.text = it.getNombre()
-            tv2.text=it.getDireccion()
-            Picasso.get().load(it.getImagen()).resize(80, 80).into(iv)
+            tv.text = it.getNombre()+" "+it.getDireccion()
+            //Picasso.get().load(it.getImagen()).resize(80, 80).into(iv)
         }
 
         return convertView

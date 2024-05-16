@@ -13,6 +13,8 @@ import android.widget.AdapterView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Clases.Establecimiento
 import com.example.primeraentrega.Adapters.AdapterEstablecimiento
 import com.example.primeraentrega.databinding.ActivityRecomendacionesBinding
@@ -31,7 +33,12 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import org.json.JSONException
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 
 class RecomendacionesActivity : AppCompatActivity() {
@@ -44,6 +51,20 @@ class RecomendacionesActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private lateinit var idGrupo : String
+    private var latMia:Double= 4.0
+    private var longMia:Double= 72.0
+
+    private val keysUbicaciones: List<String> = listOf(
+        "commercial.food_and_drink",
+        "commercial.shopping_mall",
+        "catering.restaurant",
+        "commercial.books",
+        "entertainment",
+        "commercial.hobby",
+        "commercial.clothing",
+        "commercial.art",
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -56,11 +77,16 @@ class RecomendacionesActivity : AppCompatActivity() {
         Log.i(TAG, "ENCONTRADO JEJE - $idPlan")
 
         pantalla= intent.getStringExtra("pantalla").toString()
+        latMia=intent.getDoubleExtra("latitud",0.0)
+        longMia= intent.getDoubleExtra("longitud",0.0)
 
+        Log.i("mi ubicacion","$latMia,$longMia")
         inicializarSpinner()
         inicializarSeleccionLista()
         inicializarBotones()
     }
+
+
 
 
     private fun inicializarSeleccionLista() {
@@ -73,14 +99,14 @@ class RecomendacionesActivity : AppCompatActivity() {
 
             var intent: Intent
             intent = Intent(baseContext, ElegirUbicacionActivity::class.java)
-
+            Log.i("seleccion","${selectedLugar.getLatitude()},${selectedLugar.getLongitude()}")
             intent.putExtra("pantalla",pantalla)
             intent.putExtra("longitud",selectedLugar.getLongitude())
             intent.putExtra("latitud",selectedLugar.getLatitude())
             intent.putExtra("idPlan", idPlan)
             intent.putExtra("idGrupo", idGrupo)
             intent.putExtra("recomendacion","recomendacion")
-            Log.i(TAG, "Info enviar - Longitud: ${selectedLugar.getLongitude()}, Latitud: ${selectedLugar.getLatitude()}")
+            Log.i(TAG, "rInfo envia - Longitud: ${selectedLugar.getLongitude()}, Latitud: ${selectedLugar.getLatitude()}")
             // Pasa el objeto Pais como un extra del Intent
             startActivity(intent)
         }
@@ -90,7 +116,7 @@ class RecomendacionesActivity : AppCompatActivity() {
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val seleccion = spinner.selectedItem as String
-                llenarLista(seleccion)
+                llenarLista(keysUbicaciones[position])
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -101,57 +127,53 @@ class RecomendacionesActivity : AppCompatActivity() {
 
     private fun llenarLista(seleccion: String)
     {
-
         crearConsulta(seleccion)
 
     }
 
     private fun crearConsulta(seleccion: String) {
         val queue: RequestQueue = Volley.newRequestQueue(this)
-        val url = "https://travel-advisor.p.rapidapi.com/locations/v2/auto-complete"
-        val query = "?query=$seleccion&lang=en_US&units=km"
-        val fullUrl = "$url$query"
+        val token = "f2336d652f6644439f3fe49fd7fa1251"
+        val url="https://api.geoapify.com/v2/places?categories=$seleccion&filter=circle:$longMia,$latMia,6000&bias=proximity:$longMia,$latMia&lang=en&limit=40&apiKey=$token"
         val imagen="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNiROUXTw6BUWAP9A08C-1vcvI_YNWF4KzYtzTRAb9LQ&s"
-
         // Solicitud GET de Volley.
         val jsonObjectRequest = object : JsonObjectRequest(
-            Request.Method.GET, fullUrl, null,
+            Request.Method.GET, url, null,
+
             Response.Listener<JSONObject> { response ->
-                // Manejo de la respuesta JSON.
+
                 try {
                     establecimientos.clear()
-                    val data = response.getJSONObject("data")
-                    val typeaheadAutocomplete = data.getJSONObject("Typeahead_autocomplete")
-                    val results = typeaheadAutocomplete.getJSONArray("results")
+                    Log.i("resultado", "$response")
 
-                    for (i in 0 until results.length()) {
-                        val result = results.getJSONObject(i)
-
+                    val features = response.getJSONArray("features")
+                    for (i in 0 until features.length()) {
                         // Acceder a "names" si existe.
-                        val namesObject = result.optJSONObject("detailsV2")?.optJSONObject("names")
-                        val name = namesObject?.optString("name", "Nombre no disponible")
+                        val feature = features.getJSONObject(i)
+                        val properties = feature.getJSONObject("properties")
 
-                        // Acceder a "geocode" si existe.
-                        val geocodeObject = result.optJSONObject("detailsV2")?.optJSONObject("geocode")
-                        val latitude = geocodeObject?.optDouble("latitude", 30000.0) ?: 0.0
-                        val longitude = geocodeObject?.optDouble("longitude", 30000.0) ?: 0.0
+                        if(properties.has("name")
+                            && properties.has("street")
+                            && properties.has("lat")
+                            && properties.has("lon"))
+                        {
+                            var name = properties.getString("name")
+                            var latitude = properties.getDouble("lat")
+                            var longitude = properties.getDouble("lon")
+                            var street = properties.getString("street")
 
-                        // Hacer lo que necesites con los datos obtenidos.
-                        println("Nombre: $name")
-                        println("Latitud: $latitude")
-                        println("Longitud: $longitude")
+                            var establecimiento=Establecimiento(name, imagen, latitude, longitude, street)
+                            // Hacer lo que necesites con los datos obtenidos.
+                            Log.i("resultado", "$name,  $latitude, $longitude, $street")
 
-                        if (name != null) {
-                            if( latitude!=30000.0 && name != "Nombre no disponible")
-                            {
-                                findAddress(LatLng(latitude, longitude))?.let {
-                                    establecimientos.add (Establecimiento(name, imagen, latitude, longitude, it))
-                                }
-                            }
+                            establecimientos.add (establecimiento)
                         }
+
                     }
 
-                    val adapter = AdapterEstablecimiento(applicationContext, establecimientos)
+                    Log.d("crearConsulta", "Tamaño de la lista 2 de establecimientos: ${establecimientos.size}")
+
+                    var adapter = AdapterEstablecimiento(applicationContext, establecimientos)
 
                     // Asignar el adaptador al ListView
                     binding.listView.adapter = adapter
@@ -163,30 +185,12 @@ class RecomendacionesActivity : AppCompatActivity() {
             },
             Response.ErrorListener { error ->
                 // Manejo de errores de la solicitud.
-                Log.e(ContentValues.TAG, "Error en la solicitud: " + error.message)
+                Log.e("Error en la solicitud", "Error en la solicitud: " + error.message)
             }) {
-
-            // Override de la función getHeaders para agregar los encabezados necesarios.
-            override fun getHeaders(): Map<String, String> {
-                val headers = HashMap<String, String>()
-                headers["X-RapidAPI-Key"] = "098e8444dbmsh2d59bc94f56c440p16b71bjsn13d0886ab7fc"
-                headers["X-RapidAPI-Host"] = "travel-advisor.p.rapidapi.com"
-                return headers
-            }
         }
 
         // Agrega la solicitud a la cola de solicitudes.
         queue.add(jsonObjectRequest)
-    }
-
-    fun findAddress (location : LatLng):String?{
-        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 2)
-        if(addresses != null && !addresses.isEmpty()){
-            val addr = addresses.get(0)
-            val locname = addr.getAddressLine(0)
-            return locname
-        }
-        return null
     }
 
     private fun inicializarBotones() {
@@ -200,11 +204,31 @@ class RecomendacionesActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
+                    val executor = ContextCompat.getMainExecutor(this)
+                    val biometricPrompt = BiometricPrompt(this, executor,
+                        object : BiometricPrompt.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                                super.onAuthenticationSucceeded(result)
+                                // Aquí puedes realizar alguna acción después de la autenticación exitosa
+                                // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
+                                var intent = Intent(baseContext, PerfilConfActivity::class.java)
+                                intent.putExtra("user", usuario)
+                                startActivity(intent)
+                                //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
+                                //startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                                true
+                            }
+                        })
+
+                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Autenticación de huella dactilar")
+                        .setSubtitle("Toque el sensor de huella dactilar")
+                        .setNegativeButtonText("Cancelar")
+                        .build()
+
+                    biometricPrompt.authenticate(promptInfo)
                     // Respond to navigation item 2 click
-                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                    intent.putExtra("user", usuario)
-                    startActivity(intent)
-                    true
+                    false
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
@@ -261,7 +285,7 @@ class RecomendacionesActivity : AppCompatActivity() {
 
     private fun revisarActivo() {
         var existe=false
-        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        val ref = FirebaseDatabase.getInstance().getReference("Groups")
         ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -307,13 +331,45 @@ class RecomendacionesActivity : AppCompatActivity() {
     }
 
     private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
-        val fechaActual = Date()
+        val fechaActual = LocalDateTime.now()
+
+        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        // Establece la zona horaria a UTC si es necesario
+        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
+        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
+
+        val fechaHoraAlarmaInicio =textoAFechaAlarma(
+            formatoFecha.format(dateInicio).toString(),
+            formatoHora.format(dateInicio).toString()
+        )
+
+        val fechaHoraAlarmaFinal =textoAFechaAlarma(
+            formatoFecha.format(dateFinal).toString(),
+            formatoHora.format(dateFinal).toString()
+        )
 
         return when {
-            fechaActual.before(dateInicio) -> "Activo"
-            fechaActual.after(dateFinal) -> "Cerrado"
-            else -> "Abierto"
+            fechaActual<fechaHoraAlarmaInicio -> "Activo"
+            fechaActual>fechaHoraAlarmaFinal -> "Cerrado"
+            fechaActual>fechaHoraAlarmaInicio && fechaActual<fechaHoraAlarmaFinal-> "Abierto"
+            else ->"Abierto"
         }
+    }
+
+    fun textoAFechaAlarma(fechaTexto: String, horaTexto: String): LocalDateTime {
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")
+
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val fechaHora = LocalDateTime.parse("${fechaTexto} ${horaTexto}", formatter)
+        Log.i("tiempo","es: $fechaHora")
+        // Calcular la diferencia en segundos entre la hora actual y la fechaHora propuesta
+        val diferenciaSegundos = LocalDateTime.now().until(fechaHora, java.time.temporal.ChronoUnit.SECONDS)
+        Log.i("tiempo","es: diferencias local ${LocalDateTime.now()} con  inicio $diferenciaSegundos")
+        // Ajustar la hora actual sumando la diferencia en segundos
+        return LocalDateTime.now().plusSeconds(diferenciaSegundos)
     }
 
     private fun initShowout (v: View){

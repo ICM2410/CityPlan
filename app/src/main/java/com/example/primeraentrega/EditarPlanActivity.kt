@@ -32,6 +32,8 @@ import android.widget.TimePicker
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.PlanJson
 import com.example.primeraentrega.Clases.PosAmigo
@@ -59,6 +61,8 @@ import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -393,11 +397,31 @@ class EditarPlanActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
+                    val executor = ContextCompat.getMainExecutor(this)
+                    val biometricPrompt = BiometricPrompt(this, executor,
+                        object : BiometricPrompt.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                                super.onAuthenticationSucceeded(result)
+                                // Aquí puedes realizar alguna acción después de la autenticación exitosa
+                                // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
+                                var intent = Intent(baseContext, PerfilConfActivity::class.java)
+                                intent.putExtra("user", usuario)
+                                startActivity(intent)
+                                //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
+                                //startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                                true
+                            }
+                        })
+
+                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Autenticación de huella dactilar")
+                        .setSubtitle("Toque el sensor de huella dactilar")
+                        .setNegativeButtonText("Cancelar")
+                        .build()
+
+                    biometricPrompt.authenticate(promptInfo)
                     // Respond to navigation item 2 click
-                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                    intent.putExtra("user", usuario)
-                    startActivity(intent)
-                    true
+                    false
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
@@ -454,7 +478,7 @@ class EditarPlanActivity : AppCompatActivity() {
 
     private fun revisarActivo() {
         var existe=false
-        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        val ref = FirebaseDatabase.getInstance().getReference("Groups")
         ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -500,15 +524,46 @@ class EditarPlanActivity : AppCompatActivity() {
     }
 
     private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
-        val fechaActual = Date()
+        val fechaActual = LocalDateTime.now()
+
+        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        // Establece la zona horaria a UTC si es necesario
+        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
+        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
+
+        val fechaHoraAlarmaInicio =textoAFechaAlarma(
+            formatoFecha.format(dateInicio).toString(),
+            formatoHora.format(dateInicio).toString()
+        )
+
+        val fechaHoraAlarmaFinal =textoAFechaAlarma(
+            formatoFecha.format(dateFinal).toString(),
+            formatoHora.format(dateFinal).toString()
+        )
 
         return when {
-            fechaActual.before(dateInicio) -> "Activo"
-            fechaActual.after(dateFinal) -> "Cerrado"
-            else -> "Abierto"
+            fechaActual<fechaHoraAlarmaInicio -> "Activo"
+            fechaActual>fechaHoraAlarmaFinal -> "Cerrado"
+            fechaActual>fechaHoraAlarmaInicio && fechaActual<fechaHoraAlarmaFinal-> "Abierto"
+            else ->"Abierto"
         }
     }
 
+    fun textoAFechaAlarma(fechaTexto: String, horaTexto: String): LocalDateTime {
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")
+
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val fechaHora = LocalDateTime.parse("${fechaTexto} ${horaTexto}", formatter)
+        Log.i("tiempo","es: $fechaHora")
+        // Calcular la diferencia en segundos entre la hora actual y la fechaHora propuesta
+        val diferenciaSegundos = LocalDateTime.now().until(fechaHora, java.time.temporal.ChronoUnit.SECONDS)
+        Log.i("tiempo","es: diferencias local ${LocalDateTime.now()} con  inicio $diferenciaSegundos")
+        // Ajustar la hora actual sumando la diferencia en segundos
+        return LocalDateTime.now().plusSeconds(diferenciaSegundos)
+    }
 
     private fun initShowout (v: View){
         v.apply {
@@ -848,7 +903,7 @@ class EditarPlanActivity : AppCompatActivity() {
                     //guardar plan en el grupo
                     //anadir todos los integrantes del grupo al plan
                     //guardarPlanAlGrupo(myPlan)
-                    val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+                    val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
                     val planesRef = grupoRef.child("planes").child(idPlan)
 
                     planesRef.setValue(myPlan)
@@ -916,7 +971,7 @@ class EditarPlanActivity : AppCompatActivity() {
     }
 
     private fun guardarPlanAlGrupo(myPlan: Plan) {
-        val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+        val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
 
 // Obtener la referencia al nodo "planes" dentro del grupo
         val planesRef = grupoRef.child("planes")

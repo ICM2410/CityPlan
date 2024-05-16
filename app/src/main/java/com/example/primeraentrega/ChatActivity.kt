@@ -11,6 +11,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Adapters.ChatAdapter
 import com.example.primeraentrega.Clases.Grupo
 import com.example.primeraentrega.Clases.ListMessage
@@ -40,8 +42,13 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.create
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 
 class ChatActivity : AppCompatActivity() {
@@ -50,12 +57,16 @@ class ChatActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private lateinit var groupID : String
+
     private lateinit var userId : String
     private lateinit var databaseReference: DatabaseReference
+
+    private lateinit var groupMessagesRef: DatabaseReference
+
     private lateinit var database: FirebaseDatabase
     private lateinit var auth: FirebaseAuth
     private var idPlan : String=""
-  
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityChatBinding.inflate(layoutInflater)
@@ -68,6 +79,7 @@ class ChatActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance()
 
         initializeGroup(groupID)
+        groupMessagesRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupID).child("mensajes")
         binding.botonEnviar.setOnClickListener{
             sendMessage()
             Log.e("ENVIADO", "El mensaje fue enviado")
@@ -95,12 +107,31 @@ class ChatActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
+                    val executor = ContextCompat.getMainExecutor(this)
+                    val biometricPrompt = BiometricPrompt(this, executor,
+                        object : BiometricPrompt.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                                super.onAuthenticationSucceeded(result)
+                                // Aquí puedes realizar alguna acción después de la autenticación exitosa
+                                // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
+                                var intent = Intent(baseContext, PerfilConfActivity::class.java)
+                                intent.putExtra("user", usuario)
+                                startActivity(intent)
+                                //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
+                                //startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                                true
+                            }
+                        })
+
+                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Autenticación de huella dactilar")
+                        .setSubtitle("Toque el sensor de huella dactilar")
+                        .setNegativeButtonText("Cancelar")
+                        .build()
+
+                    biometricPrompt.authenticate(promptInfo)
                     // Respond to navigation item 2 click
-                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                    intent.putExtra("user", usuario)
-                    startActivity(intent)
-                    //startActivity(Intent(baseContext, VerGruposActivity::class.java))
-                    true
+                    false
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
@@ -157,7 +188,7 @@ class ChatActivity : AppCompatActivity() {
 
     private fun revisarActivo() {
         var existe=false
-        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        val ref = FirebaseDatabase.getInstance().getReference("Groups")
         ref.child(groupID).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -177,7 +208,7 @@ class ChatActivity : AppCompatActivity() {
                     }
 
                     // Si el usuario y su ID no son nulos, añádelos al mapa integrantesMap
-                    if (planId != null &&  plan != null && status!="Activo") {
+                    if (planId != null &&  plan != null && (status!="Activo" || status!="Cerrado")) {
                         existe=true
                         idPlan=planId
                     }
@@ -203,13 +234,45 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
-        val fechaActual = Date()
+        val fechaActual = LocalDateTime.now()
+
+        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        // Establece la zona horaria a UTC si es necesario
+        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
+        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
+
+        val fechaHoraAlarmaInicio =textoAFechaAlarma(
+            formatoFecha.format(dateInicio).toString(),
+            formatoHora.format(dateInicio).toString()
+        )
+
+        val fechaHoraAlarmaFinal =textoAFechaAlarma(
+            formatoFecha.format(dateFinal).toString(),
+            formatoHora.format(dateFinal).toString()
+        )
 
         return when {
-            fechaActual.before(dateInicio) -> "Activo"
-            fechaActual.after(dateFinal) -> "Cerrado"
-            else -> "Abierto"
+            fechaActual<fechaHoraAlarmaInicio -> "Activo"
+            fechaActual>fechaHoraAlarmaFinal -> "Cerrado"
+            fechaActual>fechaHoraAlarmaInicio && fechaActual<fechaHoraAlarmaFinal-> "Abierto"
+            else ->"Abierto"
         }
+    }
+
+    fun textoAFechaAlarma(fechaTexto: String, horaTexto: String): LocalDateTime {
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")
+
+        // Parsear los textos de fecha y hora en LocalDateTime
+        val fechaHora = LocalDateTime.parse("${fechaTexto} ${horaTexto}", formatter)
+        Log.i("tiempo","es: $fechaHora")
+        // Calcular la diferencia en segundos entre la hora actual y la fechaHora propuesta
+        val diferenciaSegundos = LocalDateTime.now().until(fechaHora, java.time.temporal.ChronoUnit.SECONDS)
+        Log.i("tiempo","es: diferencias local ${LocalDateTime.now()} con  inicio $diferenciaSegundos")
+        // Ajustar la hora actual sumando la diferencia en segundos
+        return LocalDateTime.now().plusSeconds(diferenciaSegundos)
     }
 
     private fun initShowout (v: View){
@@ -403,8 +466,6 @@ class ChatActivity : AppCompatActivity() {
     private fun initializeMessageListener(groupId: String) {
         mensajesGrupo = mutableListOf()
 
-        val groupMessagesRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupId).child("mensajes")
-
         groupMessagesRef.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val mensaje = snapshot.getValue(Mensaje::class.java)
@@ -430,10 +491,17 @@ class ChatActivity : AppCompatActivity() {
                                 )
 
                                 // Add the ListMessage object to the list
-                                mensajesGrupo.add(listMessage)
+                                if(!mensajesGrupo.any { it.uid == snapshot.key }){
+                                    mensajesGrupo.add(listMessage)
+                                }
+
+                                // Sort the mensajesGrupo list based on createdAt timestamp
+                                mensajesGrupo.sortBy { it.createdAt }
+
                                 // Update the adapter
                                 val adapter = ChatAdapter(applicationContext, mensajesGrupo, FirebaseAuth.getInstance().currentUser!!.uid)
                                 binding.chat.adapter = adapter
+
 
                             }.addOnFailureListener{
                                 Log.e("Error", "User could not be found")
@@ -464,7 +532,6 @@ class ChatActivity : AppCompatActivity() {
             }
         })
     }
-
     fun getUser(uid: String, callback: (UsuarioAmigo?) -> Unit) {
         val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().getReference("Usuario").child(uid)
 
@@ -479,8 +546,5 @@ class ChatActivity : AppCompatActivity() {
             }
         }
     }
-
-
-
 
 }
