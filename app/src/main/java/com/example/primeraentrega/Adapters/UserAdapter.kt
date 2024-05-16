@@ -64,4 +64,8 @@ class UserAdapter(context: Context?, usuarioList: MutableList<ListUser>) : Array
     fun getSelectedUsers(): List<ListUser> {
         return selectedUsers.toList()
     }
+
+    fun clearSelection() {
+        TODO("Not yet implemented")
+    }
 }

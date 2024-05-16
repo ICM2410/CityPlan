@@ -3,18 +3,16 @@ package com.example.primeraentrega
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.provider.ContactsContract
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import com.example.primeraentrega.Adapters.ContactsAdapter
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.example.primeraentrega.Adapters.UserAdapter
 import com.example.primeraentrega.Clases.ListUser
 import com.example.primeraentrega.Clases.UsuarioAmigo
@@ -28,14 +26,14 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
 
-class AgregarContactosActivity : AppCompatActivity() {
+class EditarContactosGrupoActivity : AppCompatActivity() {
 
     //Permission val
-   /* val getContactsPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-        ActivityResultCallback {
-            updateUI(it)
-        })*/
+    /* val getContactsPermission = registerForActivityResult(
+         ActivityResultContracts.RequestPermission(),
+         ActivityResultCallback {
+             updateUI(it)
+         })*/
 
     private lateinit var binding: ActivityAgregarContactosBinding
     val projection = arrayOf(ContactsContract.Profile._ID, ContactsContract.Profile.DISPLAY_NAME_PRIMARY)
@@ -49,8 +47,9 @@ class AgregarContactosActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAgregarContactosBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        idGrupo = intent.getStringExtra("idGrupo").toString()
 
+        // Obtener el ID del grupo de los extras del intent
+        idGrupo = intent.getStringExtra("idGrupo").toString()
 
         //permissionRequest()
         inicializarBotones()
@@ -63,26 +62,7 @@ class AgregarContactosActivity : AppCompatActivity() {
         llenarLista()
 
         binding.agregarGrupo.setOnClickListener() {
-            // Retrieve the list of selected users from the adapter
-            val selectedUsers = (binding.listaContactos.adapter as? UserAdapter)?.getSelectedUsers()
-
-            // Check if the selectedUsers list is not null
-            selectedUsers?.let { users ->
-                // Extract the uids from the list of selected users
-                val selectedUserIds = users.map { it.uid }
-
-                // Create an intent to navigate to CrearGrupoActivity
-                val intent = Intent(this, CrearGrupoActivity::class.java)
-
-                // Put the list of selected user ids as an extra in the intent
-                intent.putStringArrayListExtra("selectedUserIds", ArrayList(selectedUserIds))
-
-                // Start the CrearGrupoActivity with the intent
-                startActivity(intent)
-
-                // Optionally, show a message to indicate success
-                Toast.makeText(this, "Selected users added to group", Toast.LENGTH_SHORT).show()
-            }
+            agregarUsuariosAGrupo()
         }
     }
 
@@ -258,51 +238,81 @@ class AgregarContactosActivity : AppCompatActivity() {
 
         auth.currentUser?.uid?.let { currentUserUid ->
             databaseReference.addChildEventListener(object : ChildEventListener {
-                    override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+                override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                        // Obtener el usuario de dataSnapshot
-                        val usuario = dataSnapshot.getValue(UsuarioAmigo::class.java)
-                        Log.e("Referencia", "Aqui llegue a usuario")
-                        Log.e("UsuarioImagen", "Imagen: ${usuario?.imagen}")
-                        // Verificar si el usuario no es el usuario actual antes de agregarlo a la lista
-                        if (usuario != null && dataSnapshot.key != currentUserUid) {
+                    // Obtener el usuario de dataSnapshot
+                    val usuario = dataSnapshot.getValue(UsuarioAmigo::class.java)
+                    Log.e("Referencia", "Aqui llegue a usuario")
+                    Log.e("UsuarioImagen", "Imagen: ${usuario?.imagen}")
+                    // Verificar si el usuario no es el usuario actual antes de agregarlo a la lista
+                    if (usuario != null && dataSnapshot.key != currentUserUid) {
 
-                            Log.e("Referencia", "Apunto de pedir storageRef")
-                            val storageRef = FirebaseStorage.getInstance().reference.child("${usuario.imagen}.jpg")
-                            Log.e("Referencia", "Ya pedi")
-                            val localfile = File. createTempFile( "tempImage", "jpg")
+                        Log.e("Referencia", "Apunto de pedir storageRef")
+                        val storageRef = FirebaseStorage.getInstance().reference.child("${usuario.imagen}.jpg")
+                        Log.e("Referencia", "Ya pedi")
+                        val localfile = File. createTempFile( "tempImage", "jpg")
 
-                            Log.e("GetFile", "Pedire local file")
-                            storageRef.getFile(localfile).addOnSuccessListener {
-                                Log.e("Entre", "ENTRE")
-                                Log.e("REFERENCIA", storageRef.toString())
-                                val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
-                                var usuarioADD= ListUser(usuario.username, usuario.uid, bitmap)
-                                contactList.add(usuarioADD)
+                        Log.e("GetFile", "Pedire local file")
+                        storageRef.getFile(localfile).addOnSuccessListener {
+                            Log.e("Entre", "ENTRE")
+                            Log.e("REFERENCIA", storageRef.toString())
+                            val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
+                            var usuarioADD= ListUser(usuario.username, usuario.uid, bitmap)
+                            contactList.add(usuarioADD)
 
-                                //Lista
-                                val adapter = UserAdapter(applicationContext,contactList);
-                                binding.listaContactos.adapter = adapter
+                            //Lista
+                            val adapter = UserAdapter(applicationContext,contactList);
+                            binding.listaContactos.adapter = adapter
 
-                            }.addOnFailureListener{
-                                Log.e("Error", "User could not be found")
-                            }
-
+                        }.addOnFailureListener{
+                            Log.e("Error", "User could not be found")
                         }
-                    }
-                    override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
                     }
-                    override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+                }
+                override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                    }
-                    override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-                    }
-                    override fun onCancelled(databaseError: DatabaseError) {
-                    }
-                })
+                }
+                override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+
+                }
+                override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                }
+            })
         }
 
+    }
+
+    private fun agregarUsuariosAGrupo() {
+        // Obtener la lista de usuarios seleccionados del adaptador
+        val selectedUsers = (binding.listaContactos.adapter as? UserAdapter)?.getSelectedUsers()
+
+        // Verificar si hay usuarios seleccionados
+        if (!selectedUsers.isNullOrEmpty()) {
+            // Referencia al grupo en la base de datos
+            val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+
+            // Iterar sobre los usuarios seleccionados y agregarlos al grupo
+            selectedUsers.forEach { user ->
+                user.uid?.let { userId ->
+                    val miembrosRef = grupoRef.child("Miembros").child(userId)
+                    miembrosRef.setValue(true)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "${user.nombre} agregado al grupo", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "Error al agregar ${user.nombre} al grupo: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+
+            // Limpiar la selección después de agregar usuarios al grupo
+            (binding.listaContactos.adapter as? UserAdapter)?.clearSelection()
+        } else {
+            Toast.makeText(this, "No se han seleccionado usuarios para agregar al grupo", Toast.LENGTH_SHORT).show()
+        }
     }
 
 }

@@ -6,4 +6,5 @@ data class ListUser (
     var nombre: String,
     var uid: String?,
     var imagen: Bitmap,
-    ){}
+    ){
+}

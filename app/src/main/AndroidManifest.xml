@@ -22,7 +22,6 @@
 
     <application
         android:name=".RunningApp.RunningApp"
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -31,8 +30,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PrimeraEntrega"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
-      
+
+        <activity
+            android:name=".EditarContactosGrupoActivity"
+            android:exported="false" />
+
         <activity
             android:name=".ImageDetailActivity"
             android:exported="false" />
@@ -50,6 +54,7 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCPGRoYs7J-yTAzy4LqlZCwGznon192FBo" />
+
         <activity
             android:name=".PlanesPasadosActivity"
             android:exported="false" />
@@ -93,13 +98,9 @@
             android:exported="false" />
         <activity
             android:name=".GaleriaActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false"/>
+
         <activity
             android:name=".EditarPlanActivity"
             android:exported="false" />
@@ -121,8 +122,6 @@
         <activity
             android:name=".IniciarSesionActivity"
 
-            android:exported="false"></activity>
-
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -130,17 +129,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".Alarms.AlarmReceiver"/>
-        <service android:name=".Services.PushNotificationService"
+
+        <receiver android:name=".Alarms.AlarmReceiver" />
+
+        <service
+            android:name=".Services.PushNotificationService"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".Services.NewPlanService"
-            android:foregroundServiceType="specialUse"
-            android:exported="false"/>
-
+        <service
+            android:name=".Services.NewPlanService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
     </application>
 
 </manifest>
