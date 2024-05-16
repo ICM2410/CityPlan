@@ -50,6 +50,7 @@ class ChatActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private lateinit var groupID : String
+    private lateinit var userId : String
     private lateinit var databaseReference: DatabaseReference
     private lateinit var database: FirebaseDatabase
     private lateinit var auth: FirebaseAuth
@@ -60,6 +61,7 @@ class ChatActivity : AppCompatActivity() {
         binding= ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
         groupID = intent.getStringExtra("groupId").toString()
+        userId = intent.getStringExtra("userId").toString()
         inicializarBotones()
         //binding.bottomNavigation.selectedItemId = R.id.cuenta_bar // Establecer elemento seleccionado
         auth = FirebaseAuth.getInstance()
@@ -75,10 +77,12 @@ class ChatActivity : AppCompatActivity() {
     private fun inicializarBotones() {
 
         binding.configGrupo.setOnClickListener {
-            var intent = Intent(baseContext, EditarGrupoActivity::class.java)
+            val intent = Intent(this@ChatActivity, EditarGrupoActivity::class.java)
+            intent.putExtra("userId", userId) // Aquí pasas el UserId como extra
             intent.putExtra("idGrupo", groupID)
             startActivity(intent)
         }
+
 
         val usuario: UsuarioAmigo = UsuarioAmigo()
 

@@ -31,6 +31,7 @@ class EditarGrupoActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityEditarGrupoBinding
     private lateinit var idGrupo : String
+    private lateinit var userId : String
     private var idPlan : String=""
     lateinit var uriCamera : Uri
 
@@ -52,6 +53,7 @@ class EditarGrupoActivity : AppCompatActivity() {
         binding= ActivityEditarGrupoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         idGrupo=intent.getStringExtra("idGrupo").toString()
+        userId = intent.getStringExtra("userId").toString()
         inicializarBotones()
     }
 
@@ -79,11 +81,34 @@ class EditarGrupoActivity : AppCompatActivity() {
         }
 
 
-
         binding.buttonSalir.setOnClickListener {
-            //se sale del grupo
-            startActivity(Intent(baseContext, VerGruposActivity::class.java))
+            // Verificar si el ID del usuario no es nulo
+            if (userId != null) {
+                // Obtener la referencia del grupo en la base de datos
+                val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
+
+                // Eliminar al usuario de la lista de miembros del grupo
+                grupoRef.child("integrantes").child(userId).removeValue()
+                    .addOnSuccessListener {
+                        // El usuario se eliminó correctamente del grupo
+                        Toast.makeText(applicationContext, "Saliste del grupo exitosamente", Toast.LENGTH_SHORT).show()
+
+                        // Redirigir al usuario a la actividad anterior o a la actividad principal
+                        finish() // Finalizar la actividad actual y regresar a la actividad anterior
+                    }
+                    .addOnFailureListener { e ->
+                        // Error al eliminar al usuario del grupo
+                        Toast.makeText(applicationContext, "Error al salir del grupo: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            } else {
+                // El ID del usuario es nulo
+                Toast.makeText(applicationContext, "ID del usuario nulo", Toast.LENGTH_SHORT).show()
+            }
+            val intent = Intent(this, VerGruposActivity::class.java)
+            startActivity(intent)
         }
+
+
 
         binding.buttonGuardar.setOnClickListener {
             val nombreGrupo = binding.editTextNombreGrupo.text.toString()

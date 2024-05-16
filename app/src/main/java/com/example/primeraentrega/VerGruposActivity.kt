@@ -82,11 +82,13 @@ class VerGruposActivity : AppCompatActivity() {
         llenarLista()
 
         binding.gruposList.setOnItemClickListener { parent, view, position, id ->
-            val group = groupList[position] // Get the clicked group from the list
+            val group = groupList[position] // Obtener el grupo clickeado de la lista
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("groupId", group.uid) // Pass the group ID to ChatActivity
+            intent.putExtra("groupId", group.uid) // Pasar el ID del grupo a ChatActivity
+            intent.putExtra("userId", auth.currentUser?.uid) // Pasar el ID del usuario actual a ChatActivity
             startActivity(intent)
         }
+
         //childId="-Nxds2b-dh--IP1NUNhP"
         //crearInfoSophie()
         gestionarPermiso()
