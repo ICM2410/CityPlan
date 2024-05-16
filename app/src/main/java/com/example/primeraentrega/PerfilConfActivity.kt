@@ -218,9 +218,15 @@ class PerfilConfActivity : AppCompatActivity() {
 
 
     private fun guardarPerfil() {
+        if (binding.user.text.toString().isEmpty() || binding.telephone.text.toString().isEmpty() || binding.password.text.toString().isEmpty()) {
+            Toast.makeText(baseContext, "Por favor, completa todos los campos", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
         // Obtener el nuevo nombre de usuario y descripción del usuario
         val nuevoNombreUsuario = binding.user.text.toString()
-        val nuevaDescripcionUsuario = binding.telephone.text.toString()
+        val nuevaDescripcionUsuario = binding.telephone.text.toString().toInt()
 
         // Actualizar el nombre de usuario y la descripción del usuario en Firebase Realtime Database
         val usuarioRef = database.getReference("Usuario").child(userId)
