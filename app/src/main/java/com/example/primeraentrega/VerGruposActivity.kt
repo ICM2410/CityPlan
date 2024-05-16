@@ -377,6 +377,9 @@ class VerGruposActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
+                    startActivity(Intent(baseContext, PerfilConfActivity::class.java).apply {
+                        putExtra("userId", auth.currentUser?.uid)
+                    })
                     val executor = ContextCompat.getMainExecutor(this)
                     val biometricPrompt = BiometricPrompt(this, executor,
                         object : BiometricPrompt.AuthenticationCallback() {
@@ -385,7 +388,7 @@ class VerGruposActivity : AppCompatActivity() {
                                 // Aquí puedes realizar alguna acción después de la autenticación exitosa
                                 // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
                                 var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                                intent.putExtra("user", usuario)
+                                intent.putExtra("userId", usuario)
                                 startActivity(intent)
                                 //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
                                 //startActivity(Intent(baseContext, VerGruposActivity::class.java))
@@ -414,12 +417,6 @@ class VerGruposActivity : AppCompatActivity() {
             }
         }
 
-        /*binding.grupoChocmelos.setOnClickListener {
-            val intent = Intent(baseContext, ChatActivity::class.java)
-            Log.i("idGrupo","revisar Ver grupos $childId")
-            intent.putExtra("idGrupo", childId)
-            startActivity(intent)
-        }*/
 
         binding.botonAgregarGrupo.setOnClickListener {
             startActivity(Intent(baseContext, AgregarContactosActivity::class.java))

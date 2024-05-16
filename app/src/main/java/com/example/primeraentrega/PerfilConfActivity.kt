@@ -1,14 +1,20 @@
 package com.example.primeraentrega
 
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.example.primeraentrega.databinding.ActivityPerfilConfBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import java.io.File
 import java.security.MessageDigest
 
 class PerfilConfActivity : AppCompatActivity() {
@@ -16,11 +22,29 @@ class PerfilConfActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPerfilConfBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
+    private lateinit var userId : String
+    lateinit var uriCamera : Uri
+
+    val getContentGallery = registerForActivityResult(
+        ActivityResultContracts.GetContent(),
+        ActivityResultCallback {
+            loadImage(it!!)
+        })
+
+    val getContentCamera = registerForActivityResult(
+        ActivityResultContracts.TakePicture(),ActivityResultCallback {
+            if(it){
+                loadImage(uriCamera)
+            }
+        })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPerfilConfBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Obtener el userId del Intent
+        userId = intent.getStringExtra("userId").toString()
 
         //val usuario = intent.getSerializableExtra("user") as? Usuario
         binding.bottomNavigation.selectedItemId = R.id.cuenta_bar
@@ -32,7 +56,21 @@ class PerfilConfActivity : AppCompatActivity() {
         inicializarBotones()
     }
 
+    private val SELECCIONAR_FOTO_REQUEST_CODE = 1
+
     private fun inicializarBotones() {
+
+        val file = File(getFilesDir(), "picFromCamera");
+        uriCamera =  FileProvider.getUriForFile(baseContext, baseContext.packageName + ".fileprovider", file)
+
+        binding.buttonGaleria.setOnClickListener {
+            getContentGallery.launch("image/*")
+        }
+
+        binding.buttonCamara.setOnClickListener {
+            getContentCamera.launch(uriCamera)
+        }
+
         binding.guardarperfil.setOnClickListener {
             startActivity(Intent(baseContext, VerGruposActivity::class.java))
         }
@@ -59,9 +97,6 @@ class PerfilConfActivity : AppCompatActivity() {
             }
         }
 
-        binding.huella.setOnClickListener {
-            solicitarHuella(usuario)
-        }
     }
 
     private fun solicitarHuella(usuario: UsuarioAmigo?) {
@@ -112,6 +147,13 @@ class PerfilConfActivity : AppCompatActivity() {
     }
 
     private fun guardarUsuarioEnFirebase(usuario: UsuarioAmigo?) {
+
+    }
+
+    private fun loadImage(uri : Uri?) {
+        val imageStream = getContentResolver().openInputStream(uri!!)
+        val bitmap = BitmapFactory.decodeStream(imageStream)
+        binding.imageViewImagen.setImageBitmap(bitmap)
 
     }
 }
