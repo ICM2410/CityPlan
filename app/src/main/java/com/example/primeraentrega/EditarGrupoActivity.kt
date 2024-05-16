@@ -79,6 +79,12 @@ class EditarGrupoActivity : AppCompatActivity() {
             getContentCamera.launch(uriCamera)
         }
 
+        binding.buttonAgregarMiembros.setOnClickListener {
+            val intent = Intent(this, EditarContactosGrupoActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
+        }
+
 
         binding.buttonSalir.setOnClickListener {
             // Verificar si el ID del usuario no es nulo
