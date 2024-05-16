@@ -47,7 +47,7 @@ class Adapterplan(context: Context, usuarioList: MutableList<PlanLista>) : Array
             tv.text = planCelda.titulo
 
             val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-            val formatoHora = SimpleDateFormat("hh:mm", Locale.getDefault())
+            val formatoHora = SimpleDateFormat("h:mm a", Locale.getDefault())
 
             // Establece la zona horaria a UTC si es necesario
             formatoFecha.timeZone = TimeZone.getTimeZone("UTC")

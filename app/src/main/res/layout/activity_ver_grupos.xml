@@ -53,7 +53,7 @@
             <ListView
                 android:id="@+id/gruposList"
                 android:layout_width="match_parent"
-                android:layout_height="660dp" />
+                android:layout_height="520dp" />
         </LinearLayout>
 
         <LinearLayout

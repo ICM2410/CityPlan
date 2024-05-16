@@ -101,8 +101,13 @@
                 android:backgroundTint="@color/rosado"
                 android:padding="2dp"
                 android:text="@string/IniciarSesión"
-                android:textSize="16sp" />
+                android:textSize="16sp" android:layout_marginRight="30dp"/>
 
+            <ImageButton
+                android:id="@+id/huella"
+                android:layout_width="61dp"
+                android:layout_height="67dp"
+                android:background="@drawable/huella_negra_fondo_blanco" />
         </LinearLayout>
     </LinearLayout>
 

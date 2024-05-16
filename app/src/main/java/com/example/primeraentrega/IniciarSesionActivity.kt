@@ -40,6 +40,10 @@ class IniciarSesionActivity : AppCompatActivity() {
 
     private fun inicializarBotones() {
 
+        binding.huella.setOnClickListener{
+            val usuario= UsuarioAmigo()
+            solicitarHuella(usuario)
+        }
         binding.buttonIniciarSesion.setOnClickListener {
             val inicioUsuario = binding.user.text.toString()
             val inicioPassword = binding.password.text.toString()
