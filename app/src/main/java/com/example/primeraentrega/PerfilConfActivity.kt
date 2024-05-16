@@ -137,10 +137,6 @@ class PerfilConfActivity : AppCompatActivity() {
                 else -> false
             }
         }
-
-        binding.huella.setOnClickListener {
-            solicitarHuella(usuario)
-        }
     }
 
     private fun obtenerUriImagenSeleccionada(): Uri? {
@@ -213,26 +209,6 @@ class PerfilConfActivity : AppCompatActivity() {
                 // Manejar el error si es necesario
                 Toast.makeText(this, "Error al guardar la URL de la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-    }
-
-
-    // Función para generar un ID único basado en los datos biométricos
-    private fun generateBiometricId(biometricData: ByteArray): String {
-        // Crear una instancia del algoritmo de hash SHA-256
-        val digest = MessageDigest.getInstance("SHA-256")
-
-        // Calcular el hash de los datos biométricos
-        val hashBytes = digest.digest(biometricData)
-
-        // Convertir el hash en una cadena hexadecimal
-        val hexString = StringBuilder()
-        for (byte in hashBytes) {
-            // Convertir cada byte a su representación hexadecimal y agregarlo a la cadena
-            hexString.append(String.format("%02x", byte))
-        }
-
-        // Devolver el ID único generado
-        return hexString.toString()
     }
 
 
