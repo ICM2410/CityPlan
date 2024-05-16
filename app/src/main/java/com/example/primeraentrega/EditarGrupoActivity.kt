@@ -4,11 +4,16 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.Plan
 import com.example.primeraentrega.Clases.UsuarioAmigo
@@ -18,6 +23,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import java.io.File
 import java.util.Date
 
 class EditarGrupoActivity : AppCompatActivity() {
@@ -25,6 +32,21 @@ class EditarGrupoActivity : AppCompatActivity() {
     private lateinit var binding : ActivityEditarGrupoBinding
     private lateinit var idGrupo : String
     private var idPlan : String=""
+    lateinit var uriCamera : Uri
+
+    val getContentGallery = registerForActivityResult(
+        ActivityResultContracts.GetContent(),
+        ActivityResultCallback {
+            loadImage(it!!)
+        })
+
+    val getContentCamera = registerForActivityResult(
+        ActivityResultContracts.TakePicture(),ActivityResultCallback {
+            if(it){
+                loadImage(uriCamera)
+            }
+        })
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityEditarGrupoBinding.inflate(layoutInflater)
@@ -38,12 +60,24 @@ class EditarGrupoActivity : AppCompatActivity() {
     private var isFabOpen=false
     private var rotation=false
     private fun inicializarBotones() {
-        binding.buttonAgregarMiembros.setOnClickListener {
-            val intent = Intent(this, EditarContactosGrupoActivity::class.java)
-            intent.putExtra("idGrupo", idGrupo)
-            startActivity(intent)
+
+        val file = File(getFilesDir(), "picFromCamera");
+        uriCamera =  FileProvider.getUriForFile(baseContext, baseContext.packageName + ".fileprovider", file)
+
+        binding.botonGaleria1.setOnClickListener {
+            getContentGallery.launch("image/*")
         }
 
+        binding.botonCamara1.setOnClickListener {
+            getContentCamera.launch(uriCamera)
+        }
+
+
+        binding.buttonAgregarMiembros.setOnClickListener {
+            var intent = Intent(baseContext, AgregarContactosActivity::class.java)
+            intent.putExtra("pantalla", "editar")
+            startActivity(intent)
+        }
 
         binding.buttonSalir.setOnClickListener {
             //se sale del grupo
@@ -51,10 +85,14 @@ class EditarGrupoActivity : AppCompatActivity() {
         }
 
         binding.buttonGuardar.setOnClickListener {
-            startActivity(Intent(baseContext, ChatActivity::class.java))
+            val nombreGrupo = binding.editTextNombreGrupo.text.toString()
+            val descripcionGrupo = binding.editTextDescGrupo.text.toString()
+            if (validateForm(nombreGrupo, descripcionGrupo)) {
+                actualizarDatosGrupo(nombreGrupo, descripcionGrupo)
+            }
         }
 
-        binding.buttonSeleccionarFoto.setOnClickListener {
+        binding.fotoSeleccionada1.setOnClickListener {
             val intent = Intent(this@EditarGrupoActivity, SeleccionarFotoActivity::class.java)
             startActivityForResult(intent, SELECCIONAR_FOTO_REQUEST_CODE)
         }
@@ -103,6 +141,19 @@ class EditarGrupoActivity : AppCompatActivity() {
         fabClicks()
     }
 
+    private fun validateForm(nombreGrupo: String, descripcionGrupo: String): Boolean {
+        var valid = false
+        if (nombreGrupo.isEmpty()) {
+            Toast.makeText(applicationContext, "¡El nombre del grupo es obligatorio!", Toast.LENGTH_SHORT).show()
+        } else if (descripcionGrupo.isEmpty()) {
+            Toast.makeText(applicationContext, "¡La descripción del grupo es obligatoria!", Toast.LENGTH_SHORT).show()
+        } else {
+            valid = true
+        }
+        return valid
+    }
+
+
     private fun fabClicks() {
         binding.fabPlanesPasados.setOnClickListener {
             var intent = Intent(baseContext, PlanesPasadosActivity::class.java)
@@ -130,7 +181,7 @@ class EditarGrupoActivity : AppCompatActivity() {
 
     private fun revisarActivo() {
         var existe=false
-        val ref = FirebaseDatabase.getInstance().getReference("Grupos")
+        val ref = FirebaseDatabase.getInstance().getReference("Groups")
         ref.child(idGrupo).child("planes").addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -267,9 +318,82 @@ class EditarGrupoActivity : AppCompatActivity() {
                 Glide.with(this)
                     .load(Uri.parse(imageUri))
                     .circleCrop() // Aplicar círculo de recorte
-                    .into(binding.buttonSeleccionarFoto)
+                    .into(binding.fotoSeleccionada1)
             }
         }
     }
-    
+
+
+
+    private fun loadImage(uri : Uri?) {
+        val imageStream = getContentResolver().openInputStream(uri!!)
+        val bitmap = BitmapFactory.decodeStream(imageStream)
+        binding.fotoSeleccionada1.setImageBitmap(bitmap)
+
+        // Después de cargar la imagen, llamar al método para actualizar la foto del grupo
+        updateGroupPhoto(uri)
+    }
+
+    private fun updateGroupPhoto(imageUri: Uri?) {
+        val drawableFoto = binding.fotoSeleccionada1.drawable
+        if (drawableFoto != null && imageUri != null) {
+            if (drawableFoto is BitmapDrawable) {
+                val bitmap = drawableFoto.bitmap
+                val storageReference = FirebaseStorage.getInstance().getReference("Groups/$idGrupo")
+
+                // Subir la imagen al almacenamiento de Firebase
+                storageReference.putFile(imageUri).addOnSuccessListener { taskSnapshot ->
+                    // Obtener la URL de la imagen subida
+                    storageReference.downloadUrl.addOnSuccessListener { uri ->
+                        // Actualizar el campo 'fotoGrupo' en la base de datos con la ruta relativa de la imagen
+                        FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
+                            .child("fotoGrupo").setValue("Groups/$idGrupo")
+                            .addOnSuccessListener {
+                                Toast.makeText(applicationContext, "Foto del grupo actualizada", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(applicationContext, "Error al actualizar la foto del grupo: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    }.addOnFailureListener { e ->
+                        Toast.makeText(applicationContext, "Error al obtener la URL de la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }.addOnFailureListener { e ->
+                    Toast.makeText(applicationContext, "Error al subir la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+
+    private fun actualizarDatosGrupo(nombreGrupo: String, descripcionGrupo: String) {
+        val gruposRef = FirebaseDatabase.getInstance().getReference("Groups")
+
+        // Actualizar los datos del grupo en la base de datos
+        gruposRef.child(idGrupo).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Verificar si el grupo existe en la base de datos
+                if (snapshot.exists()) {
+                    // Actualizar los datos del grupo
+                    snapshot.ref.child("titulo").setValue(nombreGrupo)
+                    snapshot.ref.child("descripcion").setValue(descripcionGrupo)
+                        .addOnSuccessListener {
+                            // Los datos del grupo se actualizaron correctamente
+                            Toast.makeText(applicationContext, "Datos del grupo actualizados", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            // Error al actualizar los datos del grupo
+                            Toast.makeText(applicationContext, "Error al actualizar los datos del grupo: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    // El grupo no existe en la base de datos
+                    Toast.makeText(applicationContext, "El grupo no existe en la base de datos", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Error al acceder a los datos del grupo
+                Toast.makeText(applicationContext, "Error al acceder a los datos del grupo: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 }

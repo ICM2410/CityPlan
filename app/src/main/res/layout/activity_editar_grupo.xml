@@ -40,18 +40,44 @@
         </LinearLayout>
 
         <ImageButton
-            android:id="@+id/buttonSeleccionarFoto"
+            android:id="@+id/fotoSeleccionada1"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:background="@drawable/circulo_gris"
             app:srcCompat="@drawable/camara"
             android:layout_marginTop="35dp" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/botonGaleria1"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginRight="30dp"
+                android:layout_marginLeft="32dp"
+                android:backgroundTint="@color/moradoClaro"
+                android:text="Subir Imagen" />
+
+            <Button
+                android:id="@+id/botonCamara1"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginRight="32dp"
+                android:layout_marginLeft="30dp"
+                android:backgroundTint="@color/moradoClaro"
+                android:text="Abrir Camara" />
+        </LinearLayout>
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/user2"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="320dp"
-            android:layout_height="wrap_content"
+            android:layout_height="80dp"
             android:layout_gravity="center"
             android:background="@drawable/boton_plan"
             android:backgroundTint="@color/transparente"
@@ -71,7 +97,7 @@
             android:id="@+id/user"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="320dp"
-            android:layout_height="wrap_content"
+            android:layout_height="80dp"
             android:layout_gravity="center"
             android:background="@drawable/boton_plan"
             android:backgroundTint="@color/transparente"

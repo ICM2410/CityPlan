@@ -28,13 +28,6 @@ import java.io.File
 
 class EditarContactosGrupoActivity : AppCompatActivity() {
 
-    //Permission val
-    /* val getContactsPermission = registerForActivityResult(
-         ActivityResultContracts.RequestPermission(),
-         ActivityResultCallback {
-             updateUI(it)
-         })*/
-
     private lateinit var binding: ActivityAgregarContactosBinding
     val projection = arrayOf(ContactsContract.Profile._ID, ContactsContract.Profile.DISPLAY_NAME_PRIMARY)
     private var isFabOpen=false
@@ -207,29 +200,6 @@ class EditarContactosGrupoActivity : AppCompatActivity() {
 
         return isFabOpen
     }
-
-    /*fun permissionRequest(){
-        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED){
-            if(shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS)){
-                Toast.makeText(this, "The app requires access to the contacts", Toast.LENGTH_LONG).show()
-            }
-            getContactsPermission.launch(android.Manifest.permission.READ_CONTACTS)
-        }else{
-            updateUI(true)
-        }
-    }*/
-
-    /*fun updateUI(contacts : Boolean){
-        if(contacts){
-            //Permission Granted
-            var cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, projection, null, null, null)
-            adapter.changeCursor(cursor)
-
-        }else {
-            //Permission Denied
-
-        }
-    }*/
 
     val contactList: MutableList<ListUser> = mutableListOf()
     private fun llenarLista() {
