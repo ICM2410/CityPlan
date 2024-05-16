@@ -378,9 +378,6 @@ class VerGruposActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
-                    startActivity(Intent(baseContext, PerfilConfActivity::class.java).apply {
-                        putExtra("userId", auth.currentUser?.uid)
-                    })
                     val executor = ContextCompat.getMainExecutor(this)
                     val biometricPrompt = BiometricPrompt(this, executor,
                         object : BiometricPrompt.AuthenticationCallback() {
@@ -389,7 +386,7 @@ class VerGruposActivity : AppCompatActivity() {
                                 // Aquí puedes realizar alguna acción después de la autenticación exitosa
                                 // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
                                 var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                                intent.putExtra("userId", usuario)
+                                intent.putExtra("user", usuario)
                                 startActivity(intent)
                                 //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
                                 //startActivity(Intent(baseContext, VerGruposActivity::class.java))
@@ -405,7 +402,7 @@ class VerGruposActivity : AppCompatActivity() {
 
                     biometricPrompt.authenticate(promptInfo)
                     // Respond to navigation item 2 click
-                   false
+                    false
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
