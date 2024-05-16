@@ -13,6 +13,8 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
 import com.example.primeraentrega.Clases.Plan
@@ -107,11 +109,31 @@ class EditarGrupoActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
+                    val executor = ContextCompat.getMainExecutor(this)
+                    val biometricPrompt = BiometricPrompt(this, executor,
+                        object : BiometricPrompt.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                                super.onAuthenticationSucceeded(result)
+                                // Aquí puedes realizar alguna acción después de la autenticación exitosa
+                                // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
+                                var intent = Intent(baseContext, PerfilConfActivity::class.java)
+                                intent.putExtra("user", usuario)
+                                startActivity(intent)
+                                //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
+                                //startActivity(Intent(baseContext, VerGruposActivity::class.java))
+                                true
+                            }
+                        })
+
+                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Autenticación de huella dactilar")
+                        .setSubtitle("Toque el sensor de huella dactilar")
+                        .setNegativeButtonText("Cancelar")
+                        .build()
+
+                    biometricPrompt.authenticate(promptInfo)
                     // Respond to navigation item 2 click
-                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                    intent.putExtra("user", usuario)
-                    startActivity(intent)
-                    true
+                    false
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
