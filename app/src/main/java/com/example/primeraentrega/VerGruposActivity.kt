@@ -146,6 +146,7 @@ class VerGruposActivity : AppCompatActivity() {
     override fun onRestart() {
         super.onRestart()
         gestionarPermiso()
+        llenarLista()
     }
 
     private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -455,7 +456,10 @@ class VerGruposActivity : AppCompatActivity() {
                             groupList.add(groupADD)
 
                             //se subscribe al canal de notificaciones del grupo
+
+                            //SUBSCRIPCION SE HACE AQUI
                             dataSnapshot.key?.let { it1 -> subscribirACanal(it1) }
+
                             //Lista
                             val adapter = GroupAdapter(applicationContext,groupList);
                             binding.gruposList.adapter = adapter

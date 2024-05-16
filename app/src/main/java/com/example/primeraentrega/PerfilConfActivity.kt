@@ -59,9 +59,6 @@ class PerfilConfActivity : AppCompatActivity() {
             }
         }
 
-        binding.huella.setOnClickListener {
-            solicitarHuella(usuario)
-        }
     }
 
     private fun solicitarHuella(usuario: UsuarioAmigo?) {
