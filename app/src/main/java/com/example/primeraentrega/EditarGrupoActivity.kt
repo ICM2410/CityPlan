@@ -61,6 +61,12 @@ class EditarGrupoActivity : AppCompatActivity() {
     private var rotation=false
     private fun inicializarBotones() {
 
+        binding.buttonAgregarMiembros.setOnClickListener {
+            val intent = Intent(this, EditarContactosGrupoActivity::class.java)
+            intent.putExtra("idGrupo", idGrupo)
+            startActivity(intent)
+        }
+
         val file = File(getFilesDir(), "picFromCamera");
         uriCamera =  FileProvider.getUriForFile(baseContext, baseContext.packageName + ".fileprovider", file)
 
@@ -73,11 +79,6 @@ class EditarGrupoActivity : AppCompatActivity() {
         }
 
 
-        binding.buttonAgregarMiembros.setOnClickListener {
-            var intent = Intent(baseContext, AgregarContactosActivity::class.java)
-            intent.putExtra("pantalla", "editar")
-            startActivity(intent)
-        }
 
         binding.buttonSalir.setOnClickListener {
             //se sale del grupo

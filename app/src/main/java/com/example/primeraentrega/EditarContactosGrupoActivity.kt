@@ -201,6 +201,29 @@ class EditarContactosGrupoActivity : AppCompatActivity() {
         return isFabOpen
     }
 
+    /*fun permissionRequest(){
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED){
+            if(shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS)){
+                Toast.makeText(this, "The app requires access to the contacts", Toast.LENGTH_LONG).show()
+            }
+            getContactsPermission.launch(android.Manifest.permission.READ_CONTACTS)
+        }else{
+            updateUI(true)
+        }
+    }*/
+
+    /*fun updateUI(contacts : Boolean){
+        if(contacts){
+            //Permission Granted
+            var cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, projection, null, null, null)
+            adapter.changeCursor(cursor)
+
+        }else {
+            //Permission Denied
+
+        }
+    }*/
+
     val contactList: MutableList<ListUser> = mutableListOf()
     private fun llenarLista() {
 
@@ -262,13 +285,13 @@ class EditarContactosGrupoActivity : AppCompatActivity() {
         // Verificar si hay usuarios seleccionados
         if (!selectedUsers.isNullOrEmpty()) {
             // Referencia al grupo en la base de datos
-            val grupoRef = FirebaseDatabase.getInstance().getReference("Grupos").child(idGrupo)
+            val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
 
             // Iterar sobre los usuarios seleccionados y agregarlos al grupo
             selectedUsers.forEach { user ->
                 user.uid?.let { userId ->
-                    val miembrosRef = grupoRef.child("Miembros").child(userId)
-                    miembrosRef.setValue(true)
+                    val miembrosRef = grupoRef.child("integrantes").child(userId)
+                    miembrosRef.setValue(userId)
                         .addOnSuccessListener {
                             Toast.makeText(this, "${user.nombre} agregado al grupo", Toast.LENGTH_SHORT).show()
                         }
