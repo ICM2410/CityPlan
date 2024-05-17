@@ -61,7 +61,7 @@
             android:id="@+id/toogleButton"
             android:layout_width="212dp"
             android:layout_height="43dp"
-            app:checkedButton="@id/contactos"
+            app:checkedButton="@id/otros"
             app:singleSelection="true"
             tools:layout_editor_absoluteX="48dp"
             tools:layout_editor_absoluteY="159dp">
@@ -80,7 +80,7 @@
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Otros"
+                android:text="Todos"
                 tools:layout_editor_absoluteX="117dp"
                 tools:layout_editor_absoluteY="10dp" />
 

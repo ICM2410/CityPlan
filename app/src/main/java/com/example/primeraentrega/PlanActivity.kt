@@ -146,6 +146,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
         task.addOnSuccessListener {
+            firstTime=true
             startLocationUpdates()
         }
         task.addOnFailureListener{

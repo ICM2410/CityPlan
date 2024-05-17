@@ -13,6 +13,8 @@ import android.provider.ContactsContract
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.primeraentrega.Adapters.UserAdapter
 import com.example.primeraentrega.Clases.ListUser
 import com.example.primeraentrega.Clases.UsuarioAmigo
@@ -28,15 +30,17 @@ import java.io.File
 
 class AgregarContactosActivity : AppCompatActivity() {
 
-    //Permission val
-   /* val getContactsPermission = registerForActivityResult(
+    var permiso=false
+    val projection = arrayOf(ContactsContract.Profile._ID, ContactsContract.Profile.DISPLAY_NAME_PRIMARY)
+    //permission val
+    val getContactsPermission= registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
         ActivityResultCallback {
-            updateUI(it)
-        })*/
+            permiso=true
+           loadPhoneNumbers()
+        })
 
     private lateinit var binding: ActivityAgregarContactosBinding
-    val projection = arrayOf(ContactsContract.Profile._ID, ContactsContract.Profile.DISPLAY_NAME_PRIMARY)
     private var isFabOpen=false
     private var rotation=false
     private lateinit var idGrupo : String
@@ -49,14 +53,11 @@ class AgregarContactosActivity : AppCompatActivity() {
         setContentView(binding.root)
         idGrupo = intent.getStringExtra("idGrupo").toString()
 
-
-        //permissionRequest()
         inicializarBotones()
-
-        // Define and initialize the onUserSelectedListener
-        val onUserSelectedListener = this
+        permissionRequest()
 
         auth = FirebaseAuth.getInstance()
+        evaluarToggle()
 
         llenarLista()
 
@@ -82,6 +83,88 @@ class AgregarContactosActivity : AppCompatActivity() {
                 Toast.makeText(this, "Selected users added to group", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun evaluarToggle() {
+        binding.toogleButton.addOnButtonCheckedListener { group, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.contactos -> {
+                        Toast.makeText(this, "Contactos seleccionados", Toast.LENGTH_SHORT).show()
+                        Log.d("ToggleButton", "Contactos seleccionados")
+
+                        //llenar lista de contactos
+
+                            contactList.clear()
+                        val adapter = UserAdapter(applicationContext,contactList);
+                        binding.listaContactos.adapter = adapter
+                            llenarListaTelefonos()
+
+
+                    }
+                    R.id.otros -> {
+                        Toast.makeText(this, "Otros seleccionados", Toast.LENGTH_SHORT).show()
+                        Log.d("ToggleButton", "Otros seleccionados")
+                        contactList.clear()
+                        llenarLista()
+                        //llenar lista de todos
+                    }
+                }
+            }
+        }
+    }
+
+    val phoneList: MutableList<String> = mutableListOf()
+    private fun loadPhoneNumbers() {
+        val projection = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
+        val cursor = contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            projection,
+            null,
+            null,
+            null
+        )
+
+        cursor?.use {
+            val numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
+            while (cursor.moveToNext()) {
+                val phoneNumber = cursor.getString(numberIndex)
+                Log.i("telefonos","ver telefonos $phoneNumber")
+                phoneList.add(phoneNumber)
+            }
+        }
+
+        phoneList.forEach { phoneNumber ->
+            Log.d("ContactInfo", phoneNumber)
+        }
+
+    }
+
+    fun permissionRequest()
+    {
+        if(ContextCompat.checkSelfPermission(this,android.Manifest.permission.READ_CONTACTS)== PackageManager.PERMISSION_DENIED)
+        {
+            if (shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS)) {
+                // Inside your activity or fragment
+                Toast.makeText(getApplicationContext(), "The app requires access to contacts", Toast.LENGTH_LONG).show();
+            }
+
+            getContactsPermission.launch(android.Manifest.permission.READ_CONTACTS)
+        }
+        else
+        {
+            permiso=true
+            loadPhoneNumbers()
+        }
+
+    }
+
+    override fun onRestart()
+    {
+        super.onRestart()
+        permissionRequest()
     }
 
     private fun inicializarBotones() {
@@ -246,29 +329,6 @@ class AgregarContactosActivity : AppCompatActivity() {
         return isFabOpen
     }
 
-    /*fun permissionRequest(){
-        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED){
-            if(shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS)){
-                Toast.makeText(this, "The app requires access to the contacts", Toast.LENGTH_LONG).show()
-            }
-            getContactsPermission.launch(android.Manifest.permission.READ_CONTACTS)
-        }else{
-            updateUI(true)
-        }
-    }*/
-
-    /*fun updateUI(contacts : Boolean){
-        if(contacts){
-            //Permission Granted
-            var cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, projection, null, null, null)
-            adapter.changeCursor(cursor)
-
-        }else {
-            //Permission Denied
-
-        }
-    }*/
-
     val contactList: MutableList<ListUser> = mutableListOf()
     private fun llenarLista() {
 
@@ -319,6 +379,62 @@ class AgregarContactosActivity : AppCompatActivity() {
                     override fun onCancelled(databaseError: DatabaseError) {
                     }
                 })
+        }
+
+    }
+
+
+    private fun llenarListaTelefonos() {
+
+        databaseReference = FirebaseDatabase.getInstance().getReference("Usuario")
+
+        auth.currentUser?.uid?.let { currentUserUid ->
+            databaseReference.addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+
+                    // Obtener el usuario de dataSnapshot
+                    val usuario = dataSnapshot.getValue(UsuarioAmigo::class.java)
+                    Log.e("Referencia", "Aqui llegue a usuario")
+                    Log.e("UsuarioImagen", "Imagen: ${usuario?.imagen}")
+                    // Verificar si el usuario no es el usuario actual antes de agregarlo a la lista
+
+                    if (usuario != null && dataSnapshot.key != currentUserUid && phoneList.contains(usuario.telefono.toString())) {
+                        Log.i("telefonos lista", usuario.telefono.toString())
+
+                        Log.e("Referencia 2", "Apunto de pedir storageRef")
+                        val storageRef = FirebaseStorage.getInstance().reference.child("${usuario.imagen}.jpg")
+                        Log.e("Referencia", "Ya pedi")
+                        val localfile = File. createTempFile( "tempImage", "jpg")
+
+                        Log.e("GetFile", "Pedire local file")
+                        storageRef.getFile(localfile).addOnSuccessListener {
+                            Log.e("Entre", "ENTRE")
+                            Log.e("REFERENCIA", storageRef.toString())
+                            val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
+                            var usuarioADD= ListUser(usuario.username, usuario.uid, bitmap)
+                            contactList.add(usuarioADD)
+
+                            //Lista
+                            val adapter = UserAdapter(applicationContext,contactList);
+                            binding.listaContactos.adapter = adapter
+
+                        }.addOnFailureListener{
+                            Log.e("Error", "User could not be found")
+                        }
+
+                    }
+                }
+                override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+
+                }
+                override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+
+                }
+                override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                }
+            })
         }
 
     }
