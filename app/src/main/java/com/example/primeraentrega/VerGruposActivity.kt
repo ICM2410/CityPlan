@@ -62,10 +62,12 @@ import com.google.firebase.messaging.messaging
 class VerGruposActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityVerGruposBinding
-    private lateinit var database : FirebaseDatabase
+    private lateinit var database: FirebaseDatabase
     private lateinit var databaseReference: DatabaseReference
     private lateinit var auth: FirebaseAuth
 
+    private val groupList: MutableList<ListGroup> = mutableListOf()
+    private var childEventListener: ChildEventListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +75,7 @@ class VerGruposActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         database = FirebaseDatabase.getInstance()
-        databaseReference= FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReference = FirebaseDatabase.getInstance().getReference("Grupos")
 
         inicializarBotones()
 
@@ -95,7 +97,6 @@ class VerGruposActivity : AppCompatActivity() {
         gestionarAlarma()
         iniciarServicio()
         configurarLocalizacion()
-
     }
 
     override fun onPause() {
@@ -104,15 +105,13 @@ class VerGruposActivity : AppCompatActivity() {
         stopLlenarLista()
     }
 
-
-
     private fun stopLlenarLista() {
         // Remove the listener to stop receiving updates from Firebase
-        databaseReference.removeEventListener(childEventListener!!)
+        childEventListener?.let { databaseReference.removeEventListener(it) }
     }
 
     private fun iniciarServicio() {
-        Intent (applicationContext, NewPlanService::class.java). apply {
+        Intent(applicationContext, NewPlanService::class.java).apply {
             action = NewPlanService.ACTION_START
             putExtra("uid", auth.currentUser?.uid)
             startService(this) // Aquí inicia el servicio
@@ -136,11 +135,11 @@ class VerGruposActivity : AppCompatActivity() {
         }
     }
 
-    private fun subscribirACanal(canal:String) {
+    private fun subscribirACanal(canal: String) {
         //aqui se debe subscribir a todos los chats a los que pertenece
         Firebase.messaging.subscribeToTopic(canal).addOnSuccessListener {
             Log.i("subscripcion", "Existosa")
-        }.addOnFailureListener{
+        }.addOnFailureListener {
             Log.e("subscripcion", "ERROR")
         }
     }
@@ -151,48 +150,40 @@ class VerGruposActivity : AppCompatActivity() {
         llenarLista()
     }
 
-    private val localPermissionName=android.Manifest.permission.ACCESS_FINE_LOCATION;
-    private val notificationpermissionName=android.Manifest.permission.POST_NOTIFICATIONS
-    private val ALARMpermissionName=android.Manifest.permission.SCHEDULE_EXACT_ALARM
-    private val multiplepPermissionNameList= arrayOf(localPermissionName,notificationpermissionName)
+    private val localPermissionName = android.Manifest.permission.ACCESS_FINE_LOCATION
+    private val notificationpermissionName = android.Manifest.permission.POST_NOTIFICATIONS
+    private val ALARMpermissionName = android.Manifest.permission.SCHEDULE_EXACT_ALARM
+    private val multiplepPermissionNameList = arrayOf(localPermissionName, notificationpermissionName)
 
     fun gestionarPermiso() {
-
         if (ContextCompat.checkSelfPermission(this, notificationpermissionName) == PackageManager.PERMISSION_DENIED
             || ContextCompat.checkSelfPermission(this, localPermissionName) == PackageManager.PERMISSION_DENIED
             || ContextCompat.checkSelfPermission(this, ALARMpermissionName) == PackageManager.PERMISSION_DENIED
         ) {
-
             if (shouldShowRequestPermissionRationale(notificationpermissionName)) {
                 // Mostrar una explicación al usuario sobre por qué se necesitan los permisos de notificación
                 Toast.makeText(applicationContext, "La aplicación necesita permisos para mostrar notificaciones y usar la localizacion", Toast.LENGTH_LONG).show()
             }
             // Solicitar permisos de notificación
             requestMultiplePermissions.launch(multiplepPermissionNameList)
-        }
-        else if (ContextCompat.checkSelfPermission(this, notificationpermissionName) == PackageManager.PERMISSION_DENIED) {
+        } else if (ContextCompat.checkSelfPermission(this, notificationpermissionName) == PackageManager.PERMISSION_DENIED) {
             if (shouldShowRequestPermissionRationale(notificationpermissionName)) {
                 // Mostrar una explicación al usuario sobre por qué se necesitan los permisos de notificación
                 Toast.makeText(applicationContext, "La aplicación necesita permisos para mostrar notificaciones", Toast.LENGTH_LONG).show()
             }
             // Solicitar permisos de notificación
             permissionRequestNotificacion.launch(notificationpermissionName)
-        }
-        else if(ContextCompat.checkSelfPermission(this, localPermissionName) == PackageManager.PERMISSION_DENIED) {
-            if(shouldShowRequestPermissionRationale(localPermissionName))
-            {
-                Toast.makeText(getApplicationContext(), "The app requires access to location", Toast.LENGTH_LONG).show();
+        } else if (ContextCompat.checkSelfPermission(this, localPermissionName) == PackageManager.PERMISSION_DENIED) {
+            if (shouldShowRequestPermissionRationale(localPermissionName)) {
+                Toast.makeText(getApplicationContext(), "The app requires access to location", Toast.LENGTH_LONG).show()
             }
             permissionRequest.launch(localPermissionName)
-        }
-        else if(ContextCompat.checkSelfPermission(this, ALARMpermissionName) == PackageManager.PERMISSION_DENIED) {
-            if(shouldShowRequestPermissionRationale(ALARMpermissionName))
-            {
-                Toast.makeText(getApplicationContext(), "The app requires access to location", Toast.LENGTH_LONG).show();
+        } else if (ContextCompat.checkSelfPermission(this, ALARMpermissionName) == PackageManager.PERMISSION_DENIED) {
+            if (shouldShowRequestPermissionRationale(ALARMpermissionName)) {
+                Toast.makeText(getApplicationContext(), "The app requires access to location", Toast.LENGTH_LONG).show()
             }
             permissionRequestAlarm.launch(ALARMpermissionName)
-        }
-        else {
+        } else {
             // La aplicación ya tiene permisos, mostrar notificaciones
             //notificar()
             startLocationUpdates()
@@ -203,28 +194,25 @@ class VerGruposActivity : AppCompatActivity() {
     val permissionRequestNotificacion = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
         ActivityResultCallback {
-            if(it)
-            {
+            if (it) {
                 //notificar()
-                Log.i("notification","notificaciones garantizadas")
+                Log.i("notification", "notificaciones garantizadas")
             }
         }
     )
 
-    val permissionRequestAlarm= registerForActivityResult(
+    val permissionRequestAlarm = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
         ActivityResultCallback {
-            if(it)
-            {
-                Log.i("Alarm","Alarma CONCEDIDA")
+            if (it) {
+                Log.i("Alarm", "Alarma CONCEDIDA")
             }
         })
 
-    val permissionRequest= registerForActivityResult(
+    val permissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
         ActivityResultCallback {
-            if(it)
-            {
+            if (it) {
                 locationSettings()
             }
         })
@@ -244,7 +232,7 @@ class VerGruposActivity : AppCompatActivity() {
                     if (isGranted) {
                         // El permiso de notificaciones fue concedido
                         //notificar()
-                        Log.i("notification","notificaciones garantizadas")
+                        Log.i("notification", "notificaciones garantizadas")
                     }
                 }
                 // Puedes manejar más permisos aquí si es necesario
@@ -255,22 +243,18 @@ class VerGruposActivity : AppCompatActivity() {
     private lateinit var locationCallBack: LocationCallback
     lateinit var location: FusedLocationProviderClient
 
-    val locationSettings= registerForActivityResult(
+    val locationSettings = registerForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult(),
         ActivityResultCallback {
-            if(it.
-                resultCode ==
-                RESULT_OK){
-
+            if (it.resultCode == RESULT_OK) {
                 startLocationUpdates()
-            }else{
-                Toast.makeText(getApplicationContext(), "GPS TURNED OFF", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "GPS TURNED OFF", Toast.LENGTH_LONG).show()
             }
         })
 
-    fun locationSettings()
-    {
-        val builder= LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+    fun locationSettings() {
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
 
         val client: SettingsClient = LocationServices.getSettingsClient(this)
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
@@ -278,103 +262,82 @@ class VerGruposActivity : AppCompatActivity() {
         task.addOnSuccessListener {
             startLocationUpdates()
         }
-        task.addOnFailureListener{
-            if(it is ResolvableApiException)
-            {
-                try{
+        task.addOnFailureListener {
+            if (it is ResolvableApiException) {
+                try {
                     val isr: IntentSenderRequest = IntentSenderRequest.Builder(it.resolution).build()
                     locationSettings.launch(isr)
-                }
-                catch (sendEx: IntentSender.SendIntentException)
-                {
+                } catch (sendEx: IntentSender.SendIntentException) {
                     //ignore the error
                 }
-
-            }
-            else
-            {
-                Toast.makeText(getApplicationContext(), "there is no gps hardware", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "there is no gps hardware", Toast.LENGTH_LONG).show()
             }
         }
     }
-    fun startLocationUpdates()
-    {
-        if(ActivityCompat.checkSelfPermission(this, localPermissionName)== PackageManager.PERMISSION_GRANTED)
-        {
-            location.requestLocationUpdates(locationRequest,locationCallBack, Looper.getMainLooper())
+
+    fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, localPermissionName) == PackageManager.PERMISSION_GRANTED) {
+            location.requestLocationUpdates(locationRequest, locationCallBack, Looper.getMainLooper())
 
             //PARA PONER LA POSICION INICIAL DEL USUARIO
             location.lastLocation.addOnSuccessListener {
                 if (it != null) {
-                    //latActual=it.latitude
-                    //longActual=it.longitude
-                    //auth.currentUser?.uid?.let { databaseReference.child(it).child("latitud").setValue(latActual)}
-                    //auth.currentUser?.uid?.let { databaseReference.child(it).child("latitud").setValue(longActual)}
-
+                    //latActual = it.latitude
+                    //longActual = it.longitude
+                    //auth.currentUser?.uid?.let { databaseReference.child(it).child("latitud").setValue(latActual) }
+                    //auth.currentUser?.uid?.let { databaseReference.child(it).child("latitud").setValue(longActual) }
                 }
             }
-        }
-        else
-        {
-            //Toast.makeText(getApplicationContext(), "NO HAY PERMISO", Toast.LENGTH_LONG).show();
+        } else {
+            //Toast.makeText(getApplicationContext(), "NO HAY PERMISO", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun configurarLocalizacion() {
-
-        location= LocationServices.getFusedLocationProviderClient(this);
-        locationRequest=createLocationRequest()
-        locationCallBack=createLocationCallback()
+        location = LocationServices.getFusedLocationProviderClient(this)
+        locationRequest = createLocationRequest()
+        locationCallBack = createLocationCallback()
 
         //primero gestionar los permisos
         gestionarPermiso()
-
     }
 
-    private  fun createLocationCallback():LocationCallback
-    {
-        val locationCallback=object: LocationCallback()//clase anonima en kotlin
-        //heredar y sobreescribir sobre la misma linea
-        {
+    private fun createLocationCallback(): LocationCallback {
+        val locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 super.onLocationResult(result)
-                val last=result.lastLocation
-                if(last!=null)
-                {
-                    //Toast.makeText(getApplicationContext(), "($last.latitude , $last.longitude)", Toast.LENGTH_LONG).show();
+                val last = result.lastLocation
+                if (last != null) {
+                    //Toast.makeText(getApplicationContext(), "($last.latitude , $last.longitude)", Toast.LENGTH_LONG).show()
                     auth.currentUser?.uid?.let { userId ->
-                        val refUsuario=FirebaseDatabase.getInstance().getReference("Usuario")
+                        val refUsuario = FirebaseDatabase.getInstance().getReference("Usuario")
                         refUsuario.child(userId).apply {
-                            child("latitud").setValue( last.latitude)
-                            child("longitud").setValue( last.longitude)
+                            child("latitud").setValue(last.latitude)
+                            child("longitud").setValue(last.longitude)
                         }
                     }
-
                 }
             }
         }
-
         return locationCallback
     }
 
-    private fun createLocationRequest():LocationRequest
-    {
-        val request=LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 7000)
+    private fun createLocationRequest(): LocationRequest {
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 7000)
             .setMinUpdateIntervalMillis(2000)
             .setWaitForAccurateLocation(true)
             .build()
-
         return request
     }
 
     private fun inicializarBotones() {
-        val usuario=UsuarioAmigo()
+        val usuario = UsuarioAmigo()
         binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when(item.itemId) {
+            when (item.itemId) {
                 R.id.Grupos_bar -> {
                     // Respond to navigation item 1 click
                     //startActivity(Intent(baseContext, VerGruposActivity::class.java))
-
                     true
                 }
                 R.id.cuenta_bar -> {
@@ -415,40 +378,36 @@ class VerGruposActivity : AppCompatActivity() {
             }
         }
 
-
         binding.botonAgregarGrupo.setOnClickListener {
             startActivity(Intent(baseContext, AgregarContactosActivity::class.java))
         }
-
     }
 
-    val groupList: MutableList<ListGroup> = mutableListOf()
-    private var childEventListener: ChildEventListener? = null
     private fun llenarLista() {
+        // Limpia la lista antes de llenarla
+        groupList.clear()
 
         databaseReference = FirebaseDatabase.getInstance().getReference("Groups")
 
         auth.currentUser?.uid?.let { currentUserUid ->
             childEventListener = databaseReference.addChildEventListener(object : ChildEventListener {
                 override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-
                     // Obtener el usuario de dataSnapshot
                     val grupo = dataSnapshot.getValue(Grupo::class.java)
                     Log.e("Referencia", "Aqui llegue a Grupo")
                     Log.e("GrupoImagen", "Imagen: ${grupo?.fotoGrupo}")
                     // Verificar si el usuario no es el usuario actual antes de agregarlo a la lista
                     if (grupo != null && grupo.integrantes.containsKey(currentUserUid)) {
-
                         Log.e("Referencia", "Apunto de pedir storageRef")
                         val storageRef = FirebaseStorage.getInstance().reference.child(grupo.fotoGrupo)
                         Log.e("Referencia", "Ya pedi")
-                        val localfile = File. createTempFile( "tempImage", "jpg")
+                        val localfile = File.createTempFile("tempImage", "jpg")
 
                         Log.e("GetFile", "Pedire local file")
                         storageRef.getFile(localfile).addOnSuccessListener {
                             Log.e("Entre", "ENTRE")
                             val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
-                            var groupADD= ListGroup(grupo.titulo, dataSnapshot.key, bitmap)
+                            val groupADD = ListGroup(grupo.titulo, dataSnapshot.key, bitmap)
                             groupList.add(groupADD)
 
                             //se subscribe al canal de notificaciones del grupo
@@ -457,28 +416,23 @@ class VerGruposActivity : AppCompatActivity() {
                             dataSnapshot.key?.let { it1 -> subscribirACanal(it1) }
 
                             //Lista
-                            val adapter = GroupAdapter(applicationContext,groupList);
+                            val adapter = GroupAdapter(applicationContext, groupList)
                             binding.gruposList.adapter = adapter
 
-                        }.addOnFailureListener{
+                        }.addOnFailureListener {
                             Log.e("Error", "User could not be found")
                         }
-
                     }
                 }
-                override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
 
-                }
-                override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+                override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {}
 
-                }
-                override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-                }
-                override fun onCancelled(databaseError: DatabaseError) {
-                }
+                override fun onChildRemoved(dataSnapshot: DataSnapshot) {}
+
+                override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {}
+
+                override fun onCancelled(databaseError: DatabaseError) {}
             })
         }
-
     }
-
 }
