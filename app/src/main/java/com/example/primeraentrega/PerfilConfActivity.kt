@@ -162,6 +162,7 @@ class PerfilConfActivity : AppCompatActivity() {
         if (userId != null) {
             // Referencia al almacenamiento de Firebase
             val storageRef = FirebaseStorage.getInstance().reference
+
             // Nombre de la imagen en Firebase Storage (sin la extensión)
             val imageName = "usuarios/$userId.jpg"
 
@@ -171,10 +172,7 @@ class PerfilConfActivity : AppCompatActivity() {
             // Manejar el éxito o el fracaso de la carga de la imagen
             uploadTask.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // La imagen se ha subido correctamente
-                    // Guardar la URL de la imagen en Firebase Realtime Database
-                    val imageUrl = imageName // La URL de la imagen es la misma que el nombre de la imagen
-                    guardarUrlImagenEnFirebaseDatabase(imageUrl)
+                    Toast.makeText(this, "Imagen guardada con éxito", Toast.LENGTH_SHORT).show()
                 } else {
                     // La carga de la imagen falló
                     // Manejar el error si es necesario
@@ -188,29 +186,6 @@ class PerfilConfActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun guardarUrlImagenEnFirebaseDatabase(imageUrl: String) {
-        // Referencia al nodo del usuario en la base de datos
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-
-        if(userId!=null)
-        {
-            val usuarioRef = database.getReference("Usuario").child(userId)
-
-            // Guardar la URL de la imagen en la base de datos
-            usuarioRef.child("imagen").setValue(imageUrl)
-                .addOnSuccessListener {
-                    // La URL de la imagen se ha guardado correctamente en la base de datos
-                    // Realizar cualquier otra acción necesaria, como mostrar un mensaje de éxito
-                    Toast.makeText(this, "Imagen guardada con éxito", Toast.LENGTH_SHORT).show()
-                }
-                .addOnFailureListener { e ->
-                    // La URL de la imagen no se pudo guardar en la base de datos
-                    // Manejar el error si es necesario
-                    Toast.makeText(this, "Error al guardar la URL de la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-        }
-    }
 
 
     private fun loadImage(uri: Uri?) {
