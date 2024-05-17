@@ -53,33 +53,33 @@ class PlanFinalizadoActivity : AppCompatActivity() {
             .child(idPlan)
 
         estadisticaRef.addListenerForSingleValueEvent(object :
-                ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    for (userSnapshot in dataSnapshot.children) {
-                        // Obtiene los datos de cada usuario
-                        val estId = userSnapshot.key // El ID del usuario
-                        val estData = userSnapshot.getValue(Estadistica::class.java) // Los datos del usuario convertidos a objeto Usuario
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    // Obtiene los datos de cada usuario
+                    val estId = userSnapshot.key // El ID del usuario
+                    val estData = userSnapshot.getValue(Estadistica::class.java) // Los datos del usuario convertidos a objeto Usuario
 
-                        // Aquí puedes realizar cualquier operación con los datos del usuario
-                        println("ID de est: $estId")
-                        println("Datos de est: $estData")
+                    // Aquí puedes realizar cualquier operación con los datos del usuario
+                    println("ID de est: $estId")
+                    println("Datos de est: $estData")
 
-                        // Crea un objeto PosAmigo con la información del usuario
+                    // Crea un objeto PosAmigo con la información del usuario
 
-                        if (estData != null) {
-                            estadisticas.add(estData)
-                        }
-
+                    if (estData != null) {
+                        estadisticas.add(estData)
                     }
-                    //poner los planes e la list view
-                    var adapter = AdapterEstadistica(applicationContext,estadisticas);
-                    binding.listaEst.adapter = adapter
+
                 }
-                override fun onCancelled(databaseError: DatabaseError) {
-                    // Maneja el error en caso de que ocurra
-                    println("Error al obtener los datos de planes: ${databaseError.message}")
-                }
-            })
+                //poner los planes e la list view
+                var adapter = AdapterEstadistica(applicationContext,estadisticas);
+                binding.listaEst.adapter = adapter
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Maneja el error en caso de que ocurra
+                println("Error al obtener los datos de planes: ${databaseError.message}")
+            }
+        })
     }
 
     private fun inicializarBotones() {
