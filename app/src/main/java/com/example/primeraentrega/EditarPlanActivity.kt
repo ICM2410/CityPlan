@@ -887,7 +887,8 @@ class EditarPlanActivity : AppCompatActivity() {
                 direccionplan,
                 direccionpin,
                 true,
-                documentId
+                documentId,
+                idPlan
             )
 
 
