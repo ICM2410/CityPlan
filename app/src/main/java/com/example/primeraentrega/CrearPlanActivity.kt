@@ -828,7 +828,6 @@ class CrearPlanActivity : AppCompatActivity() {
         val integrantesMap = mutableMapOf<String,PosAmigo>()
         val childId = databaseReference.child("Planes").push().key.toString()
         val grupoRef = FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo!!)
-        var estadistica= Estadistica()
         //val planId = grupoRef.child("planes").push().key
         userRef.child(idGrupo).child("integrantes").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {

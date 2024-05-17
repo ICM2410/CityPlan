@@ -104,18 +104,6 @@
             android:orientation="horizontal"
             android:padding="20dp">
 
-            <ImageButton
-                android:id="@+id/botonCamara"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="0"
-                android:background="@color/transparente"
-                android:padding="10dp"
-                android:scaleType="center"
-                app:srcCompat="@drawable/icono_camara" />
-
 
             <EditText
                 android:id="@+id/espacioDeTexto"
