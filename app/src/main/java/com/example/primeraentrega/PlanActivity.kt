@@ -293,6 +293,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         }
         else
         {
+            locationSettings()
             startLocationUpdates()
         }
     }
@@ -335,6 +336,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
     override fun onRestart() {
         super.onRestart()
+        firstTime=true
         configurarConFireBaseFotos()
         configurarLocalizacion()
         startLocationUpdates()

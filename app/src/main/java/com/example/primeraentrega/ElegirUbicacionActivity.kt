@@ -173,6 +173,7 @@ class ElegirUbicacionActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         else
         {
+            locationSettings()
             startLocationUpdates()
         }
     }
