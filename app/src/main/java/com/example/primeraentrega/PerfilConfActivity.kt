@@ -55,7 +55,6 @@ class PerfilConfActivity : AppCompatActivity() {
 
 
         binding.bottomNavigation.selectedItemId = R.id.cuenta_bar
-
         // Cargar la imagen del usuario desde Firebase Storage
         cargarImagenUsuarioDesdeFirebaseStorage()
 
@@ -82,6 +81,7 @@ class PerfilConfActivity : AppCompatActivity() {
                 }
             })
     }
+
     private fun inicializarBotones() {
 
         val file = File(getFilesDir(), "picFromCamera");
@@ -185,8 +185,6 @@ class PerfilConfActivity : AppCompatActivity() {
             Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_SHORT).show()
         }
     }
-
-
 
     private fun loadImage(uri: Uri?) {
         val imageStream = contentResolver.openInputStream(uri!!)

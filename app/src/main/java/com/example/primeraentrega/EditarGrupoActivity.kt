@@ -85,6 +85,14 @@ class EditarGrupoActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.botonGaleria1.setOnClickListener {
+            getContentGallery.launch("image/*")
+        }
+
+        binding.botonCamara1.setOnClickListener {
+            getContentCamera.launch(uriCamera)
+        }
+
 
         binding.buttonSalir.setOnClickListener {
             // Verificar si el ID del usuario no es nulo
@@ -377,45 +385,6 @@ class EditarGrupoActivity : AppCompatActivity() {
 
 
 
-
-    private fun loadImage(uri : Uri?) {
-        val imageStream = getContentResolver().openInputStream(uri!!)
-        val bitmap = BitmapFactory.decodeStream(imageStream)
-        binding.fotoSeleccionada1.setImageBitmap(bitmap)
-
-        // Después de cargar la imagen, llamar al método para actualizar la foto del grupo
-        updateGroupPhoto(uri)
-    }
-
-    private fun updateGroupPhoto(imageUri: Uri?) {
-        val drawableFoto = binding.fotoSeleccionada1.drawable
-        if (drawableFoto != null && imageUri != null) {
-            if (drawableFoto is BitmapDrawable) {
-                val bitmap = drawableFoto.bitmap
-                val storageReference = FirebaseStorage.getInstance().getReference("Groups/$idGrupo")
-
-                // Subir la imagen al almacenamiento de Firebase
-                storageReference.putFile(imageUri).addOnSuccessListener { taskSnapshot ->
-                    // Obtener la URL de la imagen subida
-                    storageReference.downloadUrl.addOnSuccessListener { uri ->
-                        // Actualizar el campo 'fotoGrupo' en la base de datos con la ruta relativa de la imagen
-                        FirebaseDatabase.getInstance().getReference("Groups").child(idGrupo)
-                            .child("fotoGrupo").setValue("Groups/$idGrupo")
-                            .addOnSuccessListener {
-                                Toast.makeText(applicationContext, "Foto del grupo actualizada", Toast.LENGTH_SHORT).show()
-                            }
-                            .addOnFailureListener { e ->
-                                Toast.makeText(applicationContext, "Error al actualizar la foto del grupo: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                    }.addOnFailureListener { e ->
-                        Toast.makeText(applicationContext, "Error al obtener la URL de la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                }.addOnFailureListener { e ->
-                    Toast.makeText(applicationContext, "Error al subir la imagen: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
 
     private fun actualizarDatosGrupo(nombreGrupo: String, descripcionGrupo: String) {
         val gruposRef = FirebaseDatabase.getInstance().getReference("Groups")

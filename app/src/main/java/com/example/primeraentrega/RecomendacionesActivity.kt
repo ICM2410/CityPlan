@@ -13,8 +13,6 @@ import android.widget.AdapterView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.biometric.BiometricPrompt
-import androidx.core.content.ContextCompat
 import com.example.primeraentrega.Clases.Establecimiento
 import com.example.primeraentrega.Adapters.AdapterEstablecimiento
 import com.example.primeraentrega.databinding.ActivityRecomendacionesBinding
@@ -33,12 +31,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import org.json.JSONException
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 
 
 class RecomendacionesActivity : AppCompatActivity() {
@@ -204,31 +197,11 @@ class RecomendacionesActivity : AppCompatActivity() {
                     true
                 }
                 R.id.cuenta_bar -> {
-                    val executor = ContextCompat.getMainExecutor(this)
-                    val biometricPrompt = BiometricPrompt(this, executor,
-                        object : BiometricPrompt.AuthenticationCallback() {
-                            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                                super.onAuthenticationSucceeded(result)
-                                // Aquí puedes realizar alguna acción después de la autenticación exitosa
-                                // Por ejemplo, mostrar un mensaje o iniciar una nueva actividad
-                                var intent = Intent(baseContext, PerfilConfActivity::class.java)
-                                intent.putExtra("user", usuario)
-                                startActivity(intent)
-                                //startActivity(Intent(baseContext, PerfilConfActivity::class.java))
-                                //startActivity(Intent(baseContext, VerGruposActivity::class.java))
-                                true
-                            }
-                        })
-
-                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Autenticación de huella dactilar")
-                        .setSubtitle("Toque el sensor de huella dactilar")
-                        .setNegativeButtonText("Cancelar")
-                        .build()
-
-                    biometricPrompt.authenticate(promptInfo)
                     // Respond to navigation item 2 click
-                    false
+                    var intent = Intent(baseContext, PerfilConfActivity::class.java)
+                    intent.putExtra("user", usuario)
+                    startActivity(intent)
+                    true
                 }
                 R.id.salir_bar -> {
                     // Respond to navigation item 3 click
@@ -331,45 +304,13 @@ class RecomendacionesActivity : AppCompatActivity() {
     }
 
     private fun planAcrivo(dateInicio: java.util.Date, dateFinal: java.util.Date): String {
-        val fechaActual = LocalDateTime.now()
-
-        val formatoFecha = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-        val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
-
-        // Establece la zona horaria a UTC si es necesario
-        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
-        formatoHora.timeZone = TimeZone.getTimeZone("UTC")
-
-        val fechaHoraAlarmaInicio =textoAFechaAlarma(
-            formatoFecha.format(dateInicio).toString(),
-            formatoHora.format(dateInicio).toString()
-        )
-
-        val fechaHoraAlarmaFinal =textoAFechaAlarma(
-            formatoFecha.format(dateFinal).toString(),
-            formatoHora.format(dateFinal).toString()
-        )
+        val fechaActual = Date()
 
         return when {
-            fechaActual<fechaHoraAlarmaInicio -> "Activo"
-            fechaActual>fechaHoraAlarmaFinal -> "Cerrado"
-            fechaActual>fechaHoraAlarmaInicio && fechaActual<fechaHoraAlarmaFinal-> "Abierto"
-            else ->"Abierto"
+            fechaActual.before(dateInicio) -> "Activo"
+            fechaActual.after(dateFinal) -> "Cerrado"
+            else -> "Abierto"
         }
-    }
-
-    fun textoAFechaAlarma(fechaTexto: String, horaTexto: String): LocalDateTime {
-        // Parsear los textos de fecha y hora en LocalDateTime
-        val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")
-
-        // Parsear los textos de fecha y hora en LocalDateTime
-        val fechaHora = LocalDateTime.parse("${fechaTexto} ${horaTexto}", formatter)
-        Log.i("tiempo","es: $fechaHora")
-        // Calcular la diferencia en segundos entre la hora actual y la fechaHora propuesta
-        val diferenciaSegundos = LocalDateTime.now().until(fechaHora, java.time.temporal.ChronoUnit.SECONDS)
-        Log.i("tiempo","es: diferencias local ${LocalDateTime.now()} con  inicio $diferenciaSegundos")
-        // Ajustar la hora actual sumando la diferencia en segundos
-        return LocalDateTime.now().plusSeconds(diferenciaSegundos)
     }
 
     private fun initShowout (v: View){

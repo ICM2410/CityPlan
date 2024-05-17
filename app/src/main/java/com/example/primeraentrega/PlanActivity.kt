@@ -51,7 +51,6 @@ import org.osmdroid.bonuspack.routing.RoadManager
 import org.osmdroid.util.GeoPoint
 import kotlin.math.min
 import android.hardware.SensorEventListener
-import com.example.primeraentrega.Clases.Estadistica
 import com.example.primeraentrega.Clases.PosAmigo
 import com.example.primeraentrega.Clases.UsuarioAmigo
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -70,7 +69,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
 import java.io.File
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -128,6 +126,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
     //SENSOR luz
     private lateinit var lightSensor : Sensor
+    // private lateinit var lightEventListener: SensorEventListener
+    //Sensor Temperatura
+    private  var temperatureSensor: Sensor? = null
+    private lateinit var tempEventListener: SensorEventListener
 
     private var nombreUsuario="NOMBRE"
 
@@ -296,6 +298,17 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         }
     }
 
+    fun gestionarPermisoActividad() {
+        val permissionName = android.Manifest.permission.ACTIVITY_RECOGNITION
+
+        if (ActivityCompat.checkSelfPermission(this, permissionName) == PackageManager.PERMISSION_DENIED) {
+            if (shouldShowRequestPermissionRationale(permissionName)) {
+                // Mostrar un mensaje explicativo si es necesario
+                Toast.makeText(getApplicationContext(), "La aplicación requiere permiso de reconocimiento de actividad", Toast.LENGTH_LONG).show()
+            }
+            permissionRequest.launch(permissionName)
+        }
+    }
 
     private lateinit var idPlan : String
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -308,6 +321,8 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         Log.e(TAG, "revisar $idPlan")
         Log.e("idGrupo", "revisar $idGrupo")
 
+        stepSensorEventListener = createStepSensorEventListener()
+
         auth=FirebaseAuth.getInstance()
         databaseReferencePlanes= FirebaseDatabase.getInstance().getReference("Planes")
         databaseReferenceGrupos= FirebaseDatabase.getInstance().getReference("Groups")
@@ -317,8 +332,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
         fotoPlan= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, miImagenResource), 160, 160, true)
 
         roadManager = OSRMRoadManager(this, "ANDROID")
-
-        stepSensorEventListener = createStepSensorEventListener()
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -367,6 +380,20 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
             //stepSensorEventListener = createStepSensorListener()
             sensorManager.registerListener(orientationEventListener, orientationSensor, SensorManager.SENSOR_DELAY_NORMAL)
         }
+
+        // Sensor temperatura
+        temperatureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
+        if (temperatureSensor == null) {
+            Toast.makeText(this, "No se detectó sensor de temperatura", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.i("Sensor", "Hay sensor de temperatura")
+            tempEventListener = createTemperatureSensorListener()
+            sensorManager.registerListener(tempEventListener, temperatureSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+
+        // Registrar el SensorEventListener para el sensor de luz
+        // sensorManager.registerListener(lightEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        //startLocationUpdates()
     }
 
     private val rotationMatrix = FloatArray(9)
@@ -653,17 +680,10 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
 
     private fun createStepSensorEventListener(): SensorEventListener {
-       // var flag=0
-
         return object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
                 if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-
-                        obtenerEstadisticaplan {
-                            Log.i("listo", "$it")
-                            Log.e("stepcount","revisar $stepCount")
-                            countSteps(event)
-                        }
+                    countSteps(event)
                 }
             }
 
@@ -671,29 +691,6 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
                 // No necesitas implementar esto necesariamente, a menos que quieras manejar cambios en la precisión del sensor.
             }
         }
-    }
-
-    private fun obtenerEstadisticaplan(callback: (String) -> Unit) {
-        auth.currentUser?.let {
-            val estRef=FirebaseDatabase.getInstance().getReference("Estadisticas").child(idPlan).child(it.uid)
-            estRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-                        // Iterar sobre los resultados de la consulta
-                        Log.i("datasnapshot pasos", "$dataSnapshot")
-                        val est= dataSnapshot.getValue(Estadistica::class.java)!!
-                        stepCount=est.pasos
-                        binding.pasoscantText.text = "$stepCount"
-                        callback("listo")
-                    }
-
-                    override fun onCancelled(databaseError: DatabaseError) {
-                        // Manejar el error en caso de que la consulta sea cancelada
-                        Log.e(TAG, "Error al realizar la consulta de estadisticas: ${databaseError.message}")
-                    }
-                })
-
-        }
-
     }
 
 
@@ -727,16 +724,71 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     private fun updateStepCount(stepCount: Int) {
         // Actualiza la vista o realiza cualquier otra acción necesaria con el nuevo recuento de pasos
         binding.pasoscantText.text = "$stepCount"
-        auth.currentUser?.let {
-            val estRef=FirebaseDatabase.getInstance().getReference("Estadisticas").child(idPlan).child(it.uid).child("pasos")
-            estRef.setValue(stepCount).addOnCompleteListener {task ->
-                if (task.isSuccessful) {
-                    Log.i("pasos","guardados $stepCount")
-                }
-            }
-        }
     }
 
+    /*fun createStepSensorListener() : SensorEventListener {
+        return object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (running && event != null && event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
+                    // Incrementar el contador de pasos cada vez que se detecta un paso
+                    binding.pasoscantText.text = (binding.pasoscantText.text.toString().toInt() + 1).toString()
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // No necesitas hacer nada aquí para este caso
+            }
+        }
+    }*/
+    /*fun createLightSensorListener() : SensorEventListener{
+        val ret : SensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if(this@PlanActivity::map.isInitialized){
+                    if (event != null && event.sensor.type == Sensor.TYPE_LIGHT) {
+                        if(event.values[0] < 1500){
+                            // Cambiar a modo oscuro
+                            map.getOverlayManager().getTilesOverlay().setColorFilter(TilesOverlay.INVERT_COLORS);
+                        }else{
+                            // Cambiar a modo claro
+                            map.getOverlayManager().getTilesOverlay().setColorFilter(null);
+                        }
+                    }
+                }
+            }
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+            }
+        }
+        return ret
+    }*/
+    fun createTemperatureSensorListener() : SensorEventListener {
+        val ret : SensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event != null && event.sensor.type == Sensor.TYPE_AMBIENT_TEMPERATURE) {
+                    val temperatura = event.values[0]
+                    val resource = when {
+                        temperatura < 0 -> {
+                            R.drawable.nevando
+                        }
+                        temperatura < 15 -> {
+                            R.drawable.muynublado
+                        }
+                        temperatura < 20 -> {
+                            R.drawable.parcialmentenublado
+                        }
+                        else -> {
+                            R.drawable.soleado
+                        }
+                    }
+                    binding.imagenTemperatura.setImageResource(resource)
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // No necesitas hacer nada aquí para este caso
+            }
+        }
+        return ret
+    }
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
 
     }
@@ -750,7 +802,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
     }
     fun resetSteps(){
         previousTotalSteps = totalSteps
-        //binding.pasoscantText.text = 0.toString()
+        binding.pasoscantText.text = 0.toString()
         saveData()
     }
     fun saveData(){
@@ -969,6 +1021,7 @@ class PlanActivity : AppCompatActivity(), SensorEventListener, OnMapReadyCallbac
 
         //primero gestionar los permisos
         gestionarPermiso()
+        gestionarPermisoActividad()
 
         binding.mostrarRutabutton.setOnClickListener{
             //muestra la ruta con oms bonus
