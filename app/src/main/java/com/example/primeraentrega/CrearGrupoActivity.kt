@@ -233,7 +233,7 @@ class CrearGrupoActivity : AppCompatActivity() {
 
 
     }
-
+    private var flag=0
     private fun createGroup() {
         var groupName = binding.editTextNombreGrupo.text.toString()
         var groupDescription = binding.editTextDescGrupo.text.toString()
@@ -266,8 +266,12 @@ class CrearGrupoActivity : AppCompatActivity() {
                         // Upload the group image with the retrieved group ID
                         uploadGroupImage(groupId)
                         //enviar notificacion de grupo creado
+                        if(flag==0)
+                        {
+                            notificacionGrupoCreado(groupId)
+                            flag++
+                        }
 
-                        notificacionGrupoCreado(groupId)
                     } else {
                         Log.e("NO ID", "Group ID is null")
                     }
