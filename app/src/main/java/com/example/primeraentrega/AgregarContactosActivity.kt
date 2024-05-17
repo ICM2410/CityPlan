@@ -411,7 +411,7 @@ class AgregarContactosActivity : AppCompatActivity() {
                             Log.e("Entre", "ENTRE")
                             Log.e("REFERENCIA", storageRef.toString())
                             val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
-                            var usuarioADD= ListUser(usuario.username, usuario.uid, bitmap)
+                            var usuarioADD= ListUser(usuario.username+" "+ usuario.telefono.toString(), usuario.uid, bitmap)
                             contactList.add(usuarioADD)
 
                             //Lista
