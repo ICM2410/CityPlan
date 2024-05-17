@@ -50,13 +50,13 @@ class NewPlanService: Service() {
 
     override fun onCreate() {
         super.onCreate()
-        databaseReference = FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReference = FirebaseDatabase.getInstance().getReference("Groups")
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
         scheduler=AndroidAlarmScheduler(this)
     }
 
-    private val gruposAnadidos = HashSet<Int>()
+    private val gruposAnadidos = HashSet<String>()
     private fun subscribirseACambiosDelUsuario() {
         Log.i("service mis grupos","ENTRE")
         val query = databaseReference
@@ -78,7 +78,7 @@ class NewPlanService: Service() {
                             }
                             for(plan in grupoData.planes)
                             {
-                                if(!gruposAnadidos.contains(plan.value.idAlarma))
+                                if(!gruposAnadidos.contains(plan.value.id))
                                 {
                                     //gruposAnadidos.add(plan.value.idAlarma)
 
@@ -101,8 +101,8 @@ class NewPlanService: Service() {
                                             formatoFecha.format(dateInicio).toString(),
                                             formatoHora.format(dateInicio).toString()
                                         )
-                                        //if(fechaHoraAlarma.isAfter(horaActual))
-                                        //{
+                                        if(horaActual<fechaHoraAlarma)
+                                        {
                                             Log.i("alarma","asignaron una nueva alarma")
                                             //agendar la alarma
                                             alarmItem= groupId?.let {
@@ -121,8 +121,8 @@ class NewPlanService: Service() {
                                             }
 
                                             alarmItem?.let (scheduler::schedule)
-                                        gruposAnadidos.add(plan.value.idAlarma)
-                                        //}
+                                            gruposAnadidos.add(plan.value.id)
+                                        }
                                     }
                                 }
                             }
@@ -147,7 +147,7 @@ class NewPlanService: Service() {
                             for(plan in grupoData.planes)
                             {
                                 Log.i("services mis grupos","hay un plan: $dataSnapshot")
-                                if(!gruposAnadidos.contains(plan.value.idAlarma))
+                                if(!gruposAnadidos.contains(plan.value.id))
                                 {
                                     Log.i("services mis grupos","no existe la alarma: $dataSnapshot")
 
@@ -169,26 +169,28 @@ class NewPlanService: Service() {
                                             formatoHora.format(dateInicio).toString()
                                         )
 
-                                        Log.i("alarma","asignaron una nueva alarma")
-                                        //agendar la alarma
-                                        alarmItem= groupId?.let {
-                                            AlarmItem(
-                                                textoAFechaAlarma(
-                                                    formatoFecha.format(dateInicio).toString(),
-                                                    formatoHora.format(dateInicio).toString()
-                                                ),
-                                                //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
-                                                "El plan ${plan.value.titulo} ha iniciado",
-                                                plan.value.titulo,
-                                                plan.value.idAlarma,
-                                                plan.value.id,
-                                                it
-                                            )
+                                        if(horaActual<fechaHoraAlarma)
+                                        {
+                                            Log.i("alarma","asignaron una nueva alarma")
+                                            //agendar la alarma
+                                            alarmItem= groupId?.let {
+                                                AlarmItem(
+                                                    textoAFechaAlarma(
+                                                        formatoFecha.format(dateInicio).toString(),
+                                                        formatoHora.format(dateInicio).toString()
+                                                    ),
+                                                    //textoAFechaAlarma(binding.fechaInicio, binding.horaInicio),
+                                                    "El plan ${plan.value.titulo} ha iniciado",
+                                                    plan.value.titulo,
+                                                    plan.value.idAlarma,
+                                                    plan.value.id,
+                                                    it
+                                                )
+                                            }
+
+                                            alarmItem?.let (scheduler::schedule)
+                                            gruposAnadidos.add(plan.value.id)
                                         }
-
-                                        alarmItem?.let (scheduler::schedule)
-                                        gruposAnadidos.add(plan.value.idAlarma)
-
                                     }
                                 }
                             }
@@ -253,7 +255,7 @@ class NewPlanService: Service() {
     }
 
     private fun start() {
-        databaseReference = FirebaseDatabase.getInstance().getReference("Grupos")
+        databaseReference = FirebaseDatabase.getInstance().getReference("Groups")
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
         subscribirseACambiosDelUsuario()

@@ -67,6 +67,7 @@ class EditarGrupoActivity : AppCompatActivity() {
     private var rotation=false
     private fun inicializarBotones() {
 
+
         val file = File(getFilesDir(), "picFromCamera");
         uriCamera =  FileProvider.getUriForFile(baseContext, baseContext.packageName + ".fileprovider", file)
 
@@ -82,14 +83,6 @@ class EditarGrupoActivity : AppCompatActivity() {
             val intent = Intent(this, EditarContactosGrupoActivity::class.java)
             intent.putExtra("idGrupo", idGrupo)
             startActivity(intent)
-        }
-
-        binding.botonGaleria1.setOnClickListener {
-            getContentGallery.launch("image/*")
-        }
-
-        binding.botonCamara1.setOnClickListener {
-            getContentCamera.launch(uriCamera)
         }
 
 
@@ -381,6 +374,7 @@ class EditarGrupoActivity : AppCompatActivity() {
             }
         }
     }
+
 
 
 
